@@ -46,6 +46,8 @@ export const datesTable = pgTable("date_plans", {
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
   startedAt: timestamp("started_at", { withTimezone: true }),
+  timezone: text("timezone").notNull().default(""),
+  durationMinutes: integer("duration_minutes").notNull().default(90),
 });
 
 export const checkInsTable = pgTable("check_ins", {

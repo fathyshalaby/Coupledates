@@ -8,11 +8,16 @@
 
 export * from './assistantInput';
 export * from './assistantTurn';
+export * from './calendarAvailability';
+export * from './calendarPreferenceInput';
+export * from './calendarSlot';
+export * from './calendarStatus';
 export * from './checkInInput';
 export * from './checkInInputActivity';
 export * from './couple';
 export * from './coupleInput';
 export * from './coupleState';
+export * from './dateCalendarState';
 export * from './dateDetail';
 export * from './dateIdea';
 export * from './dateIdeaCategory';
@@ -25,6 +30,7 @@ export * from './datePlan';
 export * from './dateResponseInput';
 export * from './dateResponseInputAction';
 export * from './dateReview';
+export * from './getCalendarAvailabilityParams';
 export * from './getRecapParams';
 export * from './healthStatus';
 export * from './joinInput';

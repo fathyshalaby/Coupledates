@@ -20,3 +20,4 @@
 export * from "./couples";
 export * from "./preferences";
 export * from "./date-reviews";
+export * from "./calendars";

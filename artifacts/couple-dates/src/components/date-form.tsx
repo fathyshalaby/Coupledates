@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { Crosshair, Info, Link2, Loader2, MapPin, Users, Video, X } from 'lucide-react';
+import { useMemo, useState, type FormEvent } from 'react';
+import { AlertTriangle, Crosshair, Globe2, Info, Link2, Loader2, MapPin, Users, Video, X } from 'lucide-react';
 import {
   useCreateDate, useUpdateDate,
   type DateInput, type DateInputCategory, type DateInputMode, type DatePlan,
@@ -9,10 +9,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { CATEGORIES, errMsg, errStatus, geoErrorText, getPosition, safeHttpUrl, todayISO, useInvalidate } from '@/lib/data';
+import { CATEGORIES, usePreferencesQ, errMsg, errStatus, geoErrorText, getPosition, safeHttpUrl, todayISO, useInvalidate } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { useCouple } from '@/lib/couple-context';
+import { DURATIONS, browserTz, commonTimezones, fmtDuration, isValidTz, resolveLocal } from '@/lib/calendar';
 
-export type DatePrefill = { title?: string; category?: DateInputCategory; mode?: DateInputMode; location?: string; notes?: string };
+export type DatePrefill = { title?: string; category?: DateInputCategory; mode?: DateInputMode; location?: string; notes?: string; date?: string; time?: string; timezone?: string; durationMinutes?: number };
+
+export const MODE_LABEL: Record<string, string> = { in_person: 'In person', remote: 'Online' };
 
 export const DATE_AFFECTED = ['dates', 'detail', 'summary', 'recap'] as const;
 
@@ -23,10 +27,19 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
 }) {
   const invalidate = useInvalidate();
   const { toast } = useToast();
+  const couple = useCouple();
+  const prefsQ = usePreferencesQ();
+  const longDistance = !!prefsQ.data?.find((p) => p.isYou)?.relationshipMode && prefsQ.data?.find((p) => p.isYou)?.relationshipMode === 'long_distance';
+  const [modeTouched, setModeTouched] = useState(false);
+  const [timezone, setTimezone] = useState(plan ? plan.timezone || couple.timezone : prefill?.timezone || browserTz() || couple.timezone);
+  const [duration, setDuration] = useState<number>(plan?.durationMinutes ?? prefill?.durationMinutes ?? 90);
+  const tzOptions = useMemo(() => commonTimezones([couple.timezone, browserTz()]), [couple.timezone]);
   const [title, setTitle] = useState(plan?.title ?? prefill?.title ?? '');
-  const [date, setDate] = useState(plan?.date.slice(0, 10) ?? '');
-  const [time, setTime] = useState(plan?.time ?? '');
-  const [mode, setMode] = useState<DateInputMode>(plan?.mode ?? prefill?.mode ?? 'in_person');
+  const [date, setDate] = useState(plan?.date.slice(0, 10) ?? prefill?.date ?? '');
+  const [time, setTime] = useState(plan?.time ?? prefill?.time ?? '');
+  const [modeState, setModeState] = useState<DateInputMode | null>(plan?.mode ?? prefill?.mode ?? null);
+  const mode: DateInputMode = modeState ?? (!modeTouched && longDistance ? 'remote' : 'in_person');
+  const setMode = (m: DateInputMode) => { setModeTouched(true); setModeState(m); };
   const [location, setLocation] = useState(plan?.location ?? prefill?.location ?? '');
   const [meetingUrl, setMeetingUrl] = useState(plan?.meetingUrl ?? '');
   const [category, setCategory] = useState<DateInputCategory>(plan?.category ?? prefill?.category ?? 'Everyday');
@@ -66,14 +79,19 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
     } finally { setLocating(false); }
   };
 
+  const localCheck = date && time ? resolveLocal(date, time, timezone).kind : 'ok';
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!date) { setError('Pick a day — the plan needs one.'); return; }
     if (requireTime && !time) { setError('Pick a time so your partner knows when.'); return; }
+    if (!isValidTz(timezone)) { setError('That timezone isn’t recognised — try a name like Europe/Lisbon.'); return; }
+    if (time && localCheck === 'gap') { setError('That clock time doesn’t exist on this day in this timezone (daylight saving jump). Pick another time.'); return; }
+    if (time && localCheck === 'ambiguous') { setError('That clock time happens twice on this day in this timezone (clocks fall back). Pick another time.'); return; }
     if (mode === 'remote' && meetingUrl.trim() && !safeHttpUrl(meetingUrl)) { setError('The call link should start with http:// or https://'); return; }
     const data: DateInput & { expectedVersion?: number } = {
-      title: title.trim(), date, time, location: location.trim(), category, notes,
+      title: title.trim(), date, time, timezone: timezone.trim(), durationMinutes: duration, location: location.trim(), category, notes,
       status: plan ? plan.status : 'proposed',
       rating: plan?.rating ?? null,
       mode,
@@ -107,8 +125,23 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
             <Input id="df-time" data-testid="input-date-time" required={requireTime} type="time" value={time} onChange={(e) => setTime(e.target.value)} className="h-12 rounded-2xl" /></div>
         </div>
 
-        <div className="grid grid-cols-2 rounded-full bg-foreground/[0.06] p-1" role="radiogroup" aria-label="Together or remote">
-          {([['in_person', 'In person', Users], ['remote', 'Remote', Video]] as const).map(([m, label, Icon]) => (
+        <div className="grid grid-cols-[1fr_auto] gap-3">
+          <div className="space-y-1.5"><Label htmlFor="df-tz" className={lbl}>Timezone</Label>
+            <div className="relative"><Globe2 className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input id="df-tz" data-testid="input-date-timezone" list="df-tz-list" maxLength={100} value={timezone} onChange={(e) => setTimezone(e.target.value)} aria-invalid={!isValidTz(timezone)} className={cn('h-12 rounded-2xl pl-10 font-mono text-sm', !isValidTz(timezone) && 'border-destructive')} /></div>
+            <datalist id="df-tz-list">{tzOptions.map((z) => <option key={z} value={z} />)}</datalist></div>
+          <div className="space-y-1.5"><Label htmlFor="df-dur" className={lbl}>Length</Label>
+            <select id="df-dur" data-testid="select-date-duration" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="h-12 rounded-2xl border border-input bg-background px-3 text-sm">
+              {Array.from(new Set([...DURATIONS, duration])).sort((a, b) => a - b).map((m) => <option key={m} value={m}>{fmtDuration(m)}</option>)}
+            </select></div>
+        </div>
+        {(localCheck === 'gap' || localCheck === 'ambiguous') && (
+          <p data-testid="text-dst-warning" className="flex gap-2 rounded-2xl bg-accent/60 px-4 py-3 text-xs"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            {localCheck === 'gap' ? 'Clocks jump forward at this time in this timezone, so it doesn’t exist that day — pick another time.' : 'Clocks fall back here, so this time happens twice that day. Pick a time outside the change — it can’t be saved.'}</p>
+        )}
+
+        <div className="grid grid-cols-2 rounded-full bg-foreground/[0.06] p-1" role="radiogroup" aria-label="In person or online">
+          {([['in_person', 'In person', Users], ['remote', 'Online', Video]] as const).map(([m, label, Icon]) => (
             <button type="button" role="radio" aria-checked={mode === m} key={m} data-testid={`option-mode-${m}`} onClick={() => setMode(m)} className={cn('flex items-center justify-center gap-1.5 rounded-full py-2.5 text-sm transition', mode === m && 'bg-card shadow-sm')}><Icon className="h-4 w-4" />{label}</button>
           ))}
         </div>

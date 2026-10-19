@@ -45,6 +45,12 @@ Location is an optional, explicitly requested foreground check against a volunta
 
 The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships. They are considering about $5/month per couple space; billing and paid feature boundaries are not finalized and no checkout has been added.
 
+The user wants partners to connect their own calendars and supports online dates as well as physical dates. They chose Google Calendar first.
+
+Calendar access is per signed-in partner through Clerk's Google external account with explicit incremental consent, never a shared workspace-owner connector. OAuth tokens remain with Clerk. Free/busy sharing is a separate opt-in, off by default; shared slots require both partners' consent and complete primary-calendar responses. Never send private calendar events to the partner or AI.
+
+Google saves and .ics downloads are explicit, one-time calendar copies, not background/two-way sync. Only agreed dates may be saved; each partner manages their own Google copy. Editing or deleting an app plan does not automatically update/remove calendar copies; keep that warning visible. Google provider approval/API availability must succeed before reporting a connection as verified. Date times use the date's saved IANA timezone, with legacy dates falling back to the couple timezone; do not reinterpret an existing date using the viewer's device timezone.
+
 ## Gotchas
 
 _Populate as you build — sharp edges, "always run X before Y" rules._

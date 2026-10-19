@@ -8,6 +8,7 @@ import {
 import { requireUser, requireCouple, fail } from "../lib/couple";
 import { dateDetail, dateResponse } from "../lib/date-details";
 import { nextDateState } from "../lib/date-state";
+import { zonedInstant } from "../lib/calendar-time";
 
 const router: IRouter = Router();
 router.use("/dates", requireUser, requireCouple);
@@ -23,6 +24,7 @@ router.post("/dates/:id/respond", async (req, res): Promise<void> => {
       .where(and(eq(datesTable.id, id), eq(datesTable.coupleId, res.locals.couple.id))).for("update");
     if (!current) fail(404, "Date not found.");
     const status = nextDateState(current, res.locals.userId, data);
+    if (data.action === "counter" && data.time) zonedInstant(data.date!, data.time, current.timezone || res.locals.couple.timezone);
     const [updated] = await tx.update(datesTable).set({
       status, version: current.version + 1,
       responseNote: data.note ?? "",

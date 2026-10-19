@@ -22,8 +22,11 @@ import { DATE_AFFECTED, DateForm } from '@/components/date-form';
 import { MEMORY_AFFECTED, MemoryForm, memoryToInput } from '@/components/memory-form';
 import { useToast } from '@/hooks/use-toast';
 import { useCouple } from '@/lib/couple-context';
-import { distanceMeters, errMsg, errStatus, fmtDate, fmtTime, geoErrorText, getPosition, safeHttpUrl, todayISO, useDateDetailQ, useInvalidate } from '@/lib/data';
+import { distanceMeters, errMsg, errStatus, fmtDate, fmtTime, geoErrorText, getPosition, safeHttpUrl, todayISO, useDateDetailQ, usePreferencesQ, useInvalidate } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { DateCalendarPanel } from '@/components/date-calendar-panel';
+import { MODE_LABEL } from '@/components/date-form';
+import { fmtDuration, fmtInstant, isValidTz, resolveLocal, tzShort } from '@/lib/calendar';
 import { whoOwes } from '@/pages/dates';
 
 const NEARBY_M = 300;
@@ -100,6 +103,13 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
   const hasPoint = d.mode === 'in_person' && d.latitude != null && d.longitude != null;
   const albumOpen = d.status !== 'declined';
   const isToday = d.date.slice(0, 10) === todayISO();
+  const online = d.mode === 'remote';
+  const zone = d.timezone || couple.timezone;
+  const prefsQ = usePreferencesQ();
+  const resolved = d.time ? resolveLocal(d.date.slice(0, 10), d.time, zone) : null;
+  const elsewhere = resolved?.kind === 'ok' ? (prefsQ.data ?? []).filter((p) => p.timezone && isValidTz(p.timezone) && p.timezone !== zone)
+    .map((p) => ({ who: p.isYou ? 'you' : p.displayName || 'partner', text: `${fmtInstant(resolved.ms, p.timezone, { weekday: 'short', hour: 'numeric', minute: '2-digit' })} ${tzShort(p.timezone, resolved.ms)}` })) : [];
+  const accepted = d.status === 'planned' || d.status === 'active' || d.status === 'completed';
 
   const pickFile = (f: File | undefined) => { if (f) setCapture({ file: f, memory: null }); if (camRef.current) camRef.current.value = ''; if (fileRef.current) fileRef.current.value = ''; };
 
@@ -131,15 +141,25 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
           <div><p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">When</p>
             <p data-testid="text-date-when" className="font-display mt-1 text-xl leading-tight">{fmtDate(d.date, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
             <p className="mt-0.5 flex items-center gap-1 text-sm"><Clock className="h-3.5 w-3.5" />{d.time ? fmtTime(d.time) : 'Any time'}</p>
-            <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">{couple.timezone}</p></div>
+            <p data-testid="text-date-timezone" className="mt-0.5 font-mono text-[10px] text-muted-foreground">{zone} · {fmtDuration(d.durationMinutes)}</p>
+            {elsewhere.map((e) => <p key={e.who} className="font-mono text-[10px] text-muted-foreground">{e.text} for {e.who}</p>)}
+            {resolved && resolved.kind !== 'ok' && <p className="font-mono text-[10px] text-destructive">Daylight-saving change at this time — consider another.</p>}</div>
           <div><p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Where</p>
-            <p className="mt-1 flex items-start gap-1 text-sm">{d.mode === 'remote' ? <Video className="mt-0.5 h-3.5 w-3.5 shrink-0" /> : <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />}<span data-testid="text-date-location">{d.location || (d.mode === 'remote' ? 'Remote' : 'Not set yet')}</span></p>
-            {d.mode === 'remote' && (url
-              ? <a href={url} target="_blank" rel="noopener noreferrer" data-testid="link-meeting-url" className="mt-2 inline-flex items-center gap-1 rounded-full bg-foreground px-3 py-1.5 text-xs text-background">Join call <ExternalLink className="h-3 w-3" /></a>
-              : d.meetingUrl ? <p className="mt-1 text-xs text-muted-foreground">Link isn’t a web address: {d.meetingUrl}</p> : null)}
+            <p className="mt-1 flex items-start gap-1 text-sm">{d.mode === 'remote' ? <Video className="mt-0.5 h-3.5 w-3.5 shrink-0" /> : <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />}<span data-testid="text-date-location">{d.location || (online ? MODE_LABEL.remote : 'Not set yet')}</span></p>
             {hasPoint && <p className="mt-1 font-mono text-[10px] text-muted-foreground">Meeting point pinned</p>}</div>
         </div>
         {d.notes && <><div className="perf my-4" /><p data-testid="text-date-notes" className="whitespace-pre-line text-[15px] leading-relaxed text-foreground/80">{d.notes}</p></>}
+        {online && (
+          <div data-testid="section-online" className="mt-4 rounded-[22px] bg-[hsl(330_32%_15%)] p-4 text-[hsl(38_60%_96%)]">
+            <p className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest opacity-70"><Video className="h-3 w-3" /> Online date</p>
+            {url ? (
+              <a href={url} target="_blank" rel="noopener noreferrer" data-testid="link-meeting-url" className="mt-2 flex items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground transition active:scale-[.98]">Join the call <ExternalLink className="h-3.5 w-3.5" /></a>
+            ) : (
+              <p className="mt-2 text-sm opacity-80">{d.meetingUrl ? `Link isn’t a web address: ${d.meetingUrl}` : canEdit ? 'No call link yet — add one by editing the plan.' : 'No call link was added.'}</p>
+            )}
+            <p className="mt-3 text-xs leading-relaxed opacity-75">Before you start: same playlist or film queued, snacks within reach, chargers plugged in. No camera needed for the album — screenshots and notes count.</p>
+          </div>
+        )}
         {d.responseNote && (
           <div className="mt-4 flex gap-2 rounded-2xl bg-secondary/70 p-3 text-sm"><MessageSquareQuote className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><p data-testid="text-response-note" className="italic">“{d.responseNote}”</p></div>
         )}
@@ -184,6 +204,8 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
         </div>
       </section>
 
+      <DateCalendarPanel plan={d} agreed={accepted} />
+
       {d.status === 'completed' && <Reviews plan={d} reviews={detail.reviews} />}
 
       {/* Album */}
@@ -199,7 +221,7 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
         {detail.memories.length === 0 ? (
           <div data-testid="state-album-empty" className="rounded-[26px] border border-dashed border-foreground/20 px-6 py-8 text-center">
             <p className="font-display text-xl">{albumOpen ? 'Nothing pinned yet.' : 'No album for declined dates.'}</p>
-            <p className="mx-auto mt-1 max-w-xs text-sm text-muted-foreground">{albumOpen ? 'Each photo becomes its own memory, with a note — both of you can add as many as you like.' : 'Propose it again to start collecting photos.'}</p>
+            <p className="mx-auto mt-1 max-w-xs text-sm text-muted-foreground">{albumOpen ? (online ? 'Apart tonight? Upload screenshots of the call or jot a note — no camera needed.' : 'Each photo becomes its own memory, with a note — both of you can add as many as you like.') : 'Propose it again to start collecting photos.'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-x-3 gap-y-5">
@@ -222,7 +244,7 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
       </Drawer>
 
       <Drawer open={countering} onOpenChange={setCountering}>
-        <DrawerContent className="bg-background">{countering && <CounterForm plan={d} pending={respond.isPending} onSubmit={(x) => act('counter', x)} />}</DrawerContent>
+        <DrawerContent className="bg-background">{countering && <CounterForm plan={d} zone={zone} pending={respond.isPending} onSubmit={(x) => act('counter', x)} />}</DrawerContent>
       </Drawer>
 
       <Drawer open={completing} onOpenChange={setCompleting}>
@@ -240,6 +262,7 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
           <AlertDialogHeader>
             <AlertDialogTitle className="font-display text-2xl">Remove this date?</AlertDialogTitle>
             <AlertDialogDescription>“{d.title}” will be removed for both of you, along with its reviews.{detail.memories.length > 0 && ` The ${detail.memories.length} album ${detail.memories.length === 1 ? 'memory stays' : 'memories stay'} safe in Memories — just unpinned from this date.`}</AlertDialogDescription>
+            <p data-testid="text-delete-calendar-warning" className="rounded-2xl bg-accent/60 px-3 py-2 text-left text-xs">Saved Google Calendar copies are not deleted automatically — they’re independent snapshots that stay in Google. Remove your copy from this date’s calendar panel first if you don’t want it.</p>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-delete-date" className="rounded-full">Keep it</AlertDialogCancel>
@@ -259,10 +282,11 @@ function ActionBtn({ testid, onClick, busy, disabled, icon: Icon, label, primary
   );
 }
 
-function CounterForm({ plan, pending, onSubmit }: { plan: DatePlan; pending: boolean; onSubmit: (x: { date: string; time: string; note: string }) => void }) {
+function CounterForm({ plan, zone, pending, onSubmit }: { plan: DatePlan; zone: string; pending: boolean; onSubmit: (x: { date: string; time: string; note: string }) => void }) {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [note, setNote] = useState('');
+  const dst = date && time ? resolveLocal(date, time, zone).kind : 'ok';
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSubmit({ date, time, note: note.trim() }); }} className="mx-auto w-full max-w-md px-5 pb-8 pt-2">
       <DrawerTitle className="font-display text-3xl">Suggest another time</DrawerTitle>
@@ -271,9 +295,11 @@ function CounterForm({ plan, pending, onSubmit }: { plan: DatePlan; pending: boo
         <div className="space-y-1.5"><Label htmlFor="c-date" className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">New day</Label><Input id="c-date" data-testid="input-counter-date" required type="date" min={todayISO()} value={date} onChange={(e) => setDate(e.target.value)} className="h-12 rounded-2xl" /></div>
         <div className="space-y-1.5"><Label htmlFor="c-time" className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">New time</Label><Input id="c-time" data-testid="input-counter-time" required type="time" value={time} onChange={(e) => setTime(e.target.value)} className="h-12 rounded-2xl" /></div>
       </div>
+      <p data-testid="text-counter-timezone" className="mt-2 font-mono text-[10px] text-muted-foreground">Times are in {zone} · length stays {fmtDuration(plan.durationMinutes)}</p>
+      {dst !== 'ok' && <p className="mt-2 rounded-2xl bg-accent/60 px-3 py-2 text-xs">Daylight-saving change at this time in {zone} — it doesn’t exist or happens twice. Pick another time.</p>}
       <div className="mt-3 space-y-1.5"><Label htmlFor="c-note" className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">Why this works better</Label>
         <Textarea id="c-note" data-testid="input-counter-note" required minLength={1} maxLength={1500} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Saturday’s packed — Sunday brunch instead?" className="min-h-20 rounded-2xl" /></div>
-      <button data-testid="button-send-counter" disabled={pending || !date || !time || !note.trim()} className="mt-5 w-full rounded-full bg-primary py-4 font-medium text-primary-foreground transition active:scale-[.98] disabled:opacity-50">{pending ? 'Sending...' : 'Send counter-proposal'}</button>
+      <button data-testid="button-send-counter" disabled={pending || !date || !time || !note.trim() || dst !== 'ok'} className="mt-5 w-full rounded-full bg-primary py-4 font-medium text-primary-foreground transition active:scale-[.98] disabled:opacity-50">{pending ? 'Sending...' : 'Send counter-proposal'}</button>
     </form>
   );
 }

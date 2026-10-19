@@ -8,6 +8,105 @@
 import * as zod from 'zod';
 
 
+export const GetCalendarStatusResponse = zod.object({
+  "connected": zod.boolean(),
+  "needsConsent": zod.boolean(),
+  "shareAvailability": zod.boolean(),
+  "partnerSharing": zod.boolean()
+})
+
+
+export const ConnectCalendarBody = zod.object({
+  "shareAvailability": zod.boolean()
+})
+
+export const ConnectCalendarResponse = zod.object({
+  "connected": zod.boolean(),
+  "needsConsent": zod.boolean(),
+  "shareAvailability": zod.boolean(),
+  "partnerSharing": zod.boolean()
+})
+
+
+export const SaveCalendarPreferencesBody = zod.object({
+  "shareAvailability": zod.boolean()
+})
+
+export const SaveCalendarPreferencesResponse = zod.object({
+  "connected": zod.boolean(),
+  "needsConsent": zod.boolean(),
+  "shareAvailability": zod.boolean(),
+  "partnerSharing": zod.boolean()
+})
+
+
+export const DisconnectCalendarResponse = zod.void()
+
+
+export const getCalendarAvailabilityQueryDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getCalendarAvailabilityQueryDurationMinutesMin = 30;
+export const getCalendarAvailabilityQueryDurationMinutesMax = 240;
+
+export const getCalendarAvailabilityQueryTimezoneMax = 100;
+
+
+
+export const GetCalendarAvailabilityQueryParams = zod.object({
+  "date": zod.coerce.string().regex(getCalendarAvailabilityQueryDateRegExp),
+  "durationMinutes": zod.coerce.number().int().min(getCalendarAvailabilityQueryDurationMinutesMin).max(getCalendarAvailabilityQueryDurationMinutesMax),
+  "timezone": zod.coerce.string().max(getCalendarAvailabilityQueryTimezoneMax)
+})
+
+export const GetCalendarAvailabilityResponse = zod.object({
+  "complete": zod.boolean(),
+  "notice": zod.string(),
+  "slots": zod.array(zod.object({
+  "start": zod.string(),
+  "end": zod.string()
+})),
+  "timezone": zod.string(),
+  "checkedAt": zod.string()
+})
+
+
+export const GetDateCalendarParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const GetDateCalendarResponse = zod.object({
+  "saved": zod.boolean(),
+  "stale": zod.boolean(),
+  "eventUrl": zod.string().nullable(),
+  "notice": zod.string()
+})
+
+
+export const SaveDateToCalendarParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const SaveDateToCalendarResponse = zod.object({
+  "saved": zod.boolean(),
+  "stale": zod.boolean(),
+  "eventUrl": zod.string().nullable(),
+  "notice": zod.string()
+})
+
+
+export const RemoveDateFromCalendarParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const RemoveDateFromCalendarResponse = zod.void()
+
+
+export const ExportDateCalendarParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const ExportDateCalendarResponse = zod.unknown()
+
+
 export const getPreferencesResponseOneDisplayNameMax = 60;
 
 export const getPreferencesResponseOneInterestsItemMax = 60;
@@ -218,6 +317,11 @@ export const GetDateDetailParams = zod.object({
 
 export const getDateDetailResponseDateOneExpectedVersionMin = 0;
 
+export const getDateDetailResponseDateOneTimezoneMax = 100;
+
+export const getDateDetailResponseDateOneDurationMinutesMin = 30;
+export const getDateDetailResponseDateOneDurationMinutesMax = 240;
+
 export const getDateDetailResponseDateOneTitleMax = 150;
 
 export const getDateDetailResponseDateOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -247,6 +351,8 @@ export const getDateDetailResponseMemoriesItemOneDateRegExp = new RegExp('^\\d{4
 export const GetDateDetailResponse = zod.object({
   "date": zod.object({
   "expectedVersion": zod.number().int().min(getDateDetailResponseDateOneExpectedVersionMin).optional(),
+  "timezone": zod.string().max(getDateDetailResponseDateOneTimezoneMax).optional(),
+  "durationMinutes": zod.number().int().min(getDateDetailResponseDateOneDurationMinutesMin).max(getDateDetailResponseDateOneDurationMinutesMax).optional(),
   "title": zod.string().min(1).max(getDateDetailResponseDateOneTitleMax),
   "date": zod.string().regex(getDateDetailResponseDateOneDateRegExp),
   "time": zod.string().max(getDateDetailResponseDateOneTimeMax).optional(),
@@ -313,6 +419,11 @@ export const RespondToDateBody = zod.object({
 
 export const respondToDateResponseOneExpectedVersionMin = 0;
 
+export const respondToDateResponseOneTimezoneMax = 100;
+
+export const respondToDateResponseOneDurationMinutesMin = 30;
+export const respondToDateResponseOneDurationMinutesMax = 240;
+
 export const respondToDateResponseOneTitleMax = 150;
 
 export const respondToDateResponseOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -336,6 +447,8 @@ export const respondToDateResponseOneLongitudeMax = 180;
 
 export const RespondToDateResponse = zod.object({
   "expectedVersion": zod.number().int().min(respondToDateResponseOneExpectedVersionMin).optional(),
+  "timezone": zod.string().max(respondToDateResponseOneTimezoneMax).optional(),
+  "durationMinutes": zod.number().int().min(respondToDateResponseOneDurationMinutesMin).max(respondToDateResponseOneDurationMinutesMax).optional(),
   "title": zod.string().min(1).max(respondToDateResponseOneTitleMax),
   "date": zod.string().regex(respondToDateResponseOneDateRegExp),
   "time": zod.string().max(respondToDateResponseOneTimeMax).optional(),
@@ -375,6 +488,11 @@ export const ReviewDateBody = zod.object({
 
 export const reviewDateResponseDateOneExpectedVersionMin = 0;
 
+export const reviewDateResponseDateOneTimezoneMax = 100;
+
+export const reviewDateResponseDateOneDurationMinutesMin = 30;
+export const reviewDateResponseDateOneDurationMinutesMax = 240;
+
 export const reviewDateResponseDateOneTitleMax = 150;
 
 export const reviewDateResponseDateOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -404,6 +522,8 @@ export const reviewDateResponseMemoriesItemOneDateRegExp = new RegExp('^\\d{4}-\
 export const ReviewDateResponse = zod.object({
   "date": zod.object({
   "expectedVersion": zod.number().int().min(reviewDateResponseDateOneExpectedVersionMin).optional(),
+  "timezone": zod.string().max(reviewDateResponseDateOneTimezoneMax).optional(),
+  "durationMinutes": zod.number().int().min(reviewDateResponseDateOneDurationMinutesMin).max(reviewDateResponseDateOneDurationMinutesMax).optional(),
   "title": zod.string().min(1).max(reviewDateResponseDateOneTitleMax),
   "date": zod.string().regex(reviewDateResponseDateOneDateRegExp),
   "time": zod.string().max(reviewDateResponseDateOneTimeMax).optional(),
@@ -621,6 +741,11 @@ export const DeleteMemoryResponse = zod.void()
 
 export const listDatesResponseOneExpectedVersionMin = 0;
 
+export const listDatesResponseOneTimezoneMax = 100;
+
+export const listDatesResponseOneDurationMinutesMin = 30;
+export const listDatesResponseOneDurationMinutesMax = 240;
+
 export const listDatesResponseOneTitleMax = 150;
 
 export const listDatesResponseOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -644,6 +769,8 @@ export const listDatesResponseOneLongitudeMax = 180;
 
 export const ListDatesResponseItem = zod.object({
   "expectedVersion": zod.number().int().min(listDatesResponseOneExpectedVersionMin).optional(),
+  "timezone": zod.string().max(listDatesResponseOneTimezoneMax).optional(),
+  "durationMinutes": zod.number().int().min(listDatesResponseOneDurationMinutesMin).max(listDatesResponseOneDurationMinutesMax).optional(),
   "title": zod.string().min(1).max(listDatesResponseOneTitleMax),
   "date": zod.string().regex(listDatesResponseOneDateRegExp),
   "time": zod.string().max(listDatesResponseOneTimeMax).optional(),
@@ -669,6 +796,11 @@ export const ListDatesResponse = zod.array(ListDatesResponseItem)
 
 export const createDateBodyExpectedVersionMin = 0;
 
+export const createDateBodyTimezoneMax = 100;
+
+export const createDateBodyDurationMinutesMin = 30;
+export const createDateBodyDurationMinutesMax = 240;
+
 export const createDateBodyTitleMax = 150;
 
 export const createDateBodyDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -692,6 +824,8 @@ export const createDateBodyLongitudeMax = 180;
 
 export const CreateDateBody = zod.object({
   "expectedVersion": zod.number().int().min(createDateBodyExpectedVersionMin).optional(),
+  "timezone": zod.string().max(createDateBodyTimezoneMax).optional(),
+  "durationMinutes": zod.number().int().min(createDateBodyDurationMinutesMin).max(createDateBodyDurationMinutesMax).optional(),
   "title": zod.string().min(1).max(createDateBodyTitleMax),
   "date": zod.string().regex(createDateBodyDateRegExp),
   "time": zod.string().max(createDateBodyTimeMax).optional(),
@@ -707,6 +841,11 @@ export const CreateDateBody = zod.object({
 })
 
 export const createDateResponseOneExpectedVersionMin = 0;
+
+export const createDateResponseOneTimezoneMax = 100;
+
+export const createDateResponseOneDurationMinutesMin = 30;
+export const createDateResponseOneDurationMinutesMax = 240;
 
 export const createDateResponseOneTitleMax = 150;
 
@@ -731,6 +870,8 @@ export const createDateResponseOneLongitudeMax = 180;
 
 export const CreateDateResponse = zod.object({
   "expectedVersion": zod.number().int().min(createDateResponseOneExpectedVersionMin).optional(),
+  "timezone": zod.string().max(createDateResponseOneTimezoneMax).optional(),
+  "durationMinutes": zod.number().int().min(createDateResponseOneDurationMinutesMin).max(createDateResponseOneDurationMinutesMax).optional(),
   "title": zod.string().min(1).max(createDateResponseOneTitleMax),
   "date": zod.string().regex(createDateResponseOneDateRegExp),
   "time": zod.string().max(createDateResponseOneTimeMax).optional(),
@@ -759,6 +900,11 @@ export const UpdateDateParams = zod.object({
 
 export const updateDateBodyExpectedVersionMin = 0;
 
+export const updateDateBodyTimezoneMax = 100;
+
+export const updateDateBodyDurationMinutesMin = 30;
+export const updateDateBodyDurationMinutesMax = 240;
+
 export const updateDateBodyTitleMax = 150;
 
 export const updateDateBodyDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -782,6 +928,8 @@ export const updateDateBodyLongitudeMax = 180;
 
 export const UpdateDateBody = zod.object({
   "expectedVersion": zod.number().int().min(updateDateBodyExpectedVersionMin).optional(),
+  "timezone": zod.string().max(updateDateBodyTimezoneMax).optional(),
+  "durationMinutes": zod.number().int().min(updateDateBodyDurationMinutesMin).max(updateDateBodyDurationMinutesMax).optional(),
   "title": zod.string().min(1).max(updateDateBodyTitleMax),
   "date": zod.string().regex(updateDateBodyDateRegExp),
   "time": zod.string().max(updateDateBodyTimeMax).optional(),
@@ -797,6 +945,11 @@ export const UpdateDateBody = zod.object({
 })
 
 export const updateDateResponseOneExpectedVersionMin = 0;
+
+export const updateDateResponseOneTimezoneMax = 100;
+
+export const updateDateResponseOneDurationMinutesMin = 30;
+export const updateDateResponseOneDurationMinutesMax = 240;
 
 export const updateDateResponseOneTitleMax = 150;
 
@@ -821,6 +974,8 @@ export const updateDateResponseOneLongitudeMax = 180;
 
 export const UpdateDateResponse = zod.object({
   "expectedVersion": zod.number().int().min(updateDateResponseOneExpectedVersionMin).optional(),
+  "timezone": zod.string().max(updateDateResponseOneTimezoneMax).optional(),
+  "durationMinutes": zod.number().int().min(updateDateResponseOneDurationMinutesMin).max(updateDateResponseOneDurationMinutesMax).optional(),
   "title": zod.string().min(1).max(updateDateResponseOneTitleMax),
   "date": zod.string().regex(updateDateResponseOneDateRegExp),
   "time": zod.string().max(updateDateResponseOneTimeMax).optional(),

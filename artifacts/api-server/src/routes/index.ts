@@ -8,6 +8,8 @@ import storageRouter from "./storage";
 import preferencesRouter from "./preferences";
 import dateActionsRouter from "./date-actions";
 import dateAssistantRouter from "./date-assistant";
+import calendarRouter from "./calendar";
+import dateCalendarRouter from "./date-calendar";
 
 const router: IRouter = Router();
 
@@ -20,5 +22,7 @@ router.use(storageRouter);
 router.use(preferencesRouter);
 router.use(dateActionsRouter);
 router.use(dateAssistantRouter);
+router.use(calendarRouter);
+router.use(dateCalendarRouter);
 
 export default router;

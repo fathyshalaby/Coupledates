@@ -8,6 +8,7 @@ import {
 import { requireUser, requireCouple, validateDay, fail } from "../lib/couple";
 import { dateResponse } from "../lib/date-details";
 import { validateTime, validateMeeting } from "../lib/date-state";
+import { validTimezone, zonedInstant } from "../lib/calendar-time";
 const router: IRouter = Router();
 router.use("/dates", requireUser, requireCouple);
 function validate(data: { date: string; time?: string; title: string; status: string; rating?: number | null }) {
@@ -23,9 +24,11 @@ router.post("/dates", async (req, res): Promise<void> => {
   const data = CreateDateBody.parse(req.body);
   validate(data);
   validateMeeting(data);
+  const timezone = validTimezone(data.timezone || res.locals.couple.timezone);
+  if (data.time) zonedInstant(data.date, data.time, timezone);
   const { expectedVersion: _v, ...input } = data;
   const [row] = await db.insert(datesTable).values({
-    ...input, mode: data.mode ?? "in_person", rating: null, status: "proposed",
+    ...input, timezone, mode: data.mode ?? "in_person", rating: null, status: "proposed",
     proposedBy: res.locals.userId, coupleId: res.locals.couple.id,
   }).returning();
   res.status(201).json(CreateDateResponse.parse(dateResponse(row!, res.locals.userId)));
@@ -39,12 +42,14 @@ router.patch("/dates/:id", async (req, res): Promise<void> => {
     const [current] = await tx.select().from(datesTable)
       .where(and(eq(datesTable.id, id), eq(datesTable.coupleId, res.locals.couple.id))).for("update");
     if (!current) fail(404, "Date not found.");
+    const timezone = validTimezone(data.timezone || current.timezone || res.locals.couple.timezone);
+    if (data.time) zonedInstant(data.date, data.time, timezone);
     if (data.expectedVersion !== current.version) fail(409, "This date changed. Refresh it before saving.");
     if (["active", "completed"].includes(current.status)) fail(409, "An active or completed date cannot be replanned.");
     if (data.status !== current.status) fail(400, "Use the date response actions to change its status.");
     const { expectedVersion: _v, ...input } = data;
     const [updated] = await tx.update(datesTable).set({
-      ...input, rating: null, status: "proposed", proposedBy: res.locals.userId,
+      ...input, timezone, rating: null, status: "proposed", proposedBy: res.locals.userId,
       version: current.version + 1, responseNote: "",
     }).where(eq(datesTable.id, id)).returning();
     return updated!;

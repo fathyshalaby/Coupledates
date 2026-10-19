@@ -112,6 +112,13 @@ export const DateInputMode = {
 export interface DateInput {
   /** @minimum 0 */
   expectedVersion?: number;
+  /** @maxLength 100 */
+  timezone?: string;
+  /**
+     * @minimum 30
+     * @maximum 240
+     */
+  durationMinutes?: number;
   /**
      * @minLength 1
      * @maxLength 150
@@ -223,6 +230,38 @@ export interface PreferencesInput {
   availability: string[];
   /** @maxLength 1500 */
   notes: string;
+}
+
+export interface CalendarPreferenceInput {
+  shareAvailability: boolean;
+}
+
+export interface CalendarStatus {
+  connected: boolean;
+  needsConsent: boolean;
+  shareAvailability: boolean;
+  partnerSharing: boolean;
+}
+
+export interface CalendarSlot {
+  start: string;
+  end: string;
+}
+
+export interface CalendarAvailability {
+  complete: boolean;
+  notice: string;
+  slots: CalendarSlot[];
+  timezone: string;
+  checkedAt: string;
+}
+
+export interface DateCalendarState {
+  saved: boolean;
+  stale: boolean;
+  /** @nullable */
+  eventUrl: string | null;
+  notice: string;
 }
 
 export type PartnerPreferences = PreferencesInput & {
@@ -414,6 +453,22 @@ export interface UploadTarget {
 export interface HealthStatus {
   status: string;
 }
+
+export type GetCalendarAvailabilityParams = {
+/**
+ * @pattern ^\d{4}-\d{2}-\d{2}$
+ */
+date: string;
+/**
+ * @minimum 30
+ * @maximum 240
+ */
+durationMinutes: number;
+/**
+ * @maxLength 100
+ */
+timezone: string;
+};
 
 export type GetRecapParams = {
 /**

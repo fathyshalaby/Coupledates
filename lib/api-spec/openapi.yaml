@@ -11,6 +11,95 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /calendar/status:
+    get:
+      operationId: getCalendarStatus
+      responses:
+        "200":
+          description: Your calendar permissions and partner's sharing status
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CalendarStatus" }
+  /calendar/connect:
+    post:
+      operationId: connectCalendar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CalendarPreferenceInput" }
+      responses:
+        "200":
+          description: Verified personal Google authorization
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CalendarStatus" }
+  /calendar/preferences:
+    put:
+      operationId: saveCalendarPreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CalendarPreferenceInput" }
+      responses:
+        "200":
+          description: Availability sharing updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CalendarStatus" }
+  /calendar/connection:
+    delete:
+      operationId: disconnectCalendar
+      responses:
+        "204": { description: Application calendar access disabled; Google sign-in and existing calendar copies retained }
+  /calendar/availability:
+    get:
+      operationId: getCalendarAvailability
+      parameters:
+        - { name: date, in: query, required: true, schema: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' } }
+        - { name: durationMinutes, in: query, required: true, schema: { type: integer, minimum: 30, maximum: 240 } }
+        - { name: timezone, in: query, required: true, schema: { type: string, maxLength: 100 } }
+      responses:
+        "200":
+          description: Shared free slots, without personal calendar event details
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CalendarAvailability" }
+  /dates/{id}/calendar:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      operationId: getDateCalendar
+      responses:
+        "200":
+          description: Your saved Google copy
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DateCalendarState" }
+    post:
+      operationId: saveDateToCalendar
+      responses:
+        "200":
+          description: Explicitly saved or updated your primary-calendar copy
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DateCalendarState" }
+    delete:
+      operationId: removeDateFromCalendar
+      responses:
+        "204": { description: Removed your saved copy }
+  /dates/{id}/calendar.ics:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    get:
+      operationId: exportDateCalendar
+      responses:
+        "200":
+          description: One-time iCalendar download, not a live subscription
+          content:
+            text/calendar:
+              schema: { type: string }
   /preferences:
     get:
       operationId: getPreferences
@@ -346,6 +435,8 @@ components:
       required: [title, date, location, category, notes, status]
       properties:
         expectedVersion: { type: integer, minimum: 0 }
+        timezone: { type: string, maxLength: 100 }
+        durationMinutes: { type: integer, minimum: 30, maximum: 240 }
         title: { type: string, minLength: 1, maxLength: 150 }
         date: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
         time: { type: string, maxLength: 10 }
@@ -391,6 +482,44 @@ components:
           maxItems: 14
           items: { type: string, minLength: 1, maxLength: 60 }
         notes: { type: string, maxLength: 1500 }
+    CalendarPreferenceInput:
+      type: object
+      required: [shareAvailability]
+      properties:
+        shareAvailability: { type: boolean }
+    CalendarStatus:
+      type: object
+      required: [connected, needsConsent, shareAvailability, partnerSharing]
+      properties:
+        connected: { type: boolean }
+        needsConsent: { type: boolean }
+        shareAvailability: { type: boolean }
+        partnerSharing: { type: boolean }
+    CalendarSlot:
+      type: object
+      required: [start, end]
+      properties:
+        start: { type: string }
+        end: { type: string }
+    CalendarAvailability:
+      type: object
+      required: [complete, notice, slots, timezone, checkedAt]
+      properties:
+        complete: { type: boolean }
+        notice: { type: string }
+        slots:
+          type: array
+          items: { $ref: "#/components/schemas/CalendarSlot" }
+        timezone: { type: string }
+        checkedAt: { type: string }
+    DateCalendarState:
+      type: object
+      required: [saved, stale, eventUrl, notice]
+      properties:
+        saved: { type: boolean }
+        stale: { type: boolean }
+        eventUrl: { type: ["string", "null"] }
+        notice: { type: string }
     PartnerPreferences:
       allOf:
         - { $ref: "#/components/schemas/PreferencesInput" }

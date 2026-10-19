@@ -12,7 +12,10 @@ import { errMsg, errStatus, useAssistantQ, useInvalidate, usePreferencesQ } from
 import { cn } from '@/lib/utils';
 
 const CHIPS = [
-  { label: 'Long distance', prompt: 'We’re apart this week — give us a remote date that still feels close.' },
+  { label: 'Online date', prompt: 'We’re apart this week — give us an online date over video that still feels close.' },
+  { label: 'Cook-along call', prompt: 'An online cook-along we can do together on a video call from two kitchens.' },
+  { label: 'Online game night', prompt: 'A playful online game night for two over a call.' },
+  { label: 'Watch party', prompt: 'A cosy online watch party we can sync up from different places.' },
   { label: 'Budget-friendly', prompt: 'Something lovely that costs almost nothing this weekend.' },
   { label: 'Surprise me', prompt: 'Surprise us with something we haven’t thought of.' },
   { label: 'Rainy evening', prompt: 'A cosy indoor evening for a rainy weeknight.' },
@@ -150,7 +153,7 @@ function IdeaCard({ i, n, turnId, onPropose }: { i: DateIdea; n: number; turnId:
   return (
     <article data-testid={`card-idea-${turnId}-${n}`} className={cn('overflow-hidden rounded-[26px] shadow-[0_1px_0_hsl(var(--border))]', n % 2 ? 'bg-card' : 'bg-[hsl(38_70%_96%)]')}>
       <div className="p-5">
-        <div className="flex flex-wrap items-center gap-1.5"><CategoryChip category={i.category} /><span className="inline-flex items-center gap-1 rounded-full bg-foreground/[0.06] px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider">{i.mode === 'remote' ? <Video className="h-3 w-3" /> : <MapPin className="h-3 w-3" />}{i.mode === 'remote' ? 'Remote' : 'In person'}</span></div>
+        <div className="flex flex-wrap items-center gap-1.5"><CategoryChip category={i.category} /><span className="inline-flex items-center gap-1 rounded-full bg-foreground/[0.06] px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider">{i.mode === 'remote' ? <Video className="h-3 w-3" /> : <MapPin className="h-3 w-3" />}{i.mode === 'remote' ? 'Online' : 'In person'}</span></div>
         <h3 className="font-display mt-2 text-2xl leading-tight">{i.title}</h3>
         <p className="mt-1.5 text-sm text-foreground/80">{i.description}</p>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">

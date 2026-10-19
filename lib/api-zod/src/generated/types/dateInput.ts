@@ -12,6 +12,13 @@ import type { DateInputStatus } from './dateInputStatus';
 export interface DateInput {
   /** @minimum 0 */
   expectedVersion?: number;
+  /** @maxLength 100 */
+  timezone?: string;
+  /**
+     * @minimum 30
+     * @maximum 240
+     */
+  durationMinutes?: number;
   /**
      * @minLength 1
      * @maxLength 150

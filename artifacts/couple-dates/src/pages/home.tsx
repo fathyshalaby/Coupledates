@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'wouter';
-import { ArrowUpRight, Camera, ClipboardList, Clock, Inbox, Lightbulb, MapPin, Plus } from 'lucide-react';
+import { ArrowUpRight, CalendarClock, Camera, ClipboardList, Clock, Inbox, Lightbulb, MapPin, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryChip, ErrorState, Photo, StatusBadge } from '@/components/bits';
 import { useCouple } from '@/lib/couple-context';
@@ -64,6 +64,11 @@ export default function HomePage() {
         <Link href="/assistant" data-testid="card-action-assistant" className="rise flex items-center gap-4 rounded-[28px] bg-card p-4 shadow-[0_1px_0_hsl(var(--border))]">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-foreground text-background"><Lightbulb className="h-4 w-4" /></span>
           <span className="flex-1 text-sm"><span className="block font-medium">Need an idea?</span><span className="text-muted-foreground">Ask the concierge — it knows your tastes.</span></span>
+          <ArrowUpRight className="h-4 w-4 text-primary" />
+        </Link>
+        <Link href="/calendar" data-testid="card-action-calendar" className="rise flex items-center gap-4 rounded-[28px] bg-card p-4 shadow-[0_1px_0_hsl(var(--border))]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-secondary text-primary"><CalendarClock className="h-4 w-4" /></span>
+          <span className="flex-1 text-sm"><span className="block font-medium">When are we both free?</span><span className="text-muted-foreground">Connect Google Calendar to compare free/busy.</span></span>
           <ArrowUpRight className="h-4 w-4 text-primary" />
         </Link>
       </section>
