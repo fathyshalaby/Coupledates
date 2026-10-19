@@ -43,7 +43,9 @@ Location is an optional, explicitly requested foreground check against a volunta
 
 ## User preferences
 
-The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships. They are considering about $5/month per couple space; billing and paid feature boundaries are not finalized and no checkout has been added.
+The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships.
+
+The user confirmed the launch upgrade at US$5/month per shared couple space, covering both partners. The paid features are the AI date assistant and yearly recap; existing memories must remain accessible after cancellation. The billing provider has not yet been selected.
 
 The user wants partners to connect their own calendars and supports online dates as well as physical dates. They chose Google Calendar first.
 
