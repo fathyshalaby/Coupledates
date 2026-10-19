@@ -6,6 +6,7 @@ import {
   getGetPreferencesQueryKey,
   getGetRecapQueryKey,
   getGetSummaryQueryKey,
+  getListRemindersQueryKey,
   getListDatesQueryKey,
   getListMemoriesQueryKey,
   useGetAssistantHistory,
@@ -61,7 +62,10 @@ export function useInvalidate() {
     for (const w of what) {
       if (w === 'couple') qc.invalidateQueries({ queryKey: getGetCoupleQueryKey() });
       if (w === 'memories') qc.invalidateQueries({ queryKey: getListMemoriesQueryKey() });
-      if (w === 'dates') qc.invalidateQueries({ queryKey: getListDatesQueryKey() });
+      if (w === 'dates') {
+        qc.invalidateQueries({ queryKey: getListDatesQueryKey() });
+        qc.invalidateQueries({ queryKey: getListRemindersQueryKey() });
+      }
       if (w === 'summary') qc.invalidateQueries({ queryKey: getGetSummaryQueryKey() });
       if (w === 'preferences') qc.invalidateQueries({ queryKey: getGetPreferencesQueryKey() });
       if (w === 'assistant') qc.invalidateQueries({ queryKey: getGetAssistantHistoryQueryKey() });

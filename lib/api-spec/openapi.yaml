@@ -11,6 +11,46 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /reminder-preferences:
+    get:
+      operationId: getReminderPreferences
+      responses:
+        "200":
+          description: Personal opt-in in-app notification preferences
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReminderPreferences" }
+    put:
+      operationId: saveReminderPreferences
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ReminderPreferences" }
+      responses:
+        "200":
+          description: Saved personal preferences
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ReminderPreferences" }
+  /reminders:
+    get:
+      operationId: listReminders
+      responses:
+        "200":
+          description: Due private in-app reminders; evaluated on foreground polling
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Reminder" }
+  /reminders/{id}:
+    delete:
+      operationId: dismissReminder
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer, minimum: 1 } }
+      responses:
+        "204": { description: Reminder permanently dismissed for this person }
   /billing/status:
     get:
       operationId: getBillingStatus
@@ -432,6 +472,25 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    ReminderPreferences:
+      type: object
+      required: [timezone, dateEnabled, photoEnabled, leadMinutes]
+      properties:
+        timezone: { type: string, minLength: 1, maxLength: 100 }
+        dateEnabled: { type: boolean }
+        photoEnabled: { type: boolean }
+        leadMinutes: { type: integer, enum: [15, 60, 1440] }
+    Reminder:
+      type: object
+      required: [id, dateId, title, kind, dueAt, timezone, href]
+      properties:
+        id: { type: integer }
+        dateId: { type: integer }
+        title: { type: string }
+        kind: { type: string, enum: [date, photo] }
+        dueAt: { type: string, format: date-time }
+        timezone: { type: string }
+        href: { type: string }
     BillingStatus:
       type: object
       required: [plan, entitled, providerStatus, isPayer, canManage, cancelAtPeriodEnd, currentPeriodEnd, checkoutPending, checkoutAvailable, verificationPending, notice, price, currency, billingIntervalDays]

@@ -46,6 +46,8 @@ import type {
   PartnerPreferences,
   PreferencesInput,
   Recap,
+  Reminder,
+  ReminderPreferences,
   ReviewInput,
   Summary,
   UploadInput,
@@ -78,6 +80,298 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetReminderPreferencesUrl = () => {
+
+
+
+
+  return `/api/reminder-preferences`
+}
+
+export const getReminderPreferences = async ( options?: Parameters<typeof customFetch>[1]): Promise<ReminderPreferences> => {
+
+  return customFetch<ReminderPreferences>(getGetReminderPreferencesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReminderPreferencesQueryKey = () => {
+    return [
+    `/api/reminder-preferences`
+    ] as const;
+    }
+
+
+export const getGetReminderPreferencesQueryOptions = <TData = Awaited<ReturnType<typeof getReminderPreferences>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReminderPreferences>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReminderPreferencesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReminderPreferences>>> = ({ signal }) => getReminderPreferences({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReminderPreferences>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetReminderPreferencesQueryResult = NonNullable<Awaited<ReturnType<typeof getReminderPreferences>>>
+export type GetReminderPreferencesQueryError = ErrorType<unknown>
+
+
+
+export function useGetReminderPreferences<TData = Awaited<ReturnType<typeof getReminderPreferences>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReminderPreferences>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetReminderPreferencesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSaveReminderPreferencesUrl = () => {
+
+
+
+
+  return `/api/reminder-preferences`
+}
+
+export const saveReminderPreferences = async (reminderPreferences: ReminderPreferences, options?: Parameters<typeof customFetch>[1]): Promise<ReminderPreferences> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<ReminderPreferences>(getSaveReminderPreferencesUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(reminderPreferences)
+  }
+);}
+
+
+
+
+
+export const getSaveReminderPreferencesMutationKey = () => ['saveReminderPreferences'] as const;
+
+export const getSaveReminderPreferencesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveReminderPreferences>>, TError,SaveReminderPreferencesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveReminderPreferences>>, TError,SaveReminderPreferencesMutationVariables, TContext> => {
+
+const mutationKey = getSaveReminderPreferencesMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveReminderPreferences>>, SaveReminderPreferencesMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  saveReminderPreferences(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveReminderPreferencesMutationResult = NonNullable<Awaited<ReturnType<typeof saveReminderPreferences>>>
+    export type SaveReminderPreferencesMutationBody = BodyType<ReminderPreferences>
+    export type SaveReminderPreferencesMutationError = ErrorType<unknown>
+    export type SaveReminderPreferencesMutationVariables = {data: BodyType<ReminderPreferences>}
+
+    export const useSaveReminderPreferences = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveReminderPreferences>>, TError,SaveReminderPreferencesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof saveReminderPreferences>>,
+        TError,
+        SaveReminderPreferencesMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSaveReminderPreferencesMutationOptions(options));
+    }
+
+export const getListRemindersUrl = () => {
+
+
+
+
+  return `/api/reminders`
+}
+
+export const listReminders = async ( options?: Parameters<typeof customFetch>[1]): Promise<Reminder[]> => {
+
+  return customFetch<Reminder[]>(getListRemindersUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRemindersQueryKey = () => {
+    return [
+    `/api/reminders`
+    ] as const;
+    }
+
+
+export const getListRemindersQueryOptions = <TData = Awaited<ReturnType<typeof listReminders>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReminders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRemindersQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReminders>>> = ({ signal }) => listReminders({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReminders>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListRemindersQueryResult = NonNullable<Awaited<ReturnType<typeof listReminders>>>
+export type ListRemindersQueryError = ErrorType<unknown>
+
+
+
+export function useListReminders<TData = Awaited<ReturnType<typeof listReminders>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReminders>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListRemindersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDismissReminderUrl = (id: number,) => {
+
+
+
+
+  return `/api/reminders/${id}`
+}
+
+export const dismissReminder = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<void> => {
+
+  return customFetch<void>(getDismissReminderUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDismissReminderMutationKey = () => ['dismissReminder'] as const;
+
+export const getDismissReminderMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof dismissReminder>>, TError,DismissReminderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof dismissReminder>>, TError,DismissReminderMutationVariables, TContext> => {
+
+const mutationKey = getDismissReminderMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof dismissReminder>>, DismissReminderMutationVariables> = (props) => {
+          const {id} = props ?? {};
+
+          return  dismissReminder(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DismissReminderMutationResult = NonNullable<Awaited<ReturnType<typeof dismissReminder>>>
+
+    export type DismissReminderMutationError = ErrorType<unknown>
+    export type DismissReminderMutationVariables = {id: number}
+
+    export const useDismissReminder = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof dismissReminder>>, TError,DismissReminderMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof dismissReminder>>,
+        TError,
+        DismissReminderMutationVariables,
+        TContext
+      > => {
+      return useMutation(getDismissReminderMutationOptions(options));
+    }
 
 export const getGetBillingStatusUrl = () => {
 

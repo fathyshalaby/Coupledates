@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, datesTable, dateReviewsTable } from "@workspace/db";
+import { db, datesTable, dateReviewsTable, remindersTable } from "@workspace/db";
 import { and, eq } from "drizzle-orm";
 import {
   GetDateDetailParams, GetDateDetailResponse, RespondToDateParams, RespondToDateBody, RespondToDateResponse,
@@ -24,6 +24,9 @@ router.post("/dates/:id/respond", async (req, res): Promise<void> => {
       .where(and(eq(datesTable.id, id), eq(datesTable.coupleId, res.locals.couple.id))).for("update");
     if (!current) fail(404, "Date not found.");
     const status = nextDateState(current, res.locals.userId, data);
+    if (data.action === "counter" || data.action === "decline") {
+      await tx.delete(remindersTable).where(eq(remindersTable.dateId, id));
+    }
     if (data.action === "counter" && data.time) zonedInstant(data.date!, data.time, current.timezone || res.locals.couple.timezone);
     const [updated] = await tx.update(datesTable).set({
       status, version: current.version + 1,

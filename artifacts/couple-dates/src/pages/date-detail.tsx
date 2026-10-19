@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { Link, useLocation, useParams } from 'wouter';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useParams, useSearch } from 'wouter';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   ArrowLeft, Camera, Check, CheckCircle2, Clock, ExternalLink, Heart, ImagePlus, Loader2, LocateFixed, MapPin, MessageSquareQuote,
@@ -28,6 +28,7 @@ import { DateCalendarPanel } from '@/components/date-calendar-panel';
 import { MODE_LABEL } from '@/components/date-form';
 import { fmtDuration, fmtInstant, isValidTz, resolveLocal, tzShort } from '@/lib/calendar';
 import { whoOwes } from '@/pages/dates';
+import { ReminderPreferences } from '@/components/reminder-preferences';
 
 const NEARBY_M = 300;
 const MAX_ACCURACY_M = 150;
@@ -73,6 +74,11 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
   const [capture, setCapture] = useState<{ file: File | null; memory: Memory | null } | null>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const search = useSearch();
+  const albumRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (new URLSearchParams(search).get('album') === '1') albumRef.current?.scrollIntoView({ block: 'start' });
+  }, [search, d.id]);
 
   const respond = useRespondToDate({ mutation: {
     onSuccess: (_r, v) => {
@@ -205,11 +211,12 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
       </section>
 
       <DateCalendarPanel plan={d} agreed={accepted} />
+      {accepted && <ReminderPreferences />}
 
       {d.status === 'completed' && <Reviews plan={d} reviews={detail.reviews} />}
 
       {/* Album */}
-      <section className="mt-8">
+      <section ref={albumRef} id="date-album" tabIndex={-1} className="mt-8 scroll-mt-4">
         <div className="mb-3 flex items-end justify-between">
           <div><p className="font-mono text-[10px] uppercase tracking-widest text-primary">Shared album</p><h2 className="font-display text-2xl">{detail.memories.length ? `${detail.memories.length} kept` : 'Our pages'}</h2></div>
           {albumOpen && <div className="flex gap-2">

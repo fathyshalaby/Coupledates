@@ -8,6 +8,63 @@
 import * as zod from 'zod';
 
 
+export const getReminderPreferencesResponseTimezoneMax = 100;
+
+
+
+export const GetReminderPreferencesResponse = zod.object({
+  "timezone": zod.string().min(1).max(getReminderPreferencesResponseTimezoneMax),
+  "dateEnabled": zod.boolean(),
+  "photoEnabled": zod.boolean(),
+  "leadMinutes": zod.union([zod.literal(15),zod.literal(60),zod.literal(1440)])
+})
+
+
+export const saveReminderPreferencesBodyTimezoneMax = 100;
+
+
+
+export const SaveReminderPreferencesBody = zod.object({
+  "timezone": zod.string().min(1).max(saveReminderPreferencesBodyTimezoneMax),
+  "dateEnabled": zod.boolean(),
+  "photoEnabled": zod.boolean(),
+  "leadMinutes": zod.union([zod.literal(15),zod.literal(60),zod.literal(1440)])
+})
+
+export const saveReminderPreferencesResponseTimezoneMax = 100;
+
+
+
+export const SaveReminderPreferencesResponse = zod.object({
+  "timezone": zod.string().min(1).max(saveReminderPreferencesResponseTimezoneMax),
+  "dateEnabled": zod.boolean(),
+  "photoEnabled": zod.boolean(),
+  "leadMinutes": zod.union([zod.literal(15),zod.literal(60),zod.literal(1440)])
+})
+
+
+export const ListRemindersResponseItem = zod.object({
+  "id": zod.number().int(),
+  "dateId": zod.number().int(),
+  "title": zod.string(),
+  "kind": zod.enum(['date', 'photo']),
+  "dueAt": zod.coerce.date(),
+  "timezone": zod.string(),
+  "href": zod.string()
+})
+export const ListRemindersResponse = zod.array(ListRemindersResponseItem)
+
+
+
+
+
+export const DismissReminderParams = zod.object({
+  "id": zod.coerce.number().int().min(1)
+})
+
+export const DismissReminderResponse = zod.void()
+
+
 export const GetBillingStatusResponse = zod.object({
   "plan": zod.enum(['free', 'plus']),
   "entitled": zod.boolean(),

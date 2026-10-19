@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { BookHeart, CalendarHeart, House, Lightbulb, Settings2, Sparkles } from 'lucide-react';
 import { useDatesQ } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { ReminderInbox } from '@/components/reminder-inbox';
 
 const NAV = [
   { href: '/home', label: 'Us', icon: House },
@@ -28,7 +29,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Settings2 className="h-[18px] w-[18px]" />
         </Link>
       </div>
-      <main className="pb-nav mx-auto max-w-xl px-5 pt-6">{children}</main>
+      <main className="pb-nav mx-auto max-w-xl px-5 pt-6"><ReminderInbox />{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
         <div className="mx-auto flex max-w-md items-center justify-between rounded-[28px] bg-foreground px-2 py-2 text-background shadow-[0_18px_40px_-16px_hsl(330_40%_15%/.6)]">
           {NAV.map(({ href, label, icon: Icon }) => {

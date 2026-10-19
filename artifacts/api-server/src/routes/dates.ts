@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { db, datesTable } from "@workspace/db";
+import { db, datesTable, remindersTable } from "@workspace/db";
 import { and, eq, desc } from "drizzle-orm";
 import {
   CreateDateBody, CreateDateResponse, UpdateDateBody, UpdateDateParams,
@@ -48,6 +48,7 @@ router.patch("/dates/:id", async (req, res): Promise<void> => {
     if (["active", "completed"].includes(current.status)) fail(409, "An active or completed date cannot be replanned.");
     if (data.status !== current.status) fail(400, "Use the date response actions to change its status.");
     const { expectedVersion: _v, ...input } = data;
+    await tx.delete(remindersTable).where(eq(remindersTable.dateId, id));
     const [updated] = await tx.update(datesTable).set({
       ...input, timezone, rating: null, status: "proposed", proposedBy: res.locals.userId,
       version: current.version + 1, responseNote: "",

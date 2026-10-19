@@ -5,6 +5,44 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type ReminderPreferencesLeadMinutes = typeof ReminderPreferencesLeadMinutes[keyof typeof ReminderPreferencesLeadMinutes];
+
+
+export const ReminderPreferencesLeadMinutes = {
+  NUMBER_15: 15,
+  NUMBER_60: 60,
+  NUMBER_1440: 1440,
+} as const;
+
+export interface ReminderPreferences {
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  timezone: string;
+  dateEnabled: boolean;
+  photoEnabled: boolean;
+  leadMinutes: ReminderPreferencesLeadMinutes;
+}
+
+export type ReminderKind = typeof ReminderKind[keyof typeof ReminderKind];
+
+
+export const ReminderKind = {
+  date: 'date',
+  photo: 'photo',
+} as const;
+
+export interface Reminder {
+  id: number;
+  dateId: number;
+  title: string;
+  kind: ReminderKind;
+  dueAt: string;
+  timezone: string;
+  href: string;
+}
+
 export type BillingStatusPlan = typeof BillingStatusPlan[keyof typeof BillingStatusPlan];
 
 

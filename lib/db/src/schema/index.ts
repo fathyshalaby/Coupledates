@@ -22,3 +22,4 @@ export * from "./preferences";
 export * from "./date-reviews";
 export * from "./calendars";
 export * from "./billing";
+export * from "./reminders";

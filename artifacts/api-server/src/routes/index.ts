@@ -11,6 +11,7 @@ import dateAssistantRouter from "./date-assistant";
 import calendarRouter from "./calendar";
 import dateCalendarRouter from "./date-calendar";
 import billingRouter from "./billing";
+import remindersRouter from "./reminders";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(dateAssistantRouter);
 router.use(calendarRouter);
 router.use(dateCalendarRouter);
 router.use(billingRouter);
+router.use(remindersRouter);
 
 export default router;

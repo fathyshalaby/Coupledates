@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useCouple } from '@/lib/couple-context';
 import { errMsg, useInvalidate } from '@/lib/data';
 import { billingPhase, fmtPeriod, useBillingStatusQ } from '@/lib/billing';
+import { ReminderPreferences } from '@/components/reminder-preferences';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -83,6 +84,7 @@ export default function SettingsPage() {
         <Link href="/streaks" data-testid="link-settings-streaks" className="flex items-center gap-3 px-5 py-4 hover:bg-foreground/[0.03]"><Flame className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Daily streak</span><span className="text-sm text-muted-foreground">Check in and see your week</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>
       </nav>
 
+      <ReminderPreferences />
       <form onSubmit={submit} className="mt-6 space-y-4 rounded-[28px] bg-card p-5 shadow-[0_1px_0_hsl(var(--border))]">
         <h2 className="font-display text-2xl">Couple profile</h2>
         <div className="space-y-1.5"><Label className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">Your name</Label><Input data-testid="input-settings-your-name" required maxLength={60} value={yourName} onChange={(e) => setYourName(e.target.value)} className="h-12 rounded-2xl" /></div>

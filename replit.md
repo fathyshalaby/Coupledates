@@ -41,6 +41,10 @@ Shared photo memory timeline; partner date proposals, acceptance/counter/decline
 
 Location is an optional, explicitly requested foreground check against a voluntarily pinned meeting point. Do not promise background arrival detection or push reminders. Current device locations from arrival checks are never sent to the backend.
 
+Reminder preferences belong to each partner and are opt-in for all agreed dates in the space. The private reminder inbox evaluates due reminders on foreground polling every 30 seconds, with a manual refresh; it is not a push/email service or a background scheduler. Use calendar export and configure calendar-app alerts for reminders while Couple Dates is closed. Timed reminders use the agreed instant; untimed dates use each person's local 9am. Photo reminders link to the exact private date album. Durable dismissal records prevent repeat delivery, and replanning revokes reminders until agreement is renewed.
+
+Reminder checks: `pnpm --filter @workspace/api-server run test` runs pure scheduling and lifecycle tests. `pnpm --filter @workspace/api-server run test:reminders-db` additionally exercises reminder routes against the development database using disposable synthetic spaces and members, which it cleans up.
+
 ## User preferences
 
 The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships.
