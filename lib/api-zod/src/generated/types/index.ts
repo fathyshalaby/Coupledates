@@ -8,6 +8,10 @@
 
 export * from './assistantInput';
 export * from './assistantTurn';
+export * from './billingCheckout';
+export * from './billingLink';
+export * from './billingStatus';
+export * from './billingStatusPlan';
 export * from './calendarAvailability';
 export * from './calendarPreferenceInput';
 export * from './calendarSlot';

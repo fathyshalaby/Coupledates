@@ -17,4 +17,17 @@ expertMode = true
 
 [postMerge]
 path = "scripts/post-merge.sh"
-timeoutMs = 20000
+timeoutMs = 120000
+
+[userenv]
+
+[userenv.shared]
+WHOP_COMPANY_ID = "biz_OeXP5gWMjWn4bc"
+WHOP_PLAN_ID = "plan_UyyHS7aVjOJKS"
+WHOP_PRODUCT_ID = "prod_6JNasCIzQVIZi"
+
+[userenv.development]
+BILLING_APP_ORIGIN = "https://47847380-6335-4a4d-9967-42da2a382a6b-00-391sg7ngokwfm.janeway.replit.dev"
+
+[userenv.production]
+BILLING_APP_ORIGIN = "https://couple-dates.replit.app"

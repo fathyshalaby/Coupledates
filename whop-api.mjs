@@ -1,0 +1,16 @@
+// Whop management helper. Never print connection secrets.
+const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+const token = process.env.REPL_IDENTITY ? "repl " + process.env.REPL_IDENTITY
+  : process.env.WEB_REPL_RENEWAL ? "depl " + process.env.WEB_REPL_RENEWAL : null;
+const [method, path, bodyJson] = process.argv.slice(2);
+if (!method || !path) {
+  console.log("Usage: node whop-api.mjs <METHOD> <path> ['{...}']");
+  process.exit(0);
+}
+const resp = await fetch(`https://${hostname}/api/v2/proxy/${path}`, {
+  method,
+  headers: { "Content-Type": "application/json", "X-Replit-Token": token, "Connector-Name": "whop" },
+  ...(bodyJson ? { body: bodyJson } : {}),
+});
+if (!resp.ok) { console.error(`Whop API failed (${resp.status}): ${await resp.text()}`); process.exit(1); }
+console.log(JSON.stringify(resp.status === 204 ? {} : await resp.json(), null, 2));

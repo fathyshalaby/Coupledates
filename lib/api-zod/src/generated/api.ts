@@ -8,6 +8,89 @@
 import * as zod from 'zod';
 
 
+export const GetBillingStatusResponse = zod.object({
+  "plan": zod.enum(['free', 'plus']),
+  "entitled": zod.boolean(),
+  "providerStatus": zod.string(),
+  "isPayer": zod.boolean(),
+  "canManage": zod.boolean(),
+  "cancelAtPeriodEnd": zod.boolean(),
+  "currentPeriodEnd": zod.string().nullable(),
+  "checkoutPending": zod.boolean(),
+  "checkoutAvailable": zod.boolean(),
+  "verificationPending": zod.boolean(),
+  "notice": zod.string(),
+  "price": zod.number(),
+  "currency": zod.string(),
+  "billingIntervalDays": zod.number().int()
+})
+
+
+export const RefreshBillingResponse = zod.object({
+  "plan": zod.enum(['free', 'plus']),
+  "entitled": zod.boolean(),
+  "providerStatus": zod.string(),
+  "isPayer": zod.boolean(),
+  "canManage": zod.boolean(),
+  "cancelAtPeriodEnd": zod.boolean(),
+  "currentPeriodEnd": zod.string().nullable(),
+  "checkoutPending": zod.boolean(),
+  "checkoutAvailable": zod.boolean(),
+  "verificationPending": zod.boolean(),
+  "notice": zod.string(),
+  "price": zod.number(),
+  "currency": zod.string(),
+  "billingIntervalDays": zod.number().int()
+})
+
+
+export const CreateBillingCheckoutResponse = zod.object({
+  "url": zod.string(),
+  "resumed": zod.boolean()
+})
+
+
+export const ManageBillingResponse = zod.object({
+  "url": zod.string()
+})
+
+
+export const CancelBillingResponse = zod.object({
+  "plan": zod.enum(['free', 'plus']),
+  "entitled": zod.boolean(),
+  "providerStatus": zod.string(),
+  "isPayer": zod.boolean(),
+  "canManage": zod.boolean(),
+  "cancelAtPeriodEnd": zod.boolean(),
+  "currentPeriodEnd": zod.string().nullable(),
+  "checkoutPending": zod.boolean(),
+  "checkoutAvailable": zod.boolean(),
+  "verificationPending": zod.boolean(),
+  "notice": zod.string(),
+  "price": zod.number(),
+  "currency": zod.string(),
+  "billingIntervalDays": zod.number().int()
+})
+
+
+export const ResumeBillingResponse = zod.object({
+  "plan": zod.enum(['free', 'plus']),
+  "entitled": zod.boolean(),
+  "providerStatus": zod.string(),
+  "isPayer": zod.boolean(),
+  "canManage": zod.boolean(),
+  "cancelAtPeriodEnd": zod.boolean(),
+  "currentPeriodEnd": zod.string().nullable(),
+  "checkoutPending": zod.boolean(),
+  "checkoutAvailable": zod.boolean(),
+  "verificationPending": zod.boolean(),
+  "notice": zod.string(),
+  "price": zod.number(),
+  "currency": zod.string(),
+  "billingIntervalDays": zod.number().int()
+})
+
+
 export const GetCalendarStatusResponse = zod.object({
   "connected": zod.boolean(),
   "needsConsent": zod.boolean(),

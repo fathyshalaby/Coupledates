@@ -1,5 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import { ensureBillingWebhook } from "./lib/billing";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +23,6 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  ensureBillingWebhook().then(() => logger.info("Verified billing webhook configured"))
+    .catch(() => logger.warn("Billing webhook setup did not finish; checkout will retry setup before allowing purchase."));
 });

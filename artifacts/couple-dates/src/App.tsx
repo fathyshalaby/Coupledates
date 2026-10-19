@@ -25,6 +25,7 @@ import DateDetailPage from '@/pages/date-detail';
 import PreferencesPage from '@/pages/preferences';
 import AssistantPage from '@/pages/assistant';
 import CalendarPage from '@/pages/calendar';
+import BillingPage from '@/pages/billing';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
@@ -200,13 +201,14 @@ const DateDetailR = protectedRoute(DateDetailPage);
 const PreferencesR = protectedRoute(PreferencesPage);
 const AssistantR = protectedRoute(AssistantPage);
 const CalendarR = protectedRoute(CalendarPage);
+const BillingR = protectedRoute(BillingPage);
 
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   useEffect(() => {
     const seg = location.split('/');
     const key = seg[1] === 'dates' && seg[2] ? 'date-detail' : seg[1] || '';
-    const names: Record<string, string> = { '': 'A private space for two', home: 'Our space', memories: 'Our memories', dates: 'Date night', streaks: 'Daily connection', recap: 'Our year together', settings: 'Our settings', 'date-detail': 'Date details', preferences: 'Date preferences', assistant: 'Date ideas', calendar: 'Calendar', 'sign-in': 'Sign in', 'sign-up': 'Create your account' };
+    const names: Record<string, string> = { '': 'A private space for two', home: 'Our space', memories: 'Our memories', dates: 'Date night', streaks: 'Daily connection', recap: 'Our year together', settings: 'Our settings', 'date-detail': 'Date details', preferences: 'Date preferences', assistant: 'Date ideas', calendar: 'Calendar', billing: 'Our plan', 'sign-in': 'Sign in', 'sign-up': 'Create your account' };
     const title = `${names[key] ?? 'Page not found'} · Couple Dates`;
     document.title = title;
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
@@ -251,6 +253,7 @@ function ClerkProviderWithRoutes() {
               <Route path="/streaks" component={StreaksR} />
               <Route path="/recap" component={RecapR} />
               <Route path="/settings" component={SettingsR} />
+              <Route path="/billing" component={BillingR} />
               <Route component={NotFound} />
             </Switch>
           </RoutedErrorBoundary>

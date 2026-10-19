@@ -5,6 +5,6 @@ description: Why AI planning is user-triggered and usage safeguards are separate
 
 Keep AI planning explicitly user-triggered. Treat AI usage allowances as operating-cost safeguards, not paid-plan entitlements.
 
-**Why:** The user asked for tailored couple-date recommendations, but only floated a subscription price. Automatic calls during onboarding or page loads spend credits without a deliberate request, and technical usage limits must not silently establish a commercial pricing model.
+**Why:** Automatic calls during onboarding or page loads spend credits without a deliberate request. The user subsequently approved a shared subscription for the assistant and yearly recap (see replit.md), but did not turn technical usage safeguards into commercial allowances.
 
-**How to apply:** Do not generate on load, claim a paid plan exists, or introduce a paywall based on the request cap. Agree on the billing model separately before integrating payments.
+**How to apply:** Do not generate on load or base access on the request cap. Check the space's verified subscription for paid features; describe the request cap separately as an operating-cost safeguard, not an included paid-plan allowance.

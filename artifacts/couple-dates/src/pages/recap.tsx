@@ -4,7 +4,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryChip, EmptyState, ErrorState, PageHeader, Photo } from '@/components/bits';
 import { useCouple } from '@/lib/couple-context';
-import { fmtDate, parseISO, useRecapQ } from '@/lib/data';
+import { errStatus, fmtDate, parseISO, useRecapQ } from '@/lib/data';
+import { useBillingStatusQ, useBillingSync } from '@/lib/billing';
+import { Paywall } from '@/components/paywall';
+import { useRefreshBilling } from '@workspace/api-client-react';
 
 const MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
 
@@ -13,14 +16,23 @@ export default function RecapPage() {
   const thisYear = new Date().getFullYear();
   const firstYear = Math.max(2000, Math.min(thisYear, parseISO(couple.anniversary).getFullYear()));
   const [year, setYear] = useState(thisYear);
-  const q = useRecapQ(year);
+  const billing = useBillingStatusQ();
+  const sync = useBillingSync();
+  const refresh = useRefreshBilling({ mutation: { onSuccess: (d) => sync(d) } });
+  const entitled = !!billing.data?.entitled && !billing.data.verificationPending;
+  const q = useRecapQ(year, entitled);
   const r = q.data;
   const max = r ? Math.max(1, ...r.monthlyCounts) : 1;
   const empty = r && r.memoryCount === 0 && r.dateCount === 0 && r.activeDays === 0;
 
+  const header = <PageHeader kicker="Year in review" title={<>The <em className="text-primary">recap</em></>} />;
+  if (billing.isLoading) return <div>{header}<Skeleton className="h-56 rounded-[32px]" /></div>;
+  if (billing.isError) return <div>{header}<ErrorState error={billing.error} onRetry={() => billing.refetch()} label="Your plan" /></div>;
+  if (!entitled || (q.isError && errStatus(q.error) === 402)) return <div>{header}<Paywall feature="recap" status={billing.data} onRetry={() => refresh.mutate()} retrying={refresh.isPending} /></div>;
+
   return (
     <div>
-      <PageHeader kicker="Year in review" title={<>The <em className="text-primary">recap</em></>} />
+      {header}
       <div className="mb-5 flex items-center justify-between rounded-full bg-card p-1.5 shadow-[0_1px_0_hsl(var(--border))]">
         <button data-testid="button-prev-year" disabled={year <= firstYear} onClick={() => setYear((y) => y - 1)} className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-foreground/5 disabled:opacity-30" aria-label="Previous year"><ChevronLeft className="h-5 w-5" /></button>
         <motion.span key={year} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} data-testid="text-recap-year" className="font-display text-2xl">{year}</motion.span>

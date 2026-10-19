@@ -39,8 +39,8 @@ export function useDatesQ() {
 export function useSummaryQ() {
   return useGetSummary({ query: { queryKey: getGetSummaryQueryKey(), ...REFRESH } });
 }
-export function useRecapQ(year: number) {
-  return useGetRecap({ year }, { query: { queryKey: getGetRecapQueryKey({ year }), ...REFRESH } });
+export function useRecapQ(year: number, enabled = true) {
+  return useGetRecap({ year }, { query: { queryKey: getGetRecapQueryKey({ year }), enabled, ...REFRESH } });
 }
 
 export function usePreferencesQ() {

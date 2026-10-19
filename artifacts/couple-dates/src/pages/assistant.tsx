@@ -10,6 +10,9 @@ import { CategoryChip, ErrorState, PageHeader } from '@/components/bits';
 import { DateForm, type DatePrefill } from '@/components/date-form';
 import { errMsg, errStatus, useAssistantQ, useInvalidate, usePreferencesQ } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { useBillingStatusQ, useBillingSync } from '@/lib/billing';
+import { Paywall } from '@/components/paywall';
+import { useRefreshBilling } from '@workspace/api-client-react';
 
 const CHIPS = [
   { label: 'Online date', prompt: 'We’re apart this week — give us an online date over video that still feels close.' },
@@ -36,7 +39,12 @@ export default function AssistantPage() {
   const [lastPrompt, setLastPrompt] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [proposing, setProposing] = useState<DatePrefill | null>(null);
-  const ask = useAskDateAssistant({ mutation: { onSuccess: () => { invalidate(['assistant']); setMsg(''); } } });
+  const billing = useBillingStatusQ();
+  const sync = useBillingSync();
+  const refresh = useRefreshBilling({ mutation: { onSuccess: (d) => sync(d) } });
+  const ask = useAskDateAssistant({ mutation: { onSuccess: () => { invalidate(['assistant']); setMsg(''); }, onError: (e) => { if (errStatus(e) === 402) sync(); } } });
+  const paidError = ask.isError && errStatus(ask.error) === 402;
+  const locked = !billing.data?.entitled || !!billing.data?.verificationPending || paidError;
 
   useEffect(() => {
     if (!ask.isPending) return;
@@ -52,7 +60,7 @@ export default function AssistantPage() {
 
   const send = (text: string) => {
     const t = text.trim();
-    if (!t || ask.isPending || needsProfile) return;
+    if (!t || ask.isPending || needsProfile || locked) return;
     setLastPrompt(t);
     ask.mutate({ data: { message: t.slice(0, 1500) } });
   };
@@ -75,21 +83,24 @@ export default function AssistantPage() {
           {partner ? `Ideas use both your profile and ${partner.displayName}’s.` : 'Ideas use your profile only — your partner hasn’t filled theirs in yet.'} <Link href="/preferences" className="underline">Edit</Link></p>
       )}
 
+      {!billing.isLoading && locked && (
+        <div className="mb-4">{billing.isError ? <ErrorState error={billing.error} onRetry={() => billing.refetch()} label="Your plan" /> : <Paywall feature="assistant" status={billing.data} onRetry={() => refresh.mutate()} retrying={refresh.isPending} />}</div>
+      )}
       <form onSubmit={onSubmit} className="rounded-[26px] bg-card p-3 shadow-[0_1px_0_hsl(var(--border)),0_20px_40px_-30px_hsl(330_40%_20%/.5)]">
         <label htmlFor="ask" className="sr-only">Ask the date concierge</label>
-        <Textarea id="ask" data-testid="input-assistant-message" maxLength={1500} disabled={needsProfile || ask.isPending} value={msg} onChange={(e) => setMsg(e.target.value)}
+        <Textarea id="ask" data-testid="input-assistant-message" maxLength={1500} disabled={needsProfile || ask.isPending || locked} value={msg} onChange={(e) => setMsg(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); send(msg); } }}
           placeholder={needsProfile ? 'Set up your profile to start asking.' : 'What kind of date are you in the mood for?'} className="min-h-20 resize-none border-0 bg-transparent text-[15px] shadow-none focus-visible:ring-0" />
         <div className="flex items-center gap-2">
           <div className="flex flex-1 gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
             {CHIPS.map((c) => (
-              <button type="button" key={c.label} data-testid={`chip-prompt-${c.label.toLowerCase().replace(/\W+/g, '-')}`} disabled={needsProfile || ask.isPending} onClick={() => setMsg(c.prompt)} className="shrink-0 rounded-full bg-secondary px-3 py-1.5 text-xs transition active:scale-95 disabled:opacity-40">{c.label}</button>
+              <button type="button" key={c.label} data-testid={`chip-prompt-${c.label.toLowerCase().replace(/\W+/g, '-')}`} disabled={needsProfile || ask.isPending || locked} onClick={() => setMsg(c.prompt)} className="shrink-0 rounded-full bg-secondary px-3 py-1.5 text-xs transition active:scale-95 disabled:opacity-40">{c.label}</button>
             ))}
           </div>
-          <button data-testid="button-ask" disabled={!msg.trim() || ask.isPending || needsProfile} aria-label="Ask" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition active:scale-90 disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button>
+          <button data-testid="button-ask" disabled={!msg.trim() || ask.isPending || needsProfile || locked} aria-label="Ask" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition active:scale-90 disabled:opacity-40"><ArrowUp className="h-5 w-5" /></button>
         </div>
       </form>
-      <p className="mt-2 flex items-start gap-1.5 px-1 text-[11px] text-muted-foreground"><Info className="mt-0.5 h-3 w-3 shrink-0" />Shared history — your partner sees these questions and ideas too. Suggestions aren’t bookings; venues and prices aren’t verified. Up to 20 requests per space in 24 hours.</p>
+      <p className="mt-2 flex items-start gap-1.5 px-1 text-[11px] text-muted-foreground"><Info className="mt-0.5 h-3 w-3 shrink-0" />Shared history — your partner sees these questions and ideas too. Suggestions aren’t bookings; venues and prices aren’t verified. An operating-cost safeguard currently limits requests to 20 per space in 24 hours; this is not a paid-plan allowance.</p>
 
       <div className="mt-6 space-y-6">
         <AnimatePresence>
@@ -104,10 +115,10 @@ export default function AssistantPage() {
           )}
         </AnimatePresence>
 
-        {ask.isError && !profileError && (
+        {ask.isError && !profileError && !paidError && (
           <div role="alert" data-testid="state-assistant-error" className="rounded-[24px] border border-destructive/30 bg-destructive/5 p-4 text-sm">
             <p className="font-medium">The concierge couldn’t answer that one.</p><p className="text-muted-foreground">{errMsg(ask.error)}</p>
-            <button data-testid="button-assistant-retry" onClick={() => send(lastPrompt)} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs text-background"><RotateCw className="h-3.5 w-3.5" /> Try again</button>
+            <button data-testid="button-assistant-retry" disabled={locked} onClick={() => send(lastPrompt)} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs text-background"><RotateCw className="h-3.5 w-3.5" /> Try again</button>
           </div>
         )}
 

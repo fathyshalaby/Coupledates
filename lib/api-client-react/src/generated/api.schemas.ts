@@ -5,6 +5,41 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type BillingStatusPlan = typeof BillingStatusPlan[keyof typeof BillingStatusPlan];
+
+
+export const BillingStatusPlan = {
+  free: 'free',
+  plus: 'plus',
+} as const;
+
+export interface BillingStatus {
+  plan: BillingStatusPlan;
+  entitled: boolean;
+  providerStatus: string;
+  isPayer: boolean;
+  canManage: boolean;
+  cancelAtPeriodEnd: boolean;
+  /** @nullable */
+  currentPeriodEnd: string | null;
+  checkoutPending: boolean;
+  checkoutAvailable: boolean;
+  verificationPending: boolean;
+  notice: string;
+  price: number;
+  currency: string;
+  billingIntervalDays: number;
+}
+
+export interface BillingLink {
+  url: string;
+}
+
+export interface BillingCheckout {
+  url: string;
+  resumed: boolean;
+}
+
 export interface Couple {
   id: number;
   yourName: string;

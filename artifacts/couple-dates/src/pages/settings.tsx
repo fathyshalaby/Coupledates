@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useClerk, useUser } from '@clerk/react';
-import { CalendarClock, Check, ChevronRight, ClipboardList, Copy, Flame, LogOut, Share2 } from 'lucide-react';
+import { CalendarClock, Gem, Check, ChevronRight, ClipboardList, Copy, Flame, LogOut, Share2 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useSaveCouple } from '@workspace/api-client-react';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { PageHeader } from '@/components/bits';
 import { useToast } from '@/hooks/use-toast';
 import { useCouple } from '@/lib/couple-context';
 import { errMsg, useInvalidate } from '@/lib/data';
+import { billingPhase, fmtPeriod, useBillingStatusQ } from '@/lib/billing';
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -27,6 +28,9 @@ export default function SettingsPage() {
   } });
   const dirty = yourName !== couple.yourName || partnerName !== couple.partnerName || anniversary !== couple.anniversary.slice(0, 10);
   const full = couple.memberCount >= 2;
+  const billing = useBillingStatusQ();
+  const bs = billing.data;
+  const planLine = billing.isLoading ? 'Checking plan...' : !bs ? 'Plan status unavailable, tap to retry' : (() => { const ph = billingPhase(bs); const end = fmtPeriod(bs.currentPeriodEnd); return ph === 'verifying' ? 'Status unknown, tap to check' : ph === 'active' ? `Plus${end ? `, renews ${end}` : ''}` : ph === 'ending' ? `Plus until ${end ?? 'period end'}` : ph === 'past_due' ? 'Payment issue' : ph === 'pending' ? 'Checkout pending' : 'Free plan, Plus adds concierge and recap'; })();
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -71,6 +75,8 @@ export default function SettingsPage() {
       </section>
 
       <nav className="mt-6 overflow-hidden rounded-[28px] bg-card shadow-[0_1px_0_hsl(var(--border))]">
+        <Link href="/billing" data-testid="link-settings-billing" className="flex items-center gap-3 px-5 py-4 hover:bg-foreground/[0.03]"><Gem className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Plan and billing</span><span data-testid="text-settings-plan" className="text-sm text-muted-foreground">{planLine}</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>
+        <div className="perf mx-5" />
         <Link href="/preferences" data-testid="link-settings-preferences" className="flex items-center gap-3 px-5 py-4 hover:bg-foreground/[0.03]"><ClipboardList className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Date preferences</span><span className="text-sm text-muted-foreground">Interests, budget, availability — shared with your partner and the concierge</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>
         <div className="perf mx-5" />
         <Link href="/calendar" data-testid="link-settings-calendar" className="flex items-center gap-3 px-5 py-4 hover:bg-foreground/[0.03]"><CalendarClock className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Google Calendar</span><span className="text-sm text-muted-foreground">Find times you’re both free, save date copies</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>

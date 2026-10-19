@@ -8,13 +8,15 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "esbuild tests/*.test.ts --bundle --platform=node --format=esm --outdir=node_modules/.cache/couple-tests --out-extension:.js=.mjs && node node_modules/.cache/couple-tests/date-state.test.mjs && node node_modules/.cache/couple-tests/calendar-time.test.mjs"
+    "test": "esbuild tests/*.test.ts --bundle --platform=node --format=esm --outdir=node_modules/.cache/couple-tests --out-extension:.js=.mjs && for test in node_modules/.cache/couple-tests/*.test.mjs; do node \"$test\" || exit 1; done",
+    "test:webhook": "esbuild tests/webhook-http-check.ts --bundle --platform=node --format=esm --banner:js=\"import {createRequire} from 'node:module'; globalThis.require=createRequire(import.meta.url);\" --outfile=node_modules/.cache/couple-webhook-check.mjs && node node_modules/.cache/couple-webhook-check.mjs"
   },
   "dependencies": {
     "@clerk/express": "^2.1.80",
     "@clerk/shared": "^4.40.0",
     "@google-cloud/storage": "^8.4.0",
     "@js-temporal/polyfill": "^0.5.1",
+    "@whop/sdk": "^2.6.0",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/integrations-openai-ai-server": "workspace:*",

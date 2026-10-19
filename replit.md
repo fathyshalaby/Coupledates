@@ -45,7 +45,9 @@ Location is an optional, explicitly requested foreground check against a volunta
 
 The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships.
 
-The user confirmed the launch upgrade at US$5/month per shared couple space, covering both partners. The paid features are the AI date assistant and yearly recap; existing memories must remain accessible after cancellation. The billing provider has not yet been selected.
+The user confirmed the launch upgrade at US$5/month per shared couple space, covering both partners, and selected Whop. The paid features are the AI date assistant and yearly recap; existing memories must remain accessible after cancellation. Whop bills in 30-day periods, disclosed alongside applicable taxes. Cancellation stops renewal, with Plus continuing through the verified paid-through date.
+
+Billing uses hosted checkout and a server-owned checkout reservation to bind a verified Whop membership to the couple space. A return URL, client-provided email, or membership identifier is never purchase proof. Both partners share entitlements; only the initiating billing owner manages renewal. Whop is the source of truth, with short-lived access snapshots and signed, idempotent webhook updates. Signing secrets are encrypted using the stable SESSION_SECRET, which must not be rotated without reprovisioning webhook verification. BILLING_APP_ORIGIN is an explicitly configured HTTPS origin for each environment.
 
 The user wants partners to connect their own calendars and supports online dates as well as physical dates. They chose Google Calendar first.
 

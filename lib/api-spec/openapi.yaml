@@ -11,6 +11,60 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /billing/status:
+    get:
+      operationId: getBillingStatus
+      responses:
+        "200":
+          description: Shared space subscription and your billing permissions
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingStatus" }
+  /billing/refresh:
+    post:
+      operationId: refreshBilling
+      responses:
+        "200":
+          description: Verified against Whop, not against redirect parameters
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingStatus" }
+  /billing/checkout:
+    post:
+      operationId: createBillingCheckout
+      responses:
+        "200":
+          description: Hosted checkout reserved for this space
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingCheckout" }
+  /billing/manage:
+    post:
+      operationId: manageBilling
+      responses:
+        "200":
+          description: Verified membership management URL for the billing owner
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingLink" }
+  /billing/cancel:
+    post:
+      operationId: cancelBilling
+      responses:
+        "200":
+          description: Auto-renewal stopped; access retained through paid-through date
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingStatus" }
+  /billing/resume:
+    post:
+      operationId: resumeBilling
+      responses:
+        "200":
+          description: Renewal resumed for the existing subscription
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/BillingStatus" }
   /calendar/status:
     get:
       operationId: getCalendarStatus
@@ -378,6 +432,35 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    BillingStatus:
+      type: object
+      required: [plan, entitled, providerStatus, isPayer, canManage, cancelAtPeriodEnd, currentPeriodEnd, checkoutPending, checkoutAvailable, verificationPending, notice, price, currency, billingIntervalDays]
+      properties:
+        plan: { type: string, enum: [free, plus] }
+        entitled: { type: boolean }
+        providerStatus: { type: string }
+        isPayer: { type: boolean }
+        canManage: { type: boolean }
+        cancelAtPeriodEnd: { type: boolean }
+        currentPeriodEnd: { type: ["string", "null"] }
+        checkoutPending: { type: boolean }
+        checkoutAvailable: { type: boolean }
+        verificationPending: { type: boolean }
+        notice: { type: string }
+        price: { type: number }
+        currency: { type: string }
+        billingIntervalDays: { type: integer }
+    BillingLink:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string }
+    BillingCheckout:
+      type: object
+      required: [url, resumed]
+      properties:
+        url: { type: string }
+        resumed: { type: boolean }
     CoupleState:
       type: object
       required: [couple]
