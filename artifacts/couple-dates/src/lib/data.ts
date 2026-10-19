@@ -1,10 +1,16 @@
 import { useQueryClient } from '@tanstack/react-query';
 import {
+  getGetAssistantHistoryQueryKey,
   getGetCoupleQueryKey,
+  getGetDateDetailQueryKey,
+  getGetPreferencesQueryKey,
   getGetRecapQueryKey,
   getGetSummaryQueryKey,
   getListDatesQueryKey,
   getListMemoriesQueryKey,
+  useGetAssistantHistory,
+  useGetDateDetail,
+  useGetPreferences,
   useGetRecap,
   useGetSummary,
   useListDates,
@@ -37,14 +43,29 @@ export function useRecapQ(year: number) {
   return useGetRecap({ year }, { query: { queryKey: getGetRecapQueryKey({ year }), ...REFRESH } });
 }
 
+export function usePreferencesQ() {
+  return useGetPreferences({ query: { queryKey: getGetPreferencesQueryKey(), ...REFRESH } });
+}
+export function useAssistantQ() {
+  return useGetAssistantHistory({ query: { queryKey: getGetAssistantHistoryQueryKey(), ...REFRESH } });
+}
+export function useDateDetailQ(id: number) {
+  return useGetDateDetail(id, { query: { queryKey: getGetDateDetailQueryKey(id), enabled: Number.isFinite(id) && id > 0, ...REFRESH } });
+}
+
+export type InvalidateKey = 'couple' | 'memories' | 'dates' | 'summary' | 'recap' | 'detail' | 'preferences' | 'assistant';
+
 export function useInvalidate() {
   const qc = useQueryClient();
-  return (what: Array<'couple' | 'memories' | 'dates' | 'summary' | 'recap'>) => {
+  return (what: InvalidateKey[]) => {
     for (const w of what) {
       if (w === 'couple') qc.invalidateQueries({ queryKey: getGetCoupleQueryKey() });
       if (w === 'memories') qc.invalidateQueries({ queryKey: getListMemoriesQueryKey() });
       if (w === 'dates') qc.invalidateQueries({ queryKey: getListDatesQueryKey() });
       if (w === 'summary') qc.invalidateQueries({ queryKey: getGetSummaryQueryKey() });
+      if (w === 'preferences') qc.invalidateQueries({ queryKey: getGetPreferencesQueryKey() });
+      if (w === 'assistant') qc.invalidateQueries({ queryKey: getGetAssistantHistoryQueryKey() });
+      if (w === 'detail') qc.invalidateQueries({ predicate: (q) => { const k = String(q.queryKey[0]); return k.startsWith('/api/dates/') && k.endsWith('/detail'); } });
       if (w === 'recap') qc.invalidateQueries({ predicate: (q) => String(q.queryKey[0]).startsWith('/api/recap') });
     }
   };
@@ -77,3 +98,55 @@ export function photoUrl(path?: string | null): string | null {
 
 export const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'] as const;
 export const MAX_BYTES = 10 * 1024 * 1024;
+
+export function errStatus(e: unknown): number | undefined {
+  const s = (e as { status?: unknown } | null)?.status;
+  return typeof s === 'number' ? s : undefined;
+}
+
+export function safeHttpUrl(raw?: string | null): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw.trim());
+    return u.protocol === 'http:' || u.protocol === 'https:' ? u.toString() : null;
+  } catch { return null; }
+}
+
+/** Haversine distance in metres. */
+export function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 6371000;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+export function geoErrorText(e: GeolocationPositionError | { code: number }): string {
+  if (e.code === 1) return 'Location permission was declined. Everything else still works — you can start and save photos without it.';
+  if (e.code === 3) return 'Finding your location took too long. Try again outdoors, or skip it.';
+  return "We couldn't read your location right now. It's optional — carry on without it.";
+}
+
+export function getPosition(): Promise<GeolocationPosition> {
+  return new Promise((resolve, reject) => {
+    if (!('geolocation' in navigator)) { reject({ code: 2 }); return; }
+    navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  });
+}
+
+export const STATUS_META: Record<string, { label: string; tone: string }> = {
+  proposed: { label: 'Proposed', tone: 'bg-accent text-accent-foreground' },
+  planned: { label: 'Planned', tone: 'bg-[hsl(170_30%_86%)] text-[hsl(170_40%_20%)]' },
+  active: { label: 'Happening now', tone: 'bg-primary text-primary-foreground' },
+  completed: { label: 'Done', tone: 'bg-foreground text-background' },
+  declined: { label: 'Declined', tone: 'bg-muted text-muted-foreground line-through decoration-1' },
+};
+
+export function fmtTime(t?: string | null): string {
+  if (!t) return '';
+  const [h, m] = t.split(':').map(Number);
+  if (Number.isNaN(h)) return t;
+  const d = new Date(); d.setHours(h, m || 0, 0, 0);
+  return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}

@@ -69,6 +69,8 @@ export interface MemoryInput {
   /** @nullable */
   photoPath?: string | null;
   favorite?: boolean;
+  /** @nullable */
+  dateId?: number | null;
 }
 
 export type Memory = MemoryInput & {
@@ -92,11 +94,24 @@ export type DateInputStatus = typeof DateInputStatus[keyof typeof DateInputStatu
 
 
 export const DateInputStatus = {
+  proposed: 'proposed',
   planned: 'planned',
+  active: 'active',
   completed: 'completed',
+  declined: 'declined',
+} as const;
+
+export type DateInputMode = typeof DateInputMode[keyof typeof DateInputMode];
+
+
+export const DateInputMode = {
+  in_person: 'in_person',
+  remote: 'remote',
 } as const;
 
 export interface DateInput {
+  /** @minimum 0 */
+  expectedVersion?: number;
   /**
      * @minLength 1
      * @maxLength 150
@@ -118,11 +133,213 @@ export interface DateInput {
      * @nullable
      */
   rating?: number | null;
+  mode?: DateInputMode;
+  /** @maxLength 1000 */
+  meetingUrl?: string;
+  /**
+     * @minimum -90
+     * @maximum 90
+     * @nullable
+     */
+  latitude?: number | null;
+  /**
+     * @minimum -180
+     * @maximum 180
+     * @nullable
+     */
+  longitude?: number | null;
 }
 
-export type DatePlan = DateInput & {
+export type DatePlan = DateInput & ({
   id: number;
+  version: number;
+  isProposer: boolean;
+  canRespond: boolean;
+  responseNote: string;
+  /** @nullable */
+  startedAt?: string | null;
+}) & Required<Pick<DateInput & ({
+  id: number;
+  version: number;
+  isProposer: boolean;
+  canRespond: boolean;
+  responseNote: string;
+  /** @nullable */
+  startedAt?: string | null;
+}), 'mode'>>;
+
+export type PreferencesInputCurrency = typeof PreferencesInputCurrency[keyof typeof PreferencesInputCurrency];
+
+
+export const PreferencesInputCurrency = {
+  USD: 'USD',
+  EUR: 'EUR',
+  GBP: 'GBP',
+  CAD: 'CAD',
+  AUD: 'AUD',
+  INR: 'INR',
+  Other: 'Other',
+} as const;
+
+export type PreferencesInputRelationshipMode = typeof PreferencesInputRelationshipMode[keyof typeof PreferencesInputRelationshipMode];
+
+
+export const PreferencesInputRelationshipMode = {
+  together: 'together',
+  long_distance: 'long_distance',
+} as const;
+
+export interface PreferencesInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  displayName: string;
+  /**
+     * @minItems 1
+     * @maxItems 20
+     * @items.minLength 1
+     * @items.maxLength 60
+     */
+  interests: string[];
+  /** @maxLength 1000 */
+  avoid: string;
+  /**
+     * @minimum 0
+     * @maximum 10000
+     */
+  budget: number;
+  currency: PreferencesInputCurrency;
+  /** @maxLength 120 */
+  city: string;
+  /** @maxLength 100 */
+  timezone: string;
+  relationshipMode: PreferencesInputRelationshipMode;
+  /**
+     * @maxItems 14
+     * @items.minLength 1
+     * @items.maxLength 60
+     */
+  availability: string[];
+  /** @maxLength 1500 */
+  notes: string;
+}
+
+export type PartnerPreferences = PreferencesInput & {
+  isYou: boolean;
 };
+
+export interface AssistantInput {
+  /**
+     * @minLength 1
+     * @maxLength 1500
+     */
+  message: string;
+}
+
+export type DateIdeaCategory = typeof DateIdeaCategory[keyof typeof DateIdeaCategory];
+
+
+export const DateIdeaCategory = {
+  Everyday: 'Everyday',
+  Adventure: 'Adventure',
+  Food: 'Food',
+  Travel: 'Travel',
+  Milestone: 'Milestone',
+} as const;
+
+export type DateIdeaMode = typeof DateIdeaMode[keyof typeof DateIdeaMode];
+
+
+export const DateIdeaMode = {
+  in_person: 'in_person',
+  remote: 'remote',
+} as const;
+
+export interface DateIdea {
+  /**
+     * @minLength 1
+     * @maxLength 150
+     */
+  title: string;
+  /** @maxLength 1500 */
+  description: string;
+  /** @maxLength 1000 */
+  whyBoth: string;
+  category: DateIdeaCategory;
+  mode: DateIdeaMode;
+  /** @maxLength 200 */
+  location: string;
+  /** @maxLength 120 */
+  estimatedCost: string;
+  /**
+     * @minimum 10
+     * @maximum 1440
+     */
+  durationMinutes: number;
+  /**
+     * @minItems 1
+     * @maxItems 8
+     * @items.maxLength 500
+     */
+  steps: string[];
+}
+
+export interface AssistantTurn {
+  id: number;
+  prompt: string;
+  message: string;
+  /** @maxItems 4 */
+  ideas: DateIdea[];
+  createdAt: string;
+}
+
+export type DateResponseInputAction = typeof DateResponseInputAction[keyof typeof DateResponseInputAction];
+
+
+export const DateResponseInputAction = {
+  accept: 'accept',
+  decline: 'decline',
+  counter: 'counter',
+  start: 'start',
+  complete: 'complete',
+} as const;
+
+export interface DateResponseInput {
+  action: DateResponseInputAction;
+  /** @minimum 0 */
+  version: number;
+  /** @maxLength 1500 */
+  note?: string;
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  date?: string;
+  /** @maxLength 10 */
+  time?: string;
+}
+
+export interface ReviewInput {
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  rating: number;
+  /** @maxLength 1500 */
+  note: string;
+}
+
+export interface DateReview {
+  id: number;
+  displayName: string;
+  isYou: boolean;
+  rating: number;
+  note: string;
+}
+
+export interface DateDetail {
+  date: DatePlan;
+  memories: Memory[];
+  reviews: DateReview[];
+}
 
 export type CheckInInputActivity = typeof CheckInInputActivity[keyof typeof CheckInInputActivity];
 

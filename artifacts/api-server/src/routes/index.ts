@@ -5,6 +5,9 @@ import memoriesRouter from "./memories";
 import datesRouter from "./dates";
 import activityRouter from "./activity";
 import storageRouter from "./storage";
+import preferencesRouter from "./preferences";
+import dateActionsRouter from "./date-actions";
+import dateAssistantRouter from "./date-assistant";
 
 const router: IRouter = Router();
 
@@ -14,5 +17,8 @@ router.use(memoriesRouter);
 router.use(datesRouter);
 router.use(activityRouter);
 router.use(storageRouter);
+router.use(preferencesRouter);
+router.use(dateActionsRouter);
+router.use(dateAssistantRouter);
 
 export default router;

@@ -1,32 +1,20 @@
-import { useMemo, useRef, useState, type FormEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Camera, Heart, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
-import {
-  useCreateMemory,
-  useDeleteMemory,
-  useRequestUploadUrl,
-  useUpdateMemory,
-  type Memory,
-  type MemoryInput,
-  type MemoryInputCategory,
-  type UploadInputContentType,
-} from '@workspace/api-client-react';
-import { Drawer, DrawerContent, DrawerDescription, DrawerTitle } from '@/components/ui/drawer';
+import { CalendarHeart, Heart, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { Link } from 'wouter';
+import { useDeleteMemory, useUpdateMemory, type Memory } from '@workspace/api-client-react';
+import { MEMORY_AFFECTED, MemoryForm, memoryToInput } from '@/components/memory-form';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { CategoryChip, EmptyState, ErrorState, ListSkeleton, PageHeader, Photo } from '@/components/bits';
 import { useToast } from '@/hooks/use-toast';
-import { ALLOWED_TYPES, CATEGORIES, MAX_BYTES, errMsg, fmtDate, parseISO, photoUrl, todayISO, useInvalidate, useMemoriesQ } from '@/lib/data';
+import { CATEGORIES, errMsg, fmtDate, parseISO, useInvalidate, useMemoriesQ } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
-const AFFECTED = ['memories', 'summary', 'recap'] as const;
-
-function toInput(m: Memory, patch: Partial<MemoryInput> = {}): MemoryInput {
-  return { title: m.title, note: m.note, date: m.date.slice(0, 10), category: m.category, photoPath: m.photoPath ?? null, favorite: m.favorite, ...patch };
-}
+const AFFECTED = MEMORY_AFFECTED;
 
 export default function MemoriesPage() {
   const q = useMemoriesQ();
@@ -108,10 +96,11 @@ export default function MemoriesPage() {
                               <div className="flex items-center gap-2"><CategoryChip category={m.category} /><span className="font-mono text-[10px] text-muted-foreground">{fmtDate(m.date, { weekday: 'short', month: 'short', day: 'numeric' })}</span></div>
                               <h3 className="font-display mt-2 text-xl leading-tight">{m.title}</h3>
                             </div>
-                            <motion.button whileTap={{ scale: 0.7 }} data-testid={`button-favorite-${m.id}`} aria-label="Favorite" onClick={() => update.mutate({ id: m.id, data: toInput(m, { favorite: !m.favorite }) })} className="shrink-0 p-1">
+                            <motion.button whileTap={{ scale: 0.7 }} data-testid={`button-favorite-${m.id}`} aria-label="Favorite" onClick={() => update.mutate({ id: m.id, data: memoryToInput(m, { favorite: !m.favorite }) })} className="shrink-0 p-1">
                               <Heart className={cn('h-6 w-6 transition', m.favorite ? 'fill-primary text-primary' : 'text-foreground/30')} />
                             </motion.button>
                           </div>
+                          {m.dateId != null && <Link href={`/dates/${m.dateId}`} data-testid={`link-memory-date-${m.id}`} className="mt-2 inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs"><CalendarHeart className="h-3 w-3" /> From a date · open album</Link>}
                           {m.note && <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-foreground/80">{m.note}</p>}
                           <div className="mt-3 flex justify-end gap-1">
                             <button data-testid={`button-edit-memory-${m.id}`} onClick={() => setEditing(m)} className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs hover:bg-foreground/5"><Pencil className="h-3.5 w-3.5" /> Edit</button>
@@ -152,98 +141,3 @@ export default function MemoriesPage() {
   );
 }
 
-function MemoryForm({ memory, onDone }: { memory: Memory | null; onDone: () => void }) {
-  const invalidate = useInvalidate();
-  const { toast } = useToast();
-  const [title, setTitle] = useState(memory?.title ?? '');
-  const [note, setNote] = useState(memory?.note ?? '');
-  const [date, setDate] = useState(memory?.date.slice(0, 10) ?? todayISO());
-  const [category, setCategory] = useState<MemoryInputCategory>(memory?.category ?? 'Everyday');
-  const [favorite, setFavorite] = useState(memory?.favorite ?? false);
-  const [photoPath, setPhotoPath] = useState<string | null>(memory?.photoPath ?? null);
-  const [localPreview, setLocalPreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const requestUrl = useRequestUploadUrl();
-  const opts = { mutation: { onSuccess: () => { invalidate([...AFFECTED]); toast({ title: memory ? 'Memory updated' : 'Memory kept' }); onDone(); }, onError: (e: unknown) => setError(errMsg(e)) } };
-  const create = useCreateMemory(opts);
-  const update = useUpdateMemory(opts);
-  const pending = create.isPending || update.isPending;
-
-  const onFile = async (file: File | undefined) => {
-    if (!file) return;
-    setError(null);
-    const type = (file.type || (/\.(heic)$/i.test(file.name) ? 'image/heic' : /\.(heif)$/i.test(file.name) ? 'image/heif' : '')) as UploadInputContentType;
-    if (!(ALLOWED_TYPES as readonly string[]).includes(type)) { setError('Use a JPEG, PNG, WebP, HEIC or HEIF photo.'); return; }
-    if (file.size > MAX_BYTES) { setError('That photo is over 10 MB. Try a smaller one.'); return; }
-    setUploading(true);
-    try {
-      const target = await requestUrl.mutateAsync({ data: { name: file.name.slice(0, 255), size: file.size, contentType: type } });
-      const res = await fetch(target.uploadURL, { method: 'PUT', headers: { 'Content-Type': type }, body: file });
-      if (!res.ok) throw new Error(`Upload failed (${res.status})`);
-      setPhotoPath(target.objectPath);
-      setLocalPreview(URL.createObjectURL(file));
-    } catch (e) {
-      setError(errMsg(e));
-    } finally {
-      setUploading(false);
-      if (fileRef.current) fileRef.current.value = '';
-    }
-  };
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    const data: MemoryInput = { title: title.trim(), note, date, category, photoPath, favorite };
-    if (memory) update.mutate({ id: memory.id, data }); else create.mutate({ data });
-  };
-
-  const preview = localPreview ?? photoUrl(photoPath);
-
-  return (
-    <form onSubmit={submit} className="mx-auto w-full max-w-xl overflow-y-auto px-5 pb-8 pt-2">
-      <DrawerTitle className="font-display text-3xl">{memory ? 'Edit memory' : 'Keep a memory'}</DrawerTitle>
-      <DrawerDescription className="text-sm text-muted-foreground">Shared with your partner the moment you save.</DrawerDescription>
-
-      <div className="mt-5">
-        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif" className="hidden" data-testid="input-photo" onChange={(e) => onFile(e.target.files?.[0])} />
-        {preview ? (
-          <div className="polaroid relative mx-auto w-3/4 rotate-[-2deg]">
-            <img src={preview} alt="" className="aspect-[4/3] w-full object-cover" />
-            <div className="absolute bottom-1 right-2 flex gap-2">
-              <button type="button" data-testid="button-change-photo" onClick={() => fileRef.current?.click()} className="text-xs text-[hsl(330_32%_15%)] underline">Change</button>
-              <button type="button" data-testid="button-remove-photo" onClick={() => { setPhotoPath(null); setLocalPreview(null); }} className="text-xs text-destructive underline">Remove</button>
-            </div>
-          </div>
-        ) : (
-          <button type="button" data-testid="button-add-photo" disabled={uploading} onClick={() => fileRef.current?.click()} className="flex w-full flex-col items-center gap-2 rounded-[24px] border-2 border-dashed border-foreground/20 py-7 text-muted-foreground transition active:scale-[.99]">
-            <Camera className="h-6 w-6" />
-            <span className="text-sm">{uploading ? 'Uploading photo...' : 'Add a photo (optional, up to 10 MB)'}</span>
-          </button>
-        )}
-        {uploading && preview && <p className="mt-2 text-center text-xs text-muted-foreground">Uploading...</p>}
-      </div>
-
-      <div className="mt-5 space-y-4">
-        <Input data-testid="input-memory-title" required maxLength={150} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Give it a title" className="font-display h-14 rounded-2xl text-xl" />
-        <Textarea data-testid="input-memory-note" maxLength={5000} value={note} onChange={(e) => setNote(e.target.value)} placeholder="What happened? What do you want to remember?" className="min-h-28 rounded-2xl" />
-        <Input data-testid="input-memory-date" required type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-12 rounded-2xl" />
-        <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((c) => (
-            <button type="button" key={c} data-testid={`option-category-${c.toLowerCase()}`} onClick={() => setCategory(c)} className={cn('rounded-full px-3.5 py-2 text-sm transition', category === c ? 'bg-foreground text-background' : 'bg-card')}>{c}</button>
-          ))}
-        </div>
-        <button type="button" data-testid="toggle-favorite" onClick={() => setFavorite((v) => !v)} className={cn('flex items-center gap-2 rounded-full px-4 py-2 text-sm', favorite ? 'bg-primary/10 text-primary' : 'bg-card')}>
-          <Heart className={cn('h-4 w-4', favorite && 'fill-current')} /> {favorite ? 'Favorite' : 'Mark as favorite'}
-        </button>
-      </div>
-
-      {error && <p data-testid="text-memory-error" className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>}
-      <button data-testid="button-save-memory" disabled={pending || uploading} className="mt-6 w-full rounded-full bg-primary py-4 font-medium text-primary-foreground transition active:scale-[.98] disabled:opacity-50">
-        {pending ? 'Saving...' : memory ? 'Save changes' : 'Keep this memory'}
-      </button>
-    </form>
-  );
-}

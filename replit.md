@@ -37,11 +37,13 @@ A mobile-first private space for couples to save photos and memories, plan and r
 
 ## Product
 
-Shared photo memory timeline; date planning, completion and 1–5 ratings; daily quality-time streaks; yearly relationship recap; couple profile and code-based partner pairing.
+Shared photo memory timeline; partner date proposals, acceptance/counter/decline, start/completion and individual 1–5 reviews; date-linked albums and camera capture; daily quality-time streaks; yearly relationship recap; couple profile and code-based partner pairing. Each partner can complete a shared interests/budget/availability questionnaire. A shared AI date concierge recommends in-person or remote experiences using the available profiles and recent dates. AI suggests only; people choose dates and approve plans.
+
+Location is an optional, explicitly requested foreground check against a voluntarily pinned meeting point. Do not promise background arrival detection or push reminders. Current device locations from arrival checks are never sent to the backend.
 
 ## User preferences
 
-The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept.
+The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships. They are considering about $5/month per couple space; billing and paid feature boundaries are not finalized and no checkout has been added.
 
 ## Gotchas
 

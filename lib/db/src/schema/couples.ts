@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, date, timestamp, boolean, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, date, timestamp, boolean, uniqueIndex, doublePrecision } from "drizzle-orm/pg-core";
 
 export const couplesTable = pgTable("couples", {
   id: serial("id").primaryKey(),
@@ -23,6 +23,7 @@ export const memoriesTable = pgTable("memories", {
   category: text("category").notNull(),
   photoPath: text("photo_path"),
   favorite: boolean("favorite").notNull().default(false),
+  dateId: integer("date_id").references(() => datesTable.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -36,7 +37,15 @@ export const datesTable = pgTable("date_plans", {
   category: text("category").notNull(),
   notes: text("notes").notNull(),
   status: text("status").notNull(),
-  rating: integer("rating"),
+  rating: doublePrecision("rating"),
+  proposedBy: text("proposed_by"),
+  version: integer("version").notNull().default(0),
+  responseNote: text("response_note").notNull().default(""),
+  mode: text("mode").notNull().default("in_person"),
+  meetingUrl: text("meeting_url").notNull().default(""),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
+  startedAt: timestamp("started_at", { withTimezone: true }),
 });
 
 export const checkInsTable = pgTable("check_ins", {

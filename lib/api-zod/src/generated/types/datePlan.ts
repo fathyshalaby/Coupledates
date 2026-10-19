@@ -7,6 +7,20 @@
  */
 import type { DateInput } from './dateInput';
 
-export type DatePlan = DateInput & {
+export type DatePlan = DateInput & ({
   id: number;
-};
+  version: number;
+  isProposer: boolean;
+  canRespond: boolean;
+  responseNote: string;
+  /** @nullable */
+  startedAt?: string | null;
+}) & Required<Pick<DateInput & ({
+  id: number;
+  version: number;
+  isProposer: boolean;
+  canRespond: boolean;
+  responseNote: string;
+  /** @nullable */
+  startedAt?: string | null;
+}), 'mode'>>;

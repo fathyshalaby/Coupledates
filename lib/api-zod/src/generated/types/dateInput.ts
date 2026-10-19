@@ -6,9 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { DateInputCategory } from './dateInputCategory';
+import type { DateInputMode } from './dateInputMode';
 import type { DateInputStatus } from './dateInputStatus';
 
 export interface DateInput {
+  /** @minimum 0 */
+  expectedVersion?: number;
   /**
      * @minLength 1
      * @maxLength 150
@@ -30,4 +33,19 @@ export interface DateInput {
      * @nullable
      */
   rating?: number | null;
+  mode?: DateInputMode;
+  /** @maxLength 1000 */
+  meetingUrl?: string;
+  /**
+     * @minimum -90
+     * @maximum 90
+     * @nullable
+     */
+  latitude?: number | null;
+  /**
+     * @minimum -180
+     * @maximum 180
+     * @nullable
+     */
+  longitude?: number | null;
 }

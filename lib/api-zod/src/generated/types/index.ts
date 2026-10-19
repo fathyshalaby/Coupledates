@@ -6,22 +6,37 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './assistantInput';
+export * from './assistantTurn';
 export * from './checkInInput';
 export * from './checkInInputActivity';
 export * from './couple';
 export * from './coupleInput';
 export * from './coupleState';
+export * from './dateDetail';
+export * from './dateIdea';
+export * from './dateIdeaCategory';
+export * from './dateIdeaMode';
 export * from './dateInput';
 export * from './dateInputCategory';
+export * from './dateInputMode';
 export * from './dateInputStatus';
 export * from './datePlan';
+export * from './dateResponseInput';
+export * from './dateResponseInputAction';
+export * from './dateReview';
 export * from './getRecapParams';
 export * from './healthStatus';
 export * from './joinInput';
 export * from './memory';
 export * from './memoryInput';
 export * from './memoryInputCategory';
+export * from './partnerPreferences';
+export * from './preferencesInput';
+export * from './preferencesInputCurrency';
+export * from './preferencesInputRelationshipMode';
 export * from './recap';
+export * from './reviewInput';
 export * from './summary';
 export * from './summaryWeekDaysItem';
 export * from './uploadInput';

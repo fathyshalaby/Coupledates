@@ -20,18 +20,25 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AssistantInput,
+  AssistantTurn,
   CheckInInput,
   Couple,
   CoupleInput,
   CoupleState,
+  DateDetail,
   DateInput,
   DatePlan,
+  DateResponseInput,
   GetRecapParams,
   HealthStatus,
   JoinInput,
   Memory,
   MemoryInput,
+  PartnerPreferences,
+  PreferencesInput,
   Recap,
+  ReviewInput,
   Summary,
   UploadInput,
   UploadTarget
@@ -63,6 +70,549 @@ const withQueryKey = <T extends object, K>(query: T, queryKey: K): T & { queryKe
   }
   return result;
 };
+
+export const getGetPreferencesUrl = () => {
+
+
+
+
+  return `/api/preferences`
+}
+
+export const getPreferences = async ( options?: Parameters<typeof customFetch>[1]): Promise<PartnerPreferences[]> => {
+
+  return customFetch<PartnerPreferences[]>(getGetPreferencesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPreferencesQueryKey = () => {
+    return [
+    `/api/preferences`
+    ] as const;
+    }
+
+
+export const getGetPreferencesQueryOptions = <TData = Awaited<ReturnType<typeof getPreferences>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPreferences>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPreferencesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPreferences>>> = ({ signal }) => getPreferences({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPreferences>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPreferencesQueryResult = NonNullable<Awaited<ReturnType<typeof getPreferences>>>
+export type GetPreferencesQueryError = ErrorType<unknown>
+
+
+
+export function useGetPreferences<TData = Awaited<ReturnType<typeof getPreferences>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPreferences>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPreferencesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSavePreferencesUrl = () => {
+
+
+
+
+  return `/api/preferences`
+}
+
+export const savePreferences = async (preferencesInput: PreferencesInput, options?: Parameters<typeof customFetch>[1]): Promise<PartnerPreferences> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<PartnerPreferences>(getSavePreferencesUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(preferencesInput)
+  }
+);}
+
+
+
+
+
+export const getSavePreferencesMutationKey = () => ['savePreferences'] as const;
+
+export const getSavePreferencesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof savePreferences>>, TError,SavePreferencesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof savePreferences>>, TError,SavePreferencesMutationVariables, TContext> => {
+
+const mutationKey = getSavePreferencesMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof savePreferences>>, SavePreferencesMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  savePreferences(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SavePreferencesMutationResult = NonNullable<Awaited<ReturnType<typeof savePreferences>>>
+    export type SavePreferencesMutationBody = BodyType<PreferencesInput>
+    export type SavePreferencesMutationError = ErrorType<unknown>
+    export type SavePreferencesMutationVariables = {data: BodyType<PreferencesInput>}
+
+    export const useSavePreferences = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof savePreferences>>, TError,SavePreferencesMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof savePreferences>>,
+        TError,
+        SavePreferencesMutationVariables,
+        TContext
+      > => {
+      return useMutation(getSavePreferencesMutationOptions(options));
+    }
+
+export const getGetAssistantHistoryUrl = () => {
+
+
+
+
+  return `/api/openai/date-assistant`
+}
+
+export const getAssistantHistory = async ( options?: Parameters<typeof customFetch>[1]): Promise<AssistantTurn[]> => {
+
+  return customFetch<AssistantTurn[]>(getGetAssistantHistoryUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAssistantHistoryQueryKey = () => {
+    return [
+    `/api/openai/date-assistant`
+    ] as const;
+    }
+
+
+export const getGetAssistantHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getAssistantHistory>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAssistantHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAssistantHistoryQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAssistantHistory>>> = ({ signal }) => getAssistantHistory({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAssistantHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAssistantHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getAssistantHistory>>>
+export type GetAssistantHistoryQueryError = ErrorType<unknown>
+
+
+
+export function useGetAssistantHistory<TData = Awaited<ReturnType<typeof getAssistantHistory>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAssistantHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAssistantHistoryQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAskDateAssistantUrl = () => {
+
+
+
+
+  return `/api/openai/date-assistant`
+}
+
+export const askDateAssistant = async (assistantInput: AssistantInput, options?: Parameters<typeof customFetch>[1]): Promise<AssistantTurn> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<AssistantTurn>(getAskDateAssistantUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(assistantInput)
+  }
+);}
+
+
+
+
+
+export const getAskDateAssistantMutationKey = () => ['askDateAssistant'] as const;
+
+export const getAskDateAssistantMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askDateAssistant>>, TError,AskDateAssistantMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof askDateAssistant>>, TError,AskDateAssistantMutationVariables, TContext> => {
+
+const mutationKey = getAskDateAssistantMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof askDateAssistant>>, AskDateAssistantMutationVariables> = (props) => {
+          const {data} = props ?? {};
+
+          return  askDateAssistant(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AskDateAssistantMutationResult = NonNullable<Awaited<ReturnType<typeof askDateAssistant>>>
+    export type AskDateAssistantMutationBody = BodyType<AssistantInput>
+    export type AskDateAssistantMutationError = ErrorType<unknown>
+    export type AskDateAssistantMutationVariables = {data: BodyType<AssistantInput>}
+
+    export const useAskDateAssistant = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof askDateAssistant>>, TError,AskDateAssistantMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof askDateAssistant>>,
+        TError,
+        AskDateAssistantMutationVariables,
+        TContext
+      > => {
+      return useMutation(getAskDateAssistantMutationOptions(options));
+    }
+
+export const getGetDateDetailUrl = (id: number,) => {
+
+
+
+
+  return `/api/dates/${id}/detail`
+}
+
+export const getDateDetail = async (id: number, options?: Parameters<typeof customFetch>[1]): Promise<DateDetail> => {
+
+  return customFetch<DateDetail>(getGetDateDetailUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDateDetailQueryKey = (id: number,) => {
+    return [
+    `/api/dates/${id}/detail`
+    ] as const;
+    }
+
+
+export const getGetDateDetailQueryOptions = <TData = Awaited<ReturnType<typeof getDateDetail>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDateDetail>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDateDetailQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDateDetail>>> = ({ signal }) => getDateDetail(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDateDetail>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDateDetailQueryResult = NonNullable<Awaited<ReturnType<typeof getDateDetail>>>
+export type GetDateDetailQueryError = ErrorType<unknown>
+
+
+
+export function useGetDateDetail<TData = Awaited<ReturnType<typeof getDateDetail>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDateDetail>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDateDetailQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRespondToDateUrl = (id: number,) => {
+
+
+
+
+  return `/api/dates/${id}/respond`
+}
+
+export const respondToDate = async (id: number,
+    dateResponseInput: DateResponseInput, options?: Parameters<typeof customFetch>[1]): Promise<DatePlan> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<DatePlan>(getRespondToDateUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(dateResponseInput)
+  }
+);}
+
+
+
+
+
+export const getRespondToDateMutationKey = () => ['respondToDate'] as const;
+
+export const getRespondToDateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToDate>>, TError,RespondToDateMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof respondToDate>>, TError,RespondToDateMutationVariables, TContext> => {
+
+const mutationKey = getRespondToDateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof respondToDate>>, RespondToDateMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  respondToDate(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RespondToDateMutationResult = NonNullable<Awaited<ReturnType<typeof respondToDate>>>
+    export type RespondToDateMutationBody = BodyType<DateResponseInput>
+    export type RespondToDateMutationError = ErrorType<unknown>
+    export type RespondToDateMutationVariables = {id: number;data: BodyType<DateResponseInput>}
+
+    export const useRespondToDate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof respondToDate>>, TError,RespondToDateMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof respondToDate>>,
+        TError,
+        RespondToDateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getRespondToDateMutationOptions(options));
+    }
+
+export const getReviewDateUrl = (id: number,) => {
+
+
+
+
+  return `/api/dates/${id}/review`
+}
+
+export const reviewDate = async (id: number,
+    reviewInput: ReviewInput, options?: Parameters<typeof customFetch>[1]): Promise<DateDetail> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<DateDetail>(getReviewDateUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders(options?.headers) },
+    body: JSON.stringify(reviewInput)
+  }
+);}
+
+
+
+
+
+export const getReviewDateMutationKey = () => ['reviewDate'] as const;
+
+export const getReviewDateMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reviewDate>>, TError,ReviewDateMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reviewDate>>, TError,ReviewDateMutationVariables, TContext> => {
+
+const mutationKey = getReviewDateMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reviewDate>>, ReviewDateMutationVariables> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  reviewDate(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReviewDateMutationResult = NonNullable<Awaited<ReturnType<typeof reviewDate>>>
+    export type ReviewDateMutationBody = BodyType<ReviewInput>
+    export type ReviewDateMutationError = ErrorType<unknown>
+    export type ReviewDateMutationVariables = {id: number;data: BodyType<ReviewInput>}
+
+    export const useReviewDate = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reviewDate>>, TError,ReviewDateMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof reviewDate>>,
+        TError,
+        ReviewDateMutationVariables,
+        TContext
+      > => {
+      return useMutation(getReviewDateMutationOptions(options));
+    }
 
 export const getGetCoupleUrl = () => {
 

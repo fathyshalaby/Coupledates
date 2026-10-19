@@ -21,4 +21,6 @@ export interface MemoryInput {
   /** @nullable */
   photoPath?: string | null;
   favorite?: boolean;
+  /** @nullable */
+  dateId?: number | null;
 }

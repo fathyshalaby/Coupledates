@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useClerk, useUser } from '@clerk/react';
-import { Check, Copy, LogOut, Share2 } from 'lucide-react';
+import { Check, ChevronRight, ClipboardList, Copy, Flame, LogOut, Share2 } from 'lucide-react';
+import { Link } from 'wouter';
 import { useSaveCouple } from '@workspace/api-client-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -68,6 +69,12 @@ export default function SettingsPage() {
           </div>
         )}
       </section>
+
+      <nav className="mt-6 overflow-hidden rounded-[28px] bg-card shadow-[0_1px_0_hsl(var(--border))]">
+        <Link href="/preferences" data-testid="link-settings-preferences" className="flex items-center gap-3 px-5 py-4 hover:bg-foreground/[0.03]"><ClipboardList className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Date preferences</span><span className="text-sm text-muted-foreground">Interests, budget, availability — shared with your partner and the concierge</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>
+        <div className="perf mx-5" />
+        <Link href="/streaks" data-testid="link-settings-streaks" className="flex items-center gap-3 px-5 py-4 hover:bg-foreground/[0.03]"><Flame className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Daily streak</span><span className="text-sm text-muted-foreground">Check in and see your week</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>
+      </nav>
 
       <form onSubmit={submit} className="mt-6 space-y-4 rounded-[28px] bg-card p-5 shadow-[0_1px_0_hsl(var(--border))]">
         <h2 className="font-display text-2xl">Couple profile</h2>

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { ImageOff, RotateCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CATEGORY_TONE, errMsg, photoUrl } from '@/lib/data';
+import { CATEGORY_TONE, STATUS_META, errMsg, photoUrl } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
 export function PageHeader({ kicker, title, children }: { kicker: string; title: ReactNode; children?: ReactNode }) {
@@ -103,5 +103,15 @@ export function Stars({ value, onChange, size = 'md', testid }: { value: number 
         </button>
       ))}
     </div>
+  );
+}
+
+export function StatusBadge({ status, className }: { status: string; className?: string }) {
+  const m = STATUS_META[status] ?? { label: status, tone: 'bg-muted' };
+  return (
+    <span data-testid={`status-${status}`} className={cn('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider', m.tone, className)}>
+      {status === 'active' && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />}
+      {m.label}
+    </span>
   );
 }

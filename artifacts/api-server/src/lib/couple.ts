@@ -3,9 +3,7 @@ import { getAuth } from "@clerk/express";
 import { db, couplesTable, membersTable, memoriesTable, datesTable, checkInsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
-export function fail(status: number, message: string): never {
-  throw Object.assign(new Error(message), { status });
-}
+export { fail, validateDay } from "./validation";
 
 export function requireUser(req: Request, res: Response, next: NextFunction) {
   const id = getAuth(req).userId;
@@ -42,9 +40,6 @@ export function dayInZone(timezone: string) {
 }
 export function ordinal(day: string) { return Math.floor(Date.parse(`${day}T12:00:00Z`) / 86400000); }
 export function offsetDay(day: string, offset: number) { return new Date((ordinal(day) + offset) * 86400000).toISOString().slice(0, 10); }
-export function validateDay(day: string) {
-  if (!Number.isFinite(Date.parse(day)) || new Date(`${day}T00:00:00Z`).toISOString().slice(0, 10) !== day) fail(400, "Choose a valid calendar date.");
-}
 export function longestRun(days: string[]) {
   const unique = [...new Set(days)].sort();
   let longest = 0, current = 0, previous = -Infinity;

@@ -8,6 +8,445 @@
 import * as zod from 'zod';
 
 
+export const getPreferencesResponseOneDisplayNameMax = 60;
+
+export const getPreferencesResponseOneInterestsItemMax = 60;
+
+export const getPreferencesResponseOneInterestsMax = 20;
+
+export const getPreferencesResponseOneAvoidMax = 1000;
+
+export const getPreferencesResponseOneBudgetMin = 0;
+export const getPreferencesResponseOneBudgetMax = 10000;
+
+export const getPreferencesResponseOneCityMax = 120;
+
+export const getPreferencesResponseOneTimezoneMax = 100;
+
+export const getPreferencesResponseOneAvailabilityItemMax = 60;
+
+export const getPreferencesResponseOneAvailabilityMax = 14;
+
+export const getPreferencesResponseOneNotesMax = 1500;
+
+
+
+export const GetPreferencesResponseItem = zod.object({
+  "displayName": zod.string().min(1).max(getPreferencesResponseOneDisplayNameMax),
+  "interests": zod.array(zod.string().min(1).max(getPreferencesResponseOneInterestsItemMax)).min(1).max(getPreferencesResponseOneInterestsMax),
+  "avoid": zod.string().max(getPreferencesResponseOneAvoidMax),
+  "budget": zod.number().int().min(getPreferencesResponseOneBudgetMin).max(getPreferencesResponseOneBudgetMax),
+  "currency": zod.enum(['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR', 'Other']),
+  "city": zod.string().max(getPreferencesResponseOneCityMax),
+  "timezone": zod.string().max(getPreferencesResponseOneTimezoneMax),
+  "relationshipMode": zod.enum(['together', 'long_distance']),
+  "availability": zod.array(zod.string().min(1).max(getPreferencesResponseOneAvailabilityItemMax)).max(getPreferencesResponseOneAvailabilityMax),
+  "notes": zod.string().max(getPreferencesResponseOneNotesMax)
+}).and(zod.object({
+  "isYou": zod.boolean()
+}))
+export const GetPreferencesResponse = zod.array(GetPreferencesResponseItem)
+
+
+export const savePreferencesBodyDisplayNameMax = 60;
+
+export const savePreferencesBodyInterestsItemMax = 60;
+
+export const savePreferencesBodyInterestsMax = 20;
+
+export const savePreferencesBodyAvoidMax = 1000;
+
+export const savePreferencesBodyBudgetMin = 0;
+export const savePreferencesBodyBudgetMax = 10000;
+
+export const savePreferencesBodyCityMax = 120;
+
+export const savePreferencesBodyTimezoneMax = 100;
+
+export const savePreferencesBodyAvailabilityItemMax = 60;
+
+export const savePreferencesBodyAvailabilityMax = 14;
+
+export const savePreferencesBodyNotesMax = 1500;
+
+
+
+export const SavePreferencesBody = zod.object({
+  "displayName": zod.string().min(1).max(savePreferencesBodyDisplayNameMax),
+  "interests": zod.array(zod.string().min(1).max(savePreferencesBodyInterestsItemMax)).min(1).max(savePreferencesBodyInterestsMax),
+  "avoid": zod.string().max(savePreferencesBodyAvoidMax),
+  "budget": zod.number().int().min(savePreferencesBodyBudgetMin).max(savePreferencesBodyBudgetMax),
+  "currency": zod.enum(['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR', 'Other']),
+  "city": zod.string().max(savePreferencesBodyCityMax),
+  "timezone": zod.string().max(savePreferencesBodyTimezoneMax),
+  "relationshipMode": zod.enum(['together', 'long_distance']),
+  "availability": zod.array(zod.string().min(1).max(savePreferencesBodyAvailabilityItemMax)).max(savePreferencesBodyAvailabilityMax),
+  "notes": zod.string().max(savePreferencesBodyNotesMax)
+})
+
+export const savePreferencesResponseOneDisplayNameMax = 60;
+
+export const savePreferencesResponseOneInterestsItemMax = 60;
+
+export const savePreferencesResponseOneInterestsMax = 20;
+
+export const savePreferencesResponseOneAvoidMax = 1000;
+
+export const savePreferencesResponseOneBudgetMin = 0;
+export const savePreferencesResponseOneBudgetMax = 10000;
+
+export const savePreferencesResponseOneCityMax = 120;
+
+export const savePreferencesResponseOneTimezoneMax = 100;
+
+export const savePreferencesResponseOneAvailabilityItemMax = 60;
+
+export const savePreferencesResponseOneAvailabilityMax = 14;
+
+export const savePreferencesResponseOneNotesMax = 1500;
+
+
+
+export const SavePreferencesResponse = zod.object({
+  "displayName": zod.string().min(1).max(savePreferencesResponseOneDisplayNameMax),
+  "interests": zod.array(zod.string().min(1).max(savePreferencesResponseOneInterestsItemMax)).min(1).max(savePreferencesResponseOneInterestsMax),
+  "avoid": zod.string().max(savePreferencesResponseOneAvoidMax),
+  "budget": zod.number().int().min(savePreferencesResponseOneBudgetMin).max(savePreferencesResponseOneBudgetMax),
+  "currency": zod.enum(['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR', 'Other']),
+  "city": zod.string().max(savePreferencesResponseOneCityMax),
+  "timezone": zod.string().max(savePreferencesResponseOneTimezoneMax),
+  "relationshipMode": zod.enum(['together', 'long_distance']),
+  "availability": zod.array(zod.string().min(1).max(savePreferencesResponseOneAvailabilityItemMax)).max(savePreferencesResponseOneAvailabilityMax),
+  "notes": zod.string().max(savePreferencesResponseOneNotesMax)
+}).and(zod.object({
+  "isYou": zod.boolean()
+}))
+
+
+export const getAssistantHistoryResponseIdeasItemTitleMax = 150;
+
+export const getAssistantHistoryResponseIdeasItemDescriptionMax = 1500;
+
+export const getAssistantHistoryResponseIdeasItemWhyBothMax = 1000;
+
+export const getAssistantHistoryResponseIdeasItemLocationMax = 200;
+
+export const getAssistantHistoryResponseIdeasItemEstimatedCostMax = 120;
+
+export const getAssistantHistoryResponseIdeasItemDurationMinutesMin = 10;
+export const getAssistantHistoryResponseIdeasItemDurationMinutesMax = 1440;
+
+export const getAssistantHistoryResponseIdeasItemStepsItemMax = 500;
+
+export const getAssistantHistoryResponseIdeasItemStepsMax = 8;
+
+export const getAssistantHistoryResponseIdeasMax = 4;
+
+
+
+export const GetAssistantHistoryResponseItem = zod.object({
+  "id": zod.number().int(),
+  "prompt": zod.string(),
+  "message": zod.string(),
+  "ideas": zod.array(zod.object({
+  "title": zod.string().min(1).max(getAssistantHistoryResponseIdeasItemTitleMax),
+  "description": zod.string().max(getAssistantHistoryResponseIdeasItemDescriptionMax),
+  "whyBoth": zod.string().max(getAssistantHistoryResponseIdeasItemWhyBothMax),
+  "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
+  "mode": zod.enum(['in_person', 'remote']),
+  "location": zod.string().max(getAssistantHistoryResponseIdeasItemLocationMax),
+  "estimatedCost": zod.string().max(getAssistantHistoryResponseIdeasItemEstimatedCostMax),
+  "durationMinutes": zod.number().int().min(getAssistantHistoryResponseIdeasItemDurationMinutesMin).max(getAssistantHistoryResponseIdeasItemDurationMinutesMax),
+  "steps": zod.array(zod.string().max(getAssistantHistoryResponseIdeasItemStepsItemMax)).min(1).max(getAssistantHistoryResponseIdeasItemStepsMax)
+})).max(getAssistantHistoryResponseIdeasMax),
+  "createdAt": zod.string()
+})
+export const GetAssistantHistoryResponse = zod.array(GetAssistantHistoryResponseItem)
+
+
+export const askDateAssistantBodyMessageMax = 1500;
+
+
+
+export const AskDateAssistantBody = zod.object({
+  "message": zod.string().min(1).max(askDateAssistantBodyMessageMax)
+})
+
+export const askDateAssistantResponseIdeasItemTitleMax = 150;
+
+export const askDateAssistantResponseIdeasItemDescriptionMax = 1500;
+
+export const askDateAssistantResponseIdeasItemWhyBothMax = 1000;
+
+export const askDateAssistantResponseIdeasItemLocationMax = 200;
+
+export const askDateAssistantResponseIdeasItemEstimatedCostMax = 120;
+
+export const askDateAssistantResponseIdeasItemDurationMinutesMin = 10;
+export const askDateAssistantResponseIdeasItemDurationMinutesMax = 1440;
+
+export const askDateAssistantResponseIdeasItemStepsItemMax = 500;
+
+export const askDateAssistantResponseIdeasItemStepsMax = 8;
+
+export const askDateAssistantResponseIdeasMax = 4;
+
+
+
+export const AskDateAssistantResponse = zod.object({
+  "id": zod.number().int(),
+  "prompt": zod.string(),
+  "message": zod.string(),
+  "ideas": zod.array(zod.object({
+  "title": zod.string().min(1).max(askDateAssistantResponseIdeasItemTitleMax),
+  "description": zod.string().max(askDateAssistantResponseIdeasItemDescriptionMax),
+  "whyBoth": zod.string().max(askDateAssistantResponseIdeasItemWhyBothMax),
+  "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
+  "mode": zod.enum(['in_person', 'remote']),
+  "location": zod.string().max(askDateAssistantResponseIdeasItemLocationMax),
+  "estimatedCost": zod.string().max(askDateAssistantResponseIdeasItemEstimatedCostMax),
+  "durationMinutes": zod.number().int().min(askDateAssistantResponseIdeasItemDurationMinutesMin).max(askDateAssistantResponseIdeasItemDurationMinutesMax),
+  "steps": zod.array(zod.string().max(askDateAssistantResponseIdeasItemStepsItemMax)).min(1).max(askDateAssistantResponseIdeasItemStepsMax)
+})).max(askDateAssistantResponseIdeasMax),
+  "createdAt": zod.string()
+})
+
+
+export const GetDateDetailParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const getDateDetailResponseDateOneExpectedVersionMin = 0;
+
+export const getDateDetailResponseDateOneTitleMax = 150;
+
+export const getDateDetailResponseDateOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const getDateDetailResponseDateOneTimeMax = 10;
+
+export const getDateDetailResponseDateOneLocationMax = 200;
+
+export const getDateDetailResponseDateOneNotesMax = 5000;
+
+export const getDateDetailResponseDateOneRatingMax = 5;
+
+export const getDateDetailResponseDateOneMeetingUrlMax = 1000;
+
+export const getDateDetailResponseDateOneLatitudeMin = -90;
+export const getDateDetailResponseDateOneLatitudeMax = 90;
+
+export const getDateDetailResponseDateOneLongitudeMin = -180;
+export const getDateDetailResponseDateOneLongitudeMax = 180;
+
+export const getDateDetailResponseMemoriesItemOneTitleMax = 150;
+
+export const getDateDetailResponseMemoriesItemOneNoteMax = 5000;
+
+export const getDateDetailResponseMemoriesItemOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const GetDateDetailResponse = zod.object({
+  "date": zod.object({
+  "expectedVersion": zod.number().int().min(getDateDetailResponseDateOneExpectedVersionMin).optional(),
+  "title": zod.string().min(1).max(getDateDetailResponseDateOneTitleMax),
+  "date": zod.string().regex(getDateDetailResponseDateOneDateRegExp),
+  "time": zod.string().max(getDateDetailResponseDateOneTimeMax).optional(),
+  "location": zod.string().max(getDateDetailResponseDateOneLocationMax),
+  "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
+  "notes": zod.string().max(getDateDetailResponseDateOneNotesMax),
+  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "rating": zod.number().min(1).max(getDateDetailResponseDateOneRatingMax).nullish(),
+  "mode": zod.enum(['in_person', 'remote']),
+  "meetingUrl": zod.string().max(getDateDetailResponseDateOneMeetingUrlMax).optional(),
+  "latitude": zod.number().min(getDateDetailResponseDateOneLatitudeMin).max(getDateDetailResponseDateOneLatitudeMax).nullish(),
+  "longitude": zod.number().min(getDateDetailResponseDateOneLongitudeMin).max(getDateDetailResponseDateOneLongitudeMax).nullish()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "version": zod.number().int(),
+  "isProposer": zod.boolean(),
+  "canRespond": zod.boolean(),
+  "responseNote": zod.string(),
+  "startedAt": zod.string().nullish()
+})),
+  "memories": zod.array(zod.object({
+  "title": zod.string().min(1).max(getDateDetailResponseMemoriesItemOneTitleMax),
+  "note": zod.string().max(getDateDetailResponseMemoriesItemOneNoteMax),
+  "date": zod.string().regex(getDateDetailResponseMemoriesItemOneDateRegExp),
+  "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
+  "photoPath": zod.string().nullish(),
+  "favorite": zod.boolean(),
+  "dateId": zod.number().int().nullish()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "createdAt": zod.string(),
+  "favorite": zod.boolean()
+}))),
+  "reviews": zod.array(zod.object({
+  "id": zod.number().int(),
+  "displayName": zod.string(),
+  "isYou": zod.boolean(),
+  "rating": zod.number().int(),
+  "note": zod.string()
+}))
+})
+
+
+export const RespondToDateParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const respondToDateBodyVersionMin = 0;
+
+export const respondToDateBodyNoteMax = 1500;
+
+export const respondToDateBodyDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const respondToDateBodyTimeMax = 10;
+
+
+
+export const RespondToDateBody = zod.object({
+  "action": zod.enum(['accept', 'decline', 'counter', 'start', 'complete']),
+  "version": zod.number().int().min(respondToDateBodyVersionMin),
+  "note": zod.string().max(respondToDateBodyNoteMax).optional(),
+  "date": zod.string().regex(respondToDateBodyDateRegExp).optional(),
+  "time": zod.string().max(respondToDateBodyTimeMax).optional()
+})
+
+export const respondToDateResponseOneExpectedVersionMin = 0;
+
+export const respondToDateResponseOneTitleMax = 150;
+
+export const respondToDateResponseOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const respondToDateResponseOneTimeMax = 10;
+
+export const respondToDateResponseOneLocationMax = 200;
+
+export const respondToDateResponseOneNotesMax = 5000;
+
+export const respondToDateResponseOneRatingMax = 5;
+
+export const respondToDateResponseOneMeetingUrlMax = 1000;
+
+export const respondToDateResponseOneLatitudeMin = -90;
+export const respondToDateResponseOneLatitudeMax = 90;
+
+export const respondToDateResponseOneLongitudeMin = -180;
+export const respondToDateResponseOneLongitudeMax = 180;
+
+
+
+export const RespondToDateResponse = zod.object({
+  "expectedVersion": zod.number().int().min(respondToDateResponseOneExpectedVersionMin).optional(),
+  "title": zod.string().min(1).max(respondToDateResponseOneTitleMax),
+  "date": zod.string().regex(respondToDateResponseOneDateRegExp),
+  "time": zod.string().max(respondToDateResponseOneTimeMax).optional(),
+  "location": zod.string().max(respondToDateResponseOneLocationMax),
+  "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
+  "notes": zod.string().max(respondToDateResponseOneNotesMax),
+  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "rating": zod.number().min(1).max(respondToDateResponseOneRatingMax).nullish(),
+  "mode": zod.enum(['in_person', 'remote']),
+  "meetingUrl": zod.string().max(respondToDateResponseOneMeetingUrlMax).optional(),
+  "latitude": zod.number().min(respondToDateResponseOneLatitudeMin).max(respondToDateResponseOneLatitudeMax).nullish(),
+  "longitude": zod.number().min(respondToDateResponseOneLongitudeMin).max(respondToDateResponseOneLongitudeMax).nullish()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "version": zod.number().int(),
+  "isProposer": zod.boolean(),
+  "canRespond": zod.boolean(),
+  "responseNote": zod.string(),
+  "startedAt": zod.string().nullish()
+}))
+
+
+export const ReviewDateParams = zod.object({
+  "id": zod.coerce.number().int()
+})
+
+export const reviewDateBodyRatingMax = 5;
+
+export const reviewDateBodyNoteMax = 1500;
+
+
+
+export const ReviewDateBody = zod.object({
+  "rating": zod.number().int().min(1).max(reviewDateBodyRatingMax),
+  "note": zod.string().max(reviewDateBodyNoteMax)
+})
+
+export const reviewDateResponseDateOneExpectedVersionMin = 0;
+
+export const reviewDateResponseDateOneTitleMax = 150;
+
+export const reviewDateResponseDateOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const reviewDateResponseDateOneTimeMax = 10;
+
+export const reviewDateResponseDateOneLocationMax = 200;
+
+export const reviewDateResponseDateOneNotesMax = 5000;
+
+export const reviewDateResponseDateOneRatingMax = 5;
+
+export const reviewDateResponseDateOneMeetingUrlMax = 1000;
+
+export const reviewDateResponseDateOneLatitudeMin = -90;
+export const reviewDateResponseDateOneLatitudeMax = 90;
+
+export const reviewDateResponseDateOneLongitudeMin = -180;
+export const reviewDateResponseDateOneLongitudeMax = 180;
+
+export const reviewDateResponseMemoriesItemOneTitleMax = 150;
+
+export const reviewDateResponseMemoriesItemOneNoteMax = 5000;
+
+export const reviewDateResponseMemoriesItemOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+
+
+export const ReviewDateResponse = zod.object({
+  "date": zod.object({
+  "expectedVersion": zod.number().int().min(reviewDateResponseDateOneExpectedVersionMin).optional(),
+  "title": zod.string().min(1).max(reviewDateResponseDateOneTitleMax),
+  "date": zod.string().regex(reviewDateResponseDateOneDateRegExp),
+  "time": zod.string().max(reviewDateResponseDateOneTimeMax).optional(),
+  "location": zod.string().max(reviewDateResponseDateOneLocationMax),
+  "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
+  "notes": zod.string().max(reviewDateResponseDateOneNotesMax),
+  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "rating": zod.number().min(1).max(reviewDateResponseDateOneRatingMax).nullish(),
+  "mode": zod.enum(['in_person', 'remote']),
+  "meetingUrl": zod.string().max(reviewDateResponseDateOneMeetingUrlMax).optional(),
+  "latitude": zod.number().min(reviewDateResponseDateOneLatitudeMin).max(reviewDateResponseDateOneLatitudeMax).nullish(),
+  "longitude": zod.number().min(reviewDateResponseDateOneLongitudeMin).max(reviewDateResponseDateOneLongitudeMax).nullish()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "version": zod.number().int(),
+  "isProposer": zod.boolean(),
+  "canRespond": zod.boolean(),
+  "responseNote": zod.string(),
+  "startedAt": zod.string().nullish()
+})),
+  "memories": zod.array(zod.object({
+  "title": zod.string().min(1).max(reviewDateResponseMemoriesItemOneTitleMax),
+  "note": zod.string().max(reviewDateResponseMemoriesItemOneNoteMax),
+  "date": zod.string().regex(reviewDateResponseMemoriesItemOneDateRegExp),
+  "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
+  "photoPath": zod.string().nullish(),
+  "favorite": zod.boolean(),
+  "dateId": zod.number().int().nullish()
+}).and(zod.object({
+  "id": zod.number().int(),
+  "createdAt": zod.string(),
+  "favorite": zod.boolean()
+}))),
+  "reviews": zod.array(zod.object({
+  "id": zod.number().int(),
+  "displayName": zod.string(),
+  "isYou": zod.boolean(),
+  "rating": zod.number().int(),
+  "note": zod.string()
+}))
+})
+
+
 export const GetCoupleResponse = zod.object({
   "couple": zod.union([zod.object({
   "id": zod.number().int(),
@@ -81,7 +520,8 @@ export const ListMemoriesResponseItem = zod.object({
   "date": zod.string().regex(listMemoriesResponseOneDateRegExp),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "photoPath": zod.string().nullish(),
-  "favorite": zod.boolean()
+  "favorite": zod.boolean(),
+  "dateId": zod.number().int().nullish()
 }).and(zod.object({
   "id": zod.number().int(),
   "createdAt": zod.string(),
@@ -103,7 +543,8 @@ export const CreateMemoryBody = zod.object({
   "date": zod.string().regex(createMemoryBodyDateRegExp),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "photoPath": zod.string().nullish(),
-  "favorite": zod.boolean().optional()
+  "favorite": zod.boolean().optional(),
+  "dateId": zod.number().int().nullish()
 })
 
 export const createMemoryResponseOneTitleMax = 150;
@@ -119,7 +560,8 @@ export const CreateMemoryResponse = zod.object({
   "date": zod.string().regex(createMemoryResponseOneDateRegExp),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "photoPath": zod.string().nullish(),
-  "favorite": zod.boolean()
+  "favorite": zod.boolean(),
+  "dateId": zod.number().int().nullish()
 }).and(zod.object({
   "id": zod.number().int(),
   "createdAt": zod.string(),
@@ -144,7 +586,8 @@ export const UpdateMemoryBody = zod.object({
   "date": zod.string().regex(updateMemoryBodyDateRegExp),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "photoPath": zod.string().nullish(),
-  "favorite": zod.boolean().optional()
+  "favorite": zod.boolean().optional(),
+  "dateId": zod.number().int().nullish()
 })
 
 export const updateMemoryResponseOneTitleMax = 150;
@@ -160,7 +603,8 @@ export const UpdateMemoryResponse = zod.object({
   "date": zod.string().regex(updateMemoryResponseOneDateRegExp),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "photoPath": zod.string().nullish(),
-  "favorite": zod.boolean()
+  "favorite": zod.boolean(),
+  "dateId": zod.number().int().nullish()
 }).and(zod.object({
   "id": zod.number().int(),
   "createdAt": zod.string(),
@@ -175,6 +619,8 @@ export const DeleteMemoryParams = zod.object({
 export const DeleteMemoryResponse = zod.void()
 
 
+export const listDatesResponseOneExpectedVersionMin = 0;
+
 export const listDatesResponseOneTitleMax = 150;
 
 export const listDatesResponseOneDateRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
@@ -186,22 +632,42 @@ export const listDatesResponseOneNotesMax = 5000;
 
 export const listDatesResponseOneRatingMax = 5;
 
+export const listDatesResponseOneMeetingUrlMax = 1000;
+
+export const listDatesResponseOneLatitudeMin = -90;
+export const listDatesResponseOneLatitudeMax = 90;
+
+export const listDatesResponseOneLongitudeMin = -180;
+export const listDatesResponseOneLongitudeMax = 180;
+
 
 
 export const ListDatesResponseItem = zod.object({
+  "expectedVersion": zod.number().int().min(listDatesResponseOneExpectedVersionMin).optional(),
   "title": zod.string().min(1).max(listDatesResponseOneTitleMax),
   "date": zod.string().regex(listDatesResponseOneDateRegExp),
   "time": zod.string().max(listDatesResponseOneTimeMax).optional(),
   "location": zod.string().max(listDatesResponseOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(listDatesResponseOneNotesMax),
-  "status": zod.enum(['planned', 'completed']),
-  "rating": zod.number().int().min(1).max(listDatesResponseOneRatingMax).nullish()
+  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "rating": zod.number().min(1).max(listDatesResponseOneRatingMax).nullish(),
+  "mode": zod.enum(['in_person', 'remote']),
+  "meetingUrl": zod.string().max(listDatesResponseOneMeetingUrlMax).optional(),
+  "latitude": zod.number().min(listDatesResponseOneLatitudeMin).max(listDatesResponseOneLatitudeMax).nullish(),
+  "longitude": zod.number().min(listDatesResponseOneLongitudeMin).max(listDatesResponseOneLongitudeMax).nullish()
 }).and(zod.object({
-  "id": zod.number().int()
+  "id": zod.number().int(),
+  "version": zod.number().int(),
+  "isProposer": zod.boolean(),
+  "canRespond": zod.boolean(),
+  "responseNote": zod.string(),
+  "startedAt": zod.string().nullish()
 }))
 export const ListDatesResponse = zod.array(ListDatesResponseItem)
 
+
+export const createDateBodyExpectedVersionMin = 0;
 
 export const createDateBodyTitleMax = 150;
 
@@ -214,18 +680,33 @@ export const createDateBodyNotesMax = 5000;
 
 export const createDateBodyRatingMax = 5;
 
+export const createDateBodyMeetingUrlMax = 1000;
+
+export const createDateBodyLatitudeMin = -90;
+export const createDateBodyLatitudeMax = 90;
+
+export const createDateBodyLongitudeMin = -180;
+export const createDateBodyLongitudeMax = 180;
+
 
 
 export const CreateDateBody = zod.object({
+  "expectedVersion": zod.number().int().min(createDateBodyExpectedVersionMin).optional(),
   "title": zod.string().min(1).max(createDateBodyTitleMax),
   "date": zod.string().regex(createDateBodyDateRegExp),
   "time": zod.string().max(createDateBodyTimeMax).optional(),
   "location": zod.string().max(createDateBodyLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(createDateBodyNotesMax),
-  "status": zod.enum(['planned', 'completed']),
-  "rating": zod.number().int().min(1).max(createDateBodyRatingMax).nullish()
+  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "rating": zod.number().min(1).max(createDateBodyRatingMax).nullish(),
+  "mode": zod.enum(['in_person', 'remote']).optional(),
+  "meetingUrl": zod.string().max(createDateBodyMeetingUrlMax).optional(),
+  "latitude": zod.number().min(createDateBodyLatitudeMin).max(createDateBodyLatitudeMax).nullish(),
+  "longitude": zod.number().min(createDateBodyLongitudeMin).max(createDateBodyLongitudeMax).nullish()
 })
+
+export const createDateResponseOneExpectedVersionMin = 0;
 
 export const createDateResponseOneTitleMax = 150;
 
@@ -238,25 +719,45 @@ export const createDateResponseOneNotesMax = 5000;
 
 export const createDateResponseOneRatingMax = 5;
 
+export const createDateResponseOneMeetingUrlMax = 1000;
+
+export const createDateResponseOneLatitudeMin = -90;
+export const createDateResponseOneLatitudeMax = 90;
+
+export const createDateResponseOneLongitudeMin = -180;
+export const createDateResponseOneLongitudeMax = 180;
+
 
 
 export const CreateDateResponse = zod.object({
+  "expectedVersion": zod.number().int().min(createDateResponseOneExpectedVersionMin).optional(),
   "title": zod.string().min(1).max(createDateResponseOneTitleMax),
   "date": zod.string().regex(createDateResponseOneDateRegExp),
   "time": zod.string().max(createDateResponseOneTimeMax).optional(),
   "location": zod.string().max(createDateResponseOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(createDateResponseOneNotesMax),
-  "status": zod.enum(['planned', 'completed']),
-  "rating": zod.number().int().min(1).max(createDateResponseOneRatingMax).nullish()
+  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "rating": zod.number().min(1).max(createDateResponseOneRatingMax).nullish(),
+  "mode": zod.enum(['in_person', 'remote']),
+  "meetingUrl": zod.string().max(createDateResponseOneMeetingUrlMax).optional(),
+  "latitude": zod.number().min(createDateResponseOneLatitudeMin).max(createDateResponseOneLatitudeMax).nullish(),
+  "longitude": zod.number().min(createDateResponseOneLongitudeMin).max(createDateResponseOneLongitudeMax).nullish()
 }).and(zod.object({
-  "id": zod.number().int()
+  "id": zod.number().int(),
+  "version": zod.number().int(),
+  "isProposer": zod.boolean(),
+  "canRespond": zod.boolean(),
+  "responseNote": zod.string(),
+  "startedAt": zod.string().nullish()
 }))
 
 
 export const UpdateDateParams = zod.object({
   "id": zod.coerce.number().int()
 })
+
+export const updateDateBodyExpectedVersionMin = 0;
 
 export const updateDateBodyTitleMax = 150;
 
@@ -269,18 +770,33 @@ export const updateDateBodyNotesMax = 5000;
 
 export const updateDateBodyRatingMax = 5;
 
+export const updateDateBodyMeetingUrlMax = 1000;
+
+export const updateDateBodyLatitudeMin = -90;
+export const updateDateBodyLatitudeMax = 90;
+
+export const updateDateBodyLongitudeMin = -180;
+export const updateDateBodyLongitudeMax = 180;
+
 
 
 export const UpdateDateBody = zod.object({
+  "expectedVersion": zod.number().int().min(updateDateBodyExpectedVersionMin).optional(),
   "title": zod.string().min(1).max(updateDateBodyTitleMax),
   "date": zod.string().regex(updateDateBodyDateRegExp),
   "time": zod.string().max(updateDateBodyTimeMax).optional(),
   "location": zod.string().max(updateDateBodyLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(updateDateBodyNotesMax),
-  "status": zod.enum(['planned', 'completed']),
-  "rating": zod.number().int().min(1).max(updateDateBodyRatingMax).nullish()
+  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "rating": zod.number().min(1).max(updateDateBodyRatingMax).nullish(),
+  "mode": zod.enum(['in_person', 'remote']).optional(),
+  "meetingUrl": zod.string().max(updateDateBodyMeetingUrlMax).optional(),
+  "latitude": zod.number().min(updateDateBodyLatitudeMin).max(updateDateBodyLatitudeMax).nullish(),
+  "longitude": zod.number().min(updateDateBodyLongitudeMin).max(updateDateBodyLongitudeMax).nullish()
 })
+
+export const updateDateResponseOneExpectedVersionMin = 0;
 
 export const updateDateResponseOneTitleMax = 150;
 
@@ -293,19 +809,37 @@ export const updateDateResponseOneNotesMax = 5000;
 
 export const updateDateResponseOneRatingMax = 5;
 
+export const updateDateResponseOneMeetingUrlMax = 1000;
+
+export const updateDateResponseOneLatitudeMin = -90;
+export const updateDateResponseOneLatitudeMax = 90;
+
+export const updateDateResponseOneLongitudeMin = -180;
+export const updateDateResponseOneLongitudeMax = 180;
+
 
 
 export const UpdateDateResponse = zod.object({
+  "expectedVersion": zod.number().int().min(updateDateResponseOneExpectedVersionMin).optional(),
   "title": zod.string().min(1).max(updateDateResponseOneTitleMax),
   "date": zod.string().regex(updateDateResponseOneDateRegExp),
   "time": zod.string().max(updateDateResponseOneTimeMax).optional(),
   "location": zod.string().max(updateDateResponseOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(updateDateResponseOneNotesMax),
-  "status": zod.enum(['planned', 'completed']),
-  "rating": zod.number().int().min(1).max(updateDateResponseOneRatingMax).nullish()
+  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "rating": zod.number().min(1).max(updateDateResponseOneRatingMax).nullish(),
+  "mode": zod.enum(['in_person', 'remote']),
+  "meetingUrl": zod.string().max(updateDateResponseOneMeetingUrlMax).optional(),
+  "latitude": zod.number().min(updateDateResponseOneLatitudeMin).max(updateDateResponseOneLatitudeMax).nullish(),
+  "longitude": zod.number().min(updateDateResponseOneLongitudeMin).max(updateDateResponseOneLongitudeMax).nullish()
 }).and(zod.object({
-  "id": zod.number().int()
+  "id": zod.number().int(),
+  "version": zod.number().int(),
+  "isProposer": zod.boolean(),
+  "canRespond": zod.boolean(),
+  "responseNote": zod.string(),
+  "startedAt": zod.string().nullish()
 }))
 
 
@@ -376,7 +910,8 @@ export const GetRecapResponse = zod.object({
   "date": zod.string().regex(getRecapResponseTopMemoriesItemOneDateRegExp),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "photoPath": zod.string().nullish(),
-  "favorite": zod.boolean()
+  "favorite": zod.boolean(),
+  "dateId": zod.number().int().nullish()
 }).and(zod.object({
   "id": zod.number().int(),
   "createdAt": zod.string(),

@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { Link } from 'wouter';
-import { ArrowUpRight, Clock, MapPin, Plus } from 'lucide-react';
+import { ArrowUpRight, Camera, ClipboardList, Clock, Inbox, Lightbulb, MapPin, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CategoryChip, ErrorState, Photo } from '@/components/bits';
+import { CategoryChip, ErrorState, Photo, StatusBadge } from '@/components/bits';
 import { useCouple } from '@/lib/couple-context';
-import { fmtDate, todayISO, useDatesQ, useMemoriesQ, useSummaryQ } from '@/lib/data';
+import { fmtDate, fmtTime, todayISO, useDatesQ, useMemoriesQ, usePreferencesQ, useSummaryQ } from '@/lib/data';
 
 function greeting() {
   const h = new Date().getHours();
@@ -19,10 +19,14 @@ export default function HomePage() {
   const summary = useSummaryQ();
   const memories = useMemoriesQ();
   const dates = useDatesQ();
+  const prefs = usePreferencesQ();
+  const needsProfile = prefs.isSuccess && !prefs.data.some((p) => p.isYou);
+  const inbox = useMemo(() => (dates.data ?? []).filter((d) => d.status === 'proposed' && d.canRespond), [dates.data]);
+  const active = useMemo(() => (dates.data ?? []).find((d) => d.status === 'active'), [dates.data]);
 
   const nextDate = useMemo(() => {
     const t = todayISO();
-    return (dates.data ?? []).filter((d) => d.status === 'planned' && d.date >= t).sort((a, b) => (a.date + (a.time ?? '')).localeCompare(b.date + (b.time ?? '')))[0];
+    return (dates.data ?? []).filter((d) => d.status === 'active' || (d.status === 'planned' && d.date.slice(0, 10) >= t)).sort((a, b) => (a.date + (a.time ?? '')).localeCompare(b.date + (b.time ?? '')))[0];
   }, [dates.data]);
   const recent = useMemo(() => [...(memories.data ?? [])].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3), [memories.data]);
   const s = summary.data;
@@ -30,11 +34,38 @@ export default function HomePage() {
   return (
     <div>
       <section className="rise">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">{greeting()}, {couple.yourName}</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">{greeting()}, {prefs.data?.find(p => p.isYou)?.displayName ?? 'you two'}</p>
         <h1 className="font-display mt-2 text-[2.8rem] leading-[0.95]" data-testid="text-couple-names">
           {couple.yourName} <em className="text-primary">&amp;</em> {couple.partnerName}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">Together since {fmtDate(couple.anniversary, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+      </section>
+
+      <section className="mt-6 space-y-3" aria-label="Next actions">
+        {active && (
+          <Link href={`/dates/${active.id}`} data-testid="card-action-active" className="rise flex items-center gap-4 rounded-[28px] bg-primary p-5 text-primary-foreground shadow-[0_18px_36px_-20px_hsl(12_76%_40%/.9)]">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-background/20"><Camera className="h-5 w-5" /></span>
+            <span className="min-w-0 flex-1"><span className="font-mono block text-[10px] uppercase tracking-widest opacity-80">Happening now</span><span className="font-display block truncate text-xl">{active.title}</span><span className="text-sm opacity-80">Snap a photo for the album.</span></span>
+          </Link>
+        )}
+        {inbox.length > 0 && (
+          <Link href={inbox.length === 1 ? `/dates/${inbox[0].id}` : '/dates'} data-testid="card-action-inbox" className="rise flex items-center gap-4 rounded-[28px] bg-accent p-5 text-accent-foreground">
+            <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-full bg-foreground text-background"><Inbox className="h-5 w-5" /><span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 font-mono text-[10px] text-primary-foreground">{inbox.length}</span></span>
+            <span className="min-w-0 flex-1"><span className="font-display block text-xl">{inbox.length === 1 ? 'Your partner asked you out' : `${inbox.length} proposals need you`}</span><span className="block truncate text-sm opacity-80">{inbox.length === 1 ? inbox[0].title : 'Accept, decline or suggest another time.'}</span></span>
+            <ArrowUpRight className="h-5 w-5" />
+          </Link>
+        )}
+        {needsProfile && (
+          <Link href="/preferences" data-testid="card-action-profile" className="rise flex items-center gap-4 rounded-[28px] border-2 border-dashed border-primary/50 bg-card p-5">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-secondary text-primary"><ClipboardList className="h-5 w-5" /></span>
+            <span className="flex-1"><span className="font-display block text-xl">What do you love doing?</span><span className="text-sm text-muted-foreground">Four quick steps so date ideas fit you both. Skip anytime.</span></span>
+          </Link>
+        )}
+        <Link href="/assistant" data-testid="card-action-assistant" className="rise flex items-center gap-4 rounded-[28px] bg-card p-4 shadow-[0_1px_0_hsl(var(--border))]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-foreground text-background"><Lightbulb className="h-4 w-4" /></span>
+          <span className="flex-1 text-sm"><span className="block font-medium">Need an idea?</span><span className="text-muted-foreground">Ask the concierge — it knows your tastes.</span></span>
+          <ArrowUpRight className="h-4 w-4 text-primary" />
+        </Link>
       </section>
 
       {summary.isError ? (
@@ -67,17 +98,17 @@ export default function HomePage() {
         {dates.isLoading ? <Skeleton className="h-28 rounded-[28px]" /> : dates.isError ? (
           <ErrorState error={dates.error} onRetry={() => dates.refetch()} label="Dates" />
         ) : nextDate ? (
-          <Link href="/dates" data-testid="card-next-date" className="stub block rounded-[28px] bg-accent p-5 text-accent-foreground transition active:scale-[.99]">
-            <p className="font-mono text-[10px] uppercase tracking-widest">{fmtDate(nextDate.date, { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+          <Link href={`/dates/${nextDate.id}`} data-testid="card-next-date" className="stub block rounded-[28px] bg-accent p-5 text-accent-foreground transition active:scale-[.99]">
+            <div className="flex items-center justify-between gap-2"><p className="font-mono text-[10px] uppercase tracking-widest">{fmtDate(nextDate.date, { weekday: 'long', month: 'short', day: 'numeric' })}</p><StatusBadge status={nextDate.status} /></div>
             <p className="font-display mt-1 text-2xl">{nextDate.title}</p>
             <div className="mt-2 flex flex-wrap gap-3 text-xs">
-              {nextDate.time && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{nextDate.time}</span>}
+              {nextDate.time && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{fmtTime(nextDate.time)}</span>}
               {nextDate.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{nextDate.location}</span>}
             </div>
           </Link>
         ) : (
           <Link href="/dates" data-testid="link-plan-date" className="flex items-center justify-between rounded-[28px] border border-foreground/10 bg-card px-5 py-5">
-            <span><span className="font-display block text-xl">Nothing on the calendar.</span><span className="text-sm text-muted-foreground">Plan something small for this week.</span></span>
+            <span><span className="font-display block text-xl">Nothing on the calendar.</span><span className="text-sm text-muted-foreground">Propose something small for this week.</span></span>
             <span className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground"><Plus className="h-5 w-5" /></span>
           </Link>
         )}
