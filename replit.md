@@ -1,6 +1,6 @@
-# [Project name]
+# Couple Dates
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A mobile-first private space for couples to save photos and memories, plan and rate dates, check in together, and revisit a yearly relationship recap.
 
 ## Run & Operate
 
@@ -22,19 +22,26 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/couple-dates` — React mobile-first web app at `/`
+- `artifacts/api-server/src/routes` — protected Express API
+- `lib/api-spec/openapi.yaml` — API contract, regenerate clients after changes
+- `lib/db/src/schema/couples.ts` — couple spaces, membership, memories, dates, check-ins, upload metadata
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Clerk owns authentication; every couple API derives identity from the verified session.
+- A couple space has at most two members. Invite codes are private bearer invitations: only share with your partner.
+- Streaks measure explicit daily check-ins in the couple's configured timezone, not page visits.
+- Personal photo bytes live in private App Storage, never in PostgreSQL. Reads require membership in the owning space.
+- Recaps are computed on demand from saved records; sample preview content is not personal history.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Shared photo memory timeline; date planning, completion and 1–5 ratings; daily quality-time streaks; yearly relationship recap; couple profile and code-based partner pairing.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept.
 
 ## Gotchas
 

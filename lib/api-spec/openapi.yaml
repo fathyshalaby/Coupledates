@@ -11,6 +11,178 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /couple:
+    get:
+      operationId: getCouple
+      responses:
+        "200":
+          description: Current couple space, or null before onboarding
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CoupleState" }
+    post:
+      operationId: saveCouple
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CoupleInput" }
+      responses:
+        "200":
+          description: Saved
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Couple" }
+  /couple/join:
+    post:
+      operationId: joinCouple
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/JoinInput" }
+      responses:
+        "200":
+          description: Joined
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Couple" }
+  /memories:
+    get:
+      operationId: listMemories
+      responses:
+        "200":
+          description: Memories
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Memory" }
+    post:
+      operationId: createMemory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MemoryInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Memory" }
+  /memories/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    patch:
+      operationId: updateMemory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MemoryInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Memory" }
+    delete:
+      operationId: deleteMemory
+      responses:
+        "204": { description: Deleted }
+  /dates:
+    get:
+      operationId: listDates
+      responses:
+        "200":
+          description: Dates
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/DatePlan" }
+    post:
+      operationId: createDate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DateInput" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DatePlan" }
+  /dates/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: integer } }
+    patch:
+      operationId: updateDate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DateInput" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DatePlan" }
+    delete:
+      operationId: deleteDate
+      responses:
+        "204": { description: Deleted }
+  /check-ins:
+    post:
+      operationId: checkIn
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CheckInInput" }
+      responses:
+        "200":
+          description: Streak updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Summary" }
+  /summary:
+    get:
+      operationId: getSummary
+      responses:
+        "200":
+          description: Relationship summary
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Summary" }
+  /recap:
+    get:
+      operationId: getRecap
+      parameters:
+        - { name: year, in: query, schema: { type: integer, minimum: 2000, maximum: 2100 } }
+      responses:
+        "200":
+          description: Year in review
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Recap" }
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UploadInput" }
+      responses:
+        "200":
+          description: Upload target
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UploadTarget" }
   /healthz:
     get:
       operationId: healthCheck
@@ -26,6 +198,129 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    CoupleState:
+      type: object
+      required: [couple]
+      properties:
+        couple:
+          anyOf:
+            - { $ref: "#/components/schemas/Couple" }
+            - { type: "null" }
+    CoupleInput:
+      type: object
+      required: [yourName, partnerName, anniversary, timezone]
+      properties:
+        yourName: { type: string, minLength: 1, maxLength: 60 }
+        partnerName: { type: string, minLength: 1, maxLength: 60 }
+        anniversary: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        timezone: { type: string, maxLength: 100 }
+    Couple:
+      type: object
+      required: [id, yourName, partnerName, anniversary, timezone, inviteCode, memberCount]
+      properties:
+        id: { type: integer }
+        yourName: { type: string }
+        partnerName: { type: string }
+        anniversary: { type: string }
+        timezone: { type: string }
+        inviteCode: { type: string }
+        memberCount: { type: integer }
+    JoinInput:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, minLength: 8, maxLength: 100 }
+    MemoryInput:
+      type: object
+      required: [title, note, date, category]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 150 }
+        note: { type: string, maxLength: 5000 }
+        date: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        category: { type: string, enum: [Everyday, Adventure, Food, Travel, Milestone] }
+        photoPath: { type: ["string", "null"] }
+        favorite: { type: boolean }
+    Memory:
+      allOf:
+        - { $ref: "#/components/schemas/MemoryInput" }
+        - type: object
+          required: [id, createdAt, favorite]
+          properties:
+            id: { type: integer }
+            createdAt: { type: string }
+            favorite: { type: boolean }
+    DateInput:
+      type: object
+      required: [title, date, location, category, notes, status]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 150 }
+        date: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
+        time: { type: string, maxLength: 10 }
+        location: { type: string, maxLength: 200 }
+        category: { type: string, enum: [Everyday, Adventure, Food, Travel, Milestone] }
+        notes: { type: string, maxLength: 5000 }
+        status: { type: string, enum: [planned, completed] }
+        rating: { type: ["integer", "null"], minimum: 1, maximum: 5 }
+    DatePlan:
+      allOf:
+        - { $ref: "#/components/schemas/DateInput" }
+        - type: object
+          required: [id]
+          properties:
+            id: { type: integer }
+    CheckInInput:
+      type: object
+      required: [activity]
+      properties:
+        activity: { type: string, enum: [Quality time, A little adventure, A good conversation] }
+    Summary:
+      type: object
+      required: [daysTogether, memoryCount, completedDates, currentStreak, longestStreak, checkedInToday, weekDays]
+      properties:
+        daysTogether: { type: integer }
+        memoryCount: { type: integer }
+        completedDates: { type: integer }
+        currentStreak: { type: integer }
+        longestStreak: { type: integer }
+        checkedInToday: { type: boolean }
+        weekDays:
+          type: array
+          items:
+            type: object
+            required: [date, checked]
+            properties:
+              date: { type: string }
+              checked: { type: boolean }
+    Recap:
+      type: object
+      required: [year, memoryCount, dateCount, averageRating, topCategory, topMemories, longestStreak, activeDays, monthlyCounts]
+      properties:
+        year: { type: integer }
+        memoryCount: { type: integer }
+        dateCount: { type: integer }
+        averageRating: { type: number }
+        topCategory: { type: string }
+        topMemories:
+          type: array
+          items: { $ref: "#/components/schemas/Memory" }
+        longestStreak: { type: integer }
+        activeDays: { type: integer }
+        monthlyCounts:
+          type: array
+          items: { type: integer }
+    UploadInput:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 255 }
+        size: { type: integer, minimum: 1, maximum: 10485760 }
+        contentType: { type: string, enum: [image/jpeg, image/png, image/webp, image/heic, image/heif] }
+    UploadTarget:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL: { type: string }
+        objectPath: { type: string }
     HealthStatus:
       type: object
       properties:

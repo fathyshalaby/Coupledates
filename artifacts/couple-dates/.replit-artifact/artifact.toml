@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Couple Dates"
+description = "A mobile-first private space for couples to plan and rate dates, share photos and memories, build activity streaks, and relive their year together."
+version = "1.0.0"
+id = "artifacts/couple-dates"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24383
+
+[services.development]
+run = "pnpm --filter @workspace/couple-dates run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/couple-dates", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/couple-dates/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24383"
+BASE_PATH = "/"
