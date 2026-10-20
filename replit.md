@@ -53,6 +53,8 @@ The user confirmed the launch upgrade at US$5/month per shared couple space, cov
 
 Billing uses hosted checkout and a server-owned checkout reservation to bind a verified Whop membership to the couple space. A return URL, client-provided email, or membership identifier is never purchase proof. Both partners share entitlements; only the initiating billing owner manages renewal. Whop is the source of truth, with short-lived access snapshots and signed, idempotent webhook updates. Signing secrets are encrypted using the stable SESSION_SECRET, which must not be rotated without reprovisioning webhook verification. BILLING_APP_ORIGIN is an explicitly configured HTTPS origin for each environment.
 
+Billing regression checks: `pnpm --filter @workspace/api-server run test:billing-contract` uses a disposable PostgreSQL cluster, a controlled clock, and intercepted real-SDK transport. It never uses the app database or real provider credentials. Do not charge accounts or seed fake Plus entitlements into the running app for regression coverage. Setup and fixture-maintenance details are in `artifacts/api-server/tests/BILLING.md`. The API typecheck also checks these test sources.
+
 The user wants partners to connect their own calendars and supports online dates as well as physical dates. They chose Google Calendar first.
 
 Calendar access is per signed-in partner through Clerk's Google external account with explicit incremental consent, never a shared workspace-owner connector. OAuth tokens remain with Clerk. Free/busy sharing is a separate opt-in, off by default; shared slots require both partners' consent and complete primary-calendar responses. Never send private calendar events to the partner or AI.
