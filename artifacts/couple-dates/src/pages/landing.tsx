@@ -6,9 +6,9 @@ import { CategoryChip, TwoRings } from '@/components/bits';
 const base = import.meta.env.BASE_URL;
 
 const SAMPLES = [
-  { img: 'sample/noodles.jpg', title: 'The noodle stall that took cash only', date: 'Mar 14', cat: 'Food', note: 'We pooled every coin we had. Worth it. Ordered a second bowl to split.', rot: -4 },
-  { img: 'sample/kitchen.jpg', title: 'Sunday crossword, 41 across', date: 'Apr 02', cat: 'Everyday', note: 'Neither of us knew it. We guessed "heron" and it was right.', rot: 3 },
-  { img: 'sample/shore.jpg', title: 'Missed the last ferry', date: 'May 19', cat: 'Adventure', note: 'Watched the light go plum instead. Best mistake of spring.', rot: -2 },
+  { img: 'sample/noodles.jpg', title: 'The noodle stall that took cash only', date: 'Mar 14', cat: 'Food', note: 'We pooled every coin we had. Worth it. Ordered a second bowl to split.', rot: -3 },
+  { img: 'sample/kitchen.jpg', title: 'Sunday crossword, 41 across', date: 'Apr 02', cat: 'Everyday', note: 'Neither of us knew it. We guessed "heron" and it was right.', rot: 2 },
+  { img: 'sample/shore.jpg', title: 'Missed the last ferry', date: 'May 19', cat: 'Adventure', note: 'Watched the light go plum instead. Best mistake of spring.', rot: -1 },
 ];
 
 const WEEK = [true, true, false, true, true, true, false];
@@ -19,26 +19,26 @@ export default function Landing() {
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5">
         <div className="flex items-center gap-2">
           <img src={`${base}logo.svg`} alt="" className="h-8 w-8" />
-          <span className="font-display text-lg italic">Couple Dates</span>
+          <span className="font-display text-[17px] font-medium">Couple Dates</span>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/sign-in" data-testid="link-sign-in" className="rounded-full px-4 py-2 text-sm font-medium hover:bg-foreground/5">Sign in</Link>
-          <Link href="/sign-up" data-testid="link-sign-up-nav" className="rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background active:scale-95 transition-transform">Start yours</Link>
+          <Link href="/sign-in" data-testid="link-sign-in" className="inline-flex min-h-10 items-center rounded-full px-4 text-sm font-medium hover:bg-foreground/5">Sign in</Link>
+          <Link href="/sign-up" data-testid="link-sign-up-nav" className="inline-flex min-h-10 items-center rounded-full bg-foreground px-4 text-sm font-medium text-background transition hover:bg-foreground/90">Start yours</Link>
         </div>
       </nav>
 
       {/* HERO */}
       <section className="mx-auto grid max-w-5xl gap-10 px-5 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:items-center md:pt-16">
         <div>
-          <p className="rise font-mono text-[11px] uppercase tracking-[0.25em] text-primary">A private space for exactly two</p>
-          <h1 className="rise font-display mt-4 text-[3.2rem] leading-[0.95] font-medium md:text-[5rem]" style={{ animationDelay: '80ms' }}>
-            Tuesday counts <em className="text-primary">too.</em>
+          <p className="rise eyebrow text-primary">A private space for exactly two</p>
+          <h1 className="rise font-display mt-4 text-[3rem] leading-[0.98] font-medium md:text-[4.75rem]" style={{ animationDelay: '80ms' }}>
+            Tuesday counts <em className="font-normal text-primary">too.</em>
           </h1>
           <p className="rise mt-5 max-w-md text-lg text-muted-foreground" style={{ animationDelay: '160ms' }}>
             A shared notebook for the two of you. Keep the small moments, plan the next date, check in each day, and look back at your year together.
           </p>
           <div className="rise mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '240ms' }}>
-            <Link href="/sign-up" data-testid="button-hero-start" className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-medium text-primary-foreground shadow-[0_12px_30px_-12px_hsl(12_76%_45%/.7)] active:scale-95 transition-transform">
+            <Link href="/sign-up" data-testid="button-hero-start" className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-[.98]">
               Make your shared space <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <a href="#preview" data-testid="link-preview" className="rounded-full px-5 py-3.5 font-medium underline decoration-primary/40 underline-offset-4">See a sample</a>
@@ -61,7 +61,7 @@ export default function Landing() {
               <figcaption className="font-display mt-2 text-sm italic text-[hsl(330_32%_15%)]">{s.title}</figcaption>
             </motion.figure>
           ))}
-          <span className="stamp-in absolute -right-2 top-4 rotate-[-6deg] rounded-md border-2 border-primary px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-primary" style={{ animationDelay: '900ms' }}>Example</span>
+          <span className="absolute -bottom-2 right-0 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground">Example photos</span>
         </div>
       </section>
 
@@ -69,19 +69,19 @@ export default function Landing() {
       <section id="preview" className="bg-foreground py-20 text-background">
         <div className="mx-auto grid max-w-5xl gap-12 px-5 md:grid-cols-2 md:items-center">
           <div>
-            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-accent">Sample space, read-only</p>
+            <p className="text-xs font-medium text-accent">Sample space, read-only</p>
             <h2 className="font-display mt-3 text-4xl leading-tight md:text-5xl">This is what a Tuesday looks like when someone writes it down.</h2>
             <p className="mt-4 text-background/70">Everything on this side is invented to show you around. Your space starts empty, and fills only with what the two of you add.</p>
             <ul className="mt-8 space-y-4 text-background/85">
               {['A shared timeline of memories, with photos, search and favorites', 'Planned dates that become rated, completed ones', 'A daily check-in you keep alive together', 'A yearly recap built from what you actually did'].map((t, i) => (
-                <li key={t} className="flex gap-3"><span className="font-mono text-accent">0{i + 1}</span>{t}</li>
+                <li key={t} className="flex gap-3"><span className="font-mono text-sm text-accent">0{i + 1}</span>{t}</li>
               ))}
             </ul>
           </div>
 
-          <div className="mx-auto w-full max-w-[340px] rounded-[44px] border border-background/15 bg-[hsl(36_45%_95%)] p-4 text-[hsl(330_32%_15%)] shadow-2xl">
+          <div className="mx-auto w-full max-w-[340px] rounded-[40px] border border-background/15 bg-background p-4 text-foreground shadow-2xl">
             <div className="rounded-[32px] bg-card p-4">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-primary">Example couple</p>
+              <p className="eyebrow text-primary">Example couple</p>
               <p className="font-display text-2xl">Noor &amp; Teo</p>
               <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                 {[['612', 'days'], ['48', 'memories'], ['9', 'day streak']].map(([n, l]) => (
@@ -97,8 +97,8 @@ export default function Landing() {
                 ))}
               </div>
             </div>
-            <div className="stub mt-3 rounded-3xl bg-accent p-4">
-              <p className="font-mono text-[10px] uppercase tracking-widest">Next date / Sat 7:30 pm</p>
+            <div className="mt-3 rounded-3xl border border-[hsl(38_60%_75%)] bg-[hsl(41_78%_94%)] p-4">
+              <p className="eyebrow">Next date / Sat 7:30 pm</p>
               <p className="font-display mt-1 text-lg">Late film at the Rialto</p>
               <p className="mt-1 flex items-center gap-1 text-xs"><MapPin className="h-3 w-3" /> Rialto Cinema, 3rd row</p>
             </div>
@@ -119,13 +119,13 @@ export default function Landing() {
 
       {/* MEMORY NOTES */}
       <section className="mx-auto max-w-5xl px-5 py-20">
-        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-primary">Memories</p>
+        <p className="eyebrow text-primary">Memories</p>
         <h2 className="font-display mt-2 max-w-xl text-4xl">Not highlights. The bits you'd otherwise forget.</h2>
         <div className="mt-10 grid gap-5 md:grid-cols-[1.3fr_1fr_1fr]">
           {SAMPLES.map((s, i) => (
-            <article key={s.title} className={`rounded-3xl bg-card p-5 shadow-[0_1px_0_hsl(var(--border))] ${i === 0 ? 'md:row-span-2' : ''}`}>
+            <article key={s.title} className={`surface p-5 ${i === 0 ? 'md:row-span-2' : ''}`}>
               <img src={`${base}${s.img}`} alt="" className={`w-full rounded-2xl object-cover ${i === 0 ? 'aspect-[4/5]' : 'aspect-video'}`} />
-              <div className="mt-4 flex items-center justify-between"><CategoryChip category={s.cat} /><span className="font-mono text-xs text-muted-foreground">{s.date} / example</span></div>
+              <div className="mt-4 flex items-center justify-between"><CategoryChip category={s.cat} /><span className="text-xs text-muted-foreground">{s.date} / example</span></div>
               <h3 className="font-display mt-2 text-xl">{s.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{s.note}</p>
             </article>
@@ -136,7 +136,7 @@ export default function Landing() {
       {/* RECAP */}
       <section className="mx-auto max-w-5xl px-5 pb-20">
         <div className="relative overflow-hidden rounded-[36px] bg-primary p-8 text-primary-foreground md:p-12">
-          <p className="font-mono text-[11px] uppercase tracking-[0.25em] opacity-80">Yearly recap / example</p>
+          <p className="text-xs font-medium opacity-85">Yearly recap / example</p>
           <p className="font-display mt-3 text-5xl leading-none md:text-7xl">83 memories.<br /><em>21 dates.</em></p>
           <p className="mt-4 max-w-md opacity-90">At the end of the year, your recap counts what really happened: busiest months, your favorite kind of date, the longest streak you kept going.</p>
           <div className="mt-8 flex h-24 items-end gap-1.5">
@@ -151,18 +151,18 @@ export default function Landing() {
       <section className="mx-auto max-w-5xl px-5 pb-24">
         <h2 className="font-display text-4xl">Two steps. Then it's yours.</h2>
         <ol className="mt-8 grid gap-4 md:grid-cols-2">
-          <li className="rounded-3xl border border-foreground/10 p-6"><span className="font-mono text-primary">01</span><p className="font-display mt-2 text-2xl">One of you creates the space.</p><p className="mt-1 text-muted-foreground">Your names, your anniversary. That's it.</p></li>
-          <li className="rounded-3xl border border-foreground/10 p-6"><span className="font-mono text-primary">02</span><p className="font-display mt-2 text-2xl">The other joins with a code.</p><p className="mt-1 text-muted-foreground">Two people, never three. Codes can't open a second space.</p></li>
+          <li className="surface p-6"><span className="font-mono text-primary">01</span><p className="font-display mt-2 text-2xl">One of you creates the space.</p><p className="mt-1 text-muted-foreground">Your names, your anniversary. That's it.</p></li>
+          <li className="surface p-6"><span className="font-mono text-primary">02</span><p className="font-display mt-2 text-2xl">The other joins with a code.</p><p className="mt-1 text-muted-foreground">Two people, never three. Codes can't open a second space.</p></li>
         </ol>
         <div className="mt-16 flex flex-col items-center text-center">
           <TwoRings size={80} />
           <p className="font-display mt-4 text-4xl">Start keeping score of the good stuff.</p>
-          <Link href="/sign-up" data-testid="button-footer-start" className="mt-6 inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3.5 font-medium text-background active:scale-95 transition-transform">
+          <Link href="/sign-up" data-testid="button-footer-start" className="mt-6 inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3.5 font-medium text-background transition hover:bg-foreground/90">
             <Heart className="h-4 w-4" /> Create your space
           </Link>
         </div>
       </section>
-      <footer className="border-t border-foreground/10 py-6 text-center font-mono text-[11px] text-muted-foreground">Couple Dates / sample content on this page is illustrative</footer>
+      <footer className="border-t border-foreground/10 py-6 text-center text-xs text-muted-foreground">Couple Dates / sample content on this page is illustrative</footer>
     </div>
   );
 }

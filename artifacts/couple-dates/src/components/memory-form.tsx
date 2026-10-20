@@ -96,8 +96,8 @@ export function MemoryForm({ memory, defaults, initialFile, onDone }: { memory: 
 
   return (
     <form onSubmit={submit} className="mx-auto w-full max-w-xl overflow-y-auto px-5 pb-8 pt-2">
-      <DrawerTitle className="font-display text-3xl">{memory ? 'Edit memory' : defaults?.dateId ? 'Add to the album' : 'Keep a memory'}</DrawerTitle>
-      <DrawerDescription className="text-sm text-muted-foreground">
+      <DrawerTitle className="font-display text-[1.75rem] font-medium">{memory ? 'Edit memory' : defaults?.dateId ? 'Add to the album' : 'Keep a memory'}</DrawerTitle>
+      <DrawerDescription className="mt-1 text-sm text-muted-foreground">
         {defaults?.dateTitle ? <>Pinned to <span className="font-medium text-foreground">{defaults.dateTitle}</span>. </> : null}
         Shared with your partner the moment you save. One photo per memory.
       </DrawerDescription>
@@ -106,52 +106,52 @@ export function MemoryForm({ memory, defaults, initialFile, onDone }: { memory: 
         <input ref={fileRef} type="file" accept={ACCEPT} className="hidden" data-testid="input-photo" aria-label="Upload a photo" onChange={(e) => onFile(e.target.files?.[0])} />
         <input ref={camRef} type="file" accept="image/*" capture="environment" className="hidden" data-testid="input-camera" aria-label="Take a photo" onChange={(e) => onFile(e.target.files?.[0])} />
         {preview ? (
-          <div className="polaroid relative mx-auto w-3/4 rotate-[-2deg]">
+          <div className="polaroid relative mx-auto w-full max-w-sm">
             <div className="relative">
               <img src={preview} alt="Selected photo" className={cn('aspect-[4/3] w-full object-cover transition', uploading && 'opacity-60 blur-[1px]')} />
               {uploading && <div className="absolute inset-0 grid place-items-center"><span className="flex items-center gap-2 rounded-full bg-background/90 px-3 py-1.5 text-xs"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading</span></div>}
             </div>
-            <div className="absolute bottom-1 right-2 flex gap-3">
-              <button type="button" disabled={uploading} data-testid="button-change-photo" onClick={() => fileRef.current?.click()} className="text-xs text-[hsl(330_32%_15%)] underline">Change</button>
-              <button type="button" disabled={uploading} data-testid="button-remove-photo" onClick={() => { selectedFile.current = null; setUploadFailed(false); setPhotoPath(null); setLocalPreview(null); setError(null); }} className="text-xs text-destructive underline">Remove</button>
+            <div className="mt-1.5 flex justify-end gap-1">
+              <button type="button" disabled={uploading} data-testid="button-change-photo" onClick={() => fileRef.current?.click()} className="min-h-9 rounded-lg px-3 text-[13px] font-medium hover:bg-foreground/5">Change</button>
+              <button type="button" disabled={uploading} data-testid="button-remove-photo" onClick={() => { selectedFile.current = null; setUploadFailed(false); setPhotoPath(null); setLocalPreview(null); setError(null); }} className="min-h-9 rounded-lg px-3 text-[13px] font-medium text-destructive hover:bg-destructive/5">Remove</button>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            <button type="button" data-testid="button-take-photo" disabled={uploading} onClick={() => camRef.current?.click()} className="flex flex-col items-center gap-2 rounded-[24px] bg-foreground py-6 text-background transition active:scale-[.97]">
+            <button type="button" data-testid="button-take-photo" disabled={uploading} onClick={() => camRef.current?.click()} className="flex flex-col items-center gap-2 rounded-xl bg-primary py-6 text-primary-foreground transition hover:bg-primary/90 active:scale-[.98]">
               <Camera className="h-6 w-6" /><span className="text-sm font-medium">Take a photo</span>
             </button>
-            <button type="button" data-testid="button-add-photo" disabled={uploading} onClick={() => fileRef.current?.click()} className="flex flex-col items-center gap-2 rounded-[24px] border-2 border-dashed border-foreground/20 py-6 text-muted-foreground transition active:scale-[.97]">
-              <ImagePlus className="h-6 w-6" /><span className="text-sm">Upload one</span>
+            <button type="button" data-testid="button-add-photo" disabled={uploading} onClick={() => fileRef.current?.click()} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card py-6 text-foreground transition hover:bg-foreground/[0.03] active:scale-[.98]">
+              <ImagePlus className="h-6 w-6" /><span className="text-sm font-medium">Upload one</span>
             </button>
-            <p className="col-span-2 text-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Optional · up to 10 MB</p>
+            <p className="col-span-2 text-center text-xs text-muted-foreground">Optional · up to 10 MB</p>
           </div>
         )}
       </div>
 
       <div className="mt-5 space-y-4">
         <div className="space-y-1.5"><Label htmlFor="memory-title" className="sr-only">Title</Label>
-          <Input id="memory-title" data-testid="input-memory-title" required maxLength={150} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Give it a title" className="font-display h-14 rounded-2xl text-xl" /></div>
+          <Input id="memory-title" data-testid="input-memory-title" required maxLength={150} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Give it a title" className="font-display h-14 rounded-xl bg-card text-xl" /></div>
         <div className="space-y-1.5"><Label htmlFor="memory-note" className="sr-only">Note</Label>
-          <Textarea id="memory-note" data-testid="input-memory-note" maxLength={5000} value={note} onChange={(e) => setNote(e.target.value)} placeholder="What happened? What do you want to remember?" className="min-h-28 rounded-2xl" /></div>
-        <div className="space-y-1.5"><Label htmlFor="memory-date" className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">Day</Label>
-          <Input id="memory-date" data-testid="input-memory-date" required type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-12 rounded-2xl" /></div>
+          <Textarea id="memory-note" data-testid="input-memory-note" maxLength={5000} value={note} onChange={(e) => setNote(e.target.value)} placeholder="What happened? What do you want to remember?" className="min-h-28 rounded-xl bg-card" /></div>
+        <div className="space-y-1.5"><Label htmlFor="memory-date" className="text-[13px] font-medium text-muted-foreground">Day</Label>
+          <Input id="memory-date" data-testid="input-memory-date" required type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-12 rounded-xl bg-card" /></div>
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Category">
           {CATEGORIES.map((c) => (
-            <button type="button" role="radio" aria-checked={category === c} key={c} data-testid={`option-category-${c.toLowerCase()}`} onClick={() => setCategory(c)} className={cn('rounded-full px-3.5 py-2 text-sm transition', category === c ? 'bg-foreground text-background' : 'bg-card')}>{c}</button>
+            <button type="button" role="radio" aria-checked={category === c} key={c} data-testid={`option-category-${c.toLowerCase()}`} onClick={() => setCategory(c)} className={cn('min-h-10 rounded-full border px-3.5 text-sm transition-colors', category === c ? 'border-foreground bg-foreground text-background' : 'border-border bg-card text-muted-foreground hover:text-foreground')}>{c}</button>
           ))}
         </div>
-        <button type="button" aria-pressed={favorite} data-testid="toggle-favorite" onClick={() => setFavorite((v) => !v)} className={cn('flex items-center gap-2 rounded-full px-4 py-2 text-sm', favorite ? 'bg-primary/10 text-primary' : 'bg-card')}>
+        <button type="button" aria-pressed={favorite} data-testid="toggle-favorite" onClick={() => setFavorite((v) => !v)} className={cn('flex min-h-10 items-center gap-2 rounded-full border px-4 text-sm transition-colors', favorite ? 'border-primary/40 bg-primary/10 text-primary' : 'border-border bg-card text-muted-foreground hover:text-foreground')}>
           <Heart className={cn('h-4 w-4', favorite && 'fill-current')} /> {favorite ? 'Favorite' : 'Mark as favorite'}
         </button>
       </div>
 
-      {error && <p role="alert" data-testid="text-memory-error" className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>}
+      {error && <p role="alert" data-testid="text-memory-error" className="mt-4 rounded-xl border border-destructive/25 bg-destructive/[0.06] px-4 py-2.5 text-sm text-destructive">{error}</p>}
       {uploadFailed && !uploading && <div className="mt-3 flex flex-wrap gap-3 text-sm">
-        <button type="button" data-testid="button-retry-photo" onClick={() => void onFile(selectedFile.current ?? undefined)} className="rounded-full bg-foreground px-4 py-2 text-background">Retry photo</button>
-        <button type="button" data-testid="button-skip-failed-photo" onClick={() => { selectedFile.current = null; setUploadFailed(false); setLocalPreview(null); setPhotoPath(memory?.photoPath ?? null); setError(null); }} className="rounded-full border border-foreground/20 px-4 py-2">Discard this photo</button>
+        <button type="button" data-testid="button-retry-photo" onClick={() => void onFile(selectedFile.current ?? undefined)} className="min-h-10 rounded-full bg-foreground px-4 text-background">Retry photo</button>
+        <button type="button" data-testid="button-skip-failed-photo" onClick={() => { selectedFile.current = null; setUploadFailed(false); setLocalPreview(null); setPhotoPath(memory?.photoPath ?? null); setError(null); }} className="min-h-10 rounded-full border border-border bg-card px-4">Discard this photo</button>
       </div>}
-      <button data-testid="button-save-memory" disabled={pending || uploading || uploadFailed} className="mt-6 w-full rounded-full bg-primary py-4 font-medium text-primary-foreground transition active:scale-[.98] disabled:opacity-50">
+      <button data-testid="button-save-memory" disabled={pending || uploading || uploadFailed} className="mt-6 min-h-[52px] w-full rounded-full bg-primary font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-[.99] disabled:opacity-50">
         {uploading ? 'Waiting for photo...' : pending ? 'Saving...' : memory ? 'Save changes' : 'Keep this memory'}
       </button>
     </form>

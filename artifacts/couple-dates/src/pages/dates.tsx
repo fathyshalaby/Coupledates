@@ -57,57 +57,57 @@ export default function DatesPage() {
 
   return (
     <div>
-      <PageHeader kicker="Plans & keepsakes" title={<>Date <em className="text-primary">night</em></>}>
-        <button data-testid="button-new-date" onClick={() => openNew()} aria-label="Propose a date" className="grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_10px_24px_-10px_hsl(12_76%_45%/.8)] transition active:scale-90"><Plus className="h-5 w-5" /></button>
+      <PageHeader kicker="Plans & keepsakes" title={<>Date <em className="font-normal text-primary">night</em></>}>
+        <button data-testid="button-new-date" onClick={() => openNew()} aria-label="Propose a date" className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-primary pl-3.5 pr-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-95"><Plus className="h-4 w-4" /><span>Propose</span></button>
       </PageHeader>
 
-      <div role="tablist" aria-label="Date lists" className="grid grid-cols-4 rounded-full bg-foreground/[0.06] p-1">
+      <div role="tablist" aria-label="Date lists" className="grid grid-cols-4 rounded-xl bg-foreground/[0.05] p-1">
         {TABS.map((t) => (
-          <button role="tab" aria-selected={current === t.key} key={t.key} data-testid={`tab-${t.key}`} onClick={() => setTab(t.key)} className="relative rounded-full py-2.5 text-[13px] font-medium">
-            {current === t.key && <motion.span layoutId="datetab" className="absolute inset-0 rounded-full bg-card shadow-sm" />}
+          <button role="tab" aria-selected={current === t.key} key={t.key} data-testid={`tab-${t.key}`} onClick={() => setTab(t.key)} className={cn('relative min-h-10 rounded-lg px-1 text-[13px] font-medium transition-colors', current === t.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+            {current === t.key && <motion.span layoutId="datetab" className="absolute inset-0 rounded-lg border border-border bg-card shadow-[0_1px_2px_hsl(335_30%_20%/.06)]" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
             <span className="relative">{t.label}</span>
             {t.key === 'inbox' && needsYou > 0 ? (
-              <span data-testid="badge-inbox-count" className="absolute -right-0.5 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 font-mono text-[10px] text-primary-foreground">{needsYou}</span>
-            ) : <span className="relative ml-1 font-mono text-[10px] opacity-40">{buckets[t.key].length}</span>}
+              <span data-testid="badge-inbox-count" className="relative ml-1.5 inline-grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 align-[1px] text-[10px] font-semibold text-primary-foreground tnum">{needsYou}</span>
+            ) : <span className="relative ml-1 text-[11px] text-muted-foreground tnum">{buckets[t.key].length}</span>}
           </button>
         ))}
       </div>
 
-      <div role="radiogroup" aria-label="Filter by type" className="mt-3 flex gap-1.5">
+      <div role="radiogroup" aria-label="Filter by type" className="mt-3 flex flex-wrap items-center gap-1.5">
         {MODES.map((m) => (
-          <button role="radio" aria-checked={modeF === m.key} key={m.key} data-testid={`filter-mode-${m.key}`} onClick={() => setModeF(m.key)} className={cn('rounded-full px-3.5 py-1.5 text-xs font-medium transition active:scale-95', modeF === m.key ? 'bg-foreground text-background' : 'bg-card shadow-[0_1px_0_hsl(var(--border))]')}>
-            {m.key === 'remote' && <Video className="mr-1 inline h-3 w-3" />}{m.label}
+          <button role="radio" aria-checked={modeF === m.key} key={m.key} data-testid={`filter-mode-${m.key}`} onClick={() => setModeF(m.key)} className={cn('inline-flex min-h-9 items-center rounded-full border px-3.5 text-[13px] font-medium transition-colors', modeF === m.key ? 'border-foreground bg-foreground text-background' : 'border-border bg-card text-muted-foreground hover:text-foreground')}>
+            {m.key === 'remote' && <Video className="mr-1.5 h-3.5 w-3.5" />}{m.label}
           </button>
         ))}
-        <Link href="/calendar" data-testid="link-dates-calendar" className="ml-auto flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-primary"><CalendarClock className="h-3.5 w-3.5" /> Free times</Link>
+        <Link href="/calendar" data-testid="link-dates-calendar" className="ml-auto inline-flex min-h-9 items-center gap-1.5 rounded-full px-2 text-[13px] font-medium text-primary hover:underline"><CalendarClock className="h-4 w-4" /> Free times</Link>
       </div>
 
-      <section className="mt-4" aria-label="Online date templates">
-        <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-primary">Apart tonight? Online, ready to send</p>
-        <div className="-mx-5 flex snap-x gap-3 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
+      <section className="mt-6" aria-label="Online date templates">
+        <div className="mb-2.5 flex items-baseline justify-between gap-3"><h2 className="text-sm font-medium">Apart tonight?</h2><p className="eyebrow">Online templates, ready to send</p></div>
+        <div className="no-scrollbar -mx-5 flex snap-x gap-2.5 overflow-x-auto px-5 pb-1 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0">
           {TEMPLATES.map((t, i) => (
             <button key={t.title} data-testid={`button-template-${i}`} onClick={() => openNew({ title: t.title, category: t.category, mode: t.mode, location: t.location, notes: t.notes })}
-              className={cn('w-40 shrink-0 snap-start rounded-[22px] p-4 text-left transition active:scale-95', i % 2 ? 'bg-secondary' : 'bg-card shadow-[0_1px_0_hsl(var(--border))]')} style={{ rotate: `${i % 2 ? 1 : -1}deg` }}>
-              <t.icon className="h-5 w-5 text-primary" />
-              <span className="font-display mt-3 block text-lg leading-tight">{t.title}</span>
+              className="surface surface-link w-[148px] shrink-0 snap-start p-3.5 text-left sm:w-auto">
+              <span className="icon-tile h-9 w-9 rounded-[10px]"><t.icon className="h-[18px] w-[18px]" /></span>
+              <span className="mt-3 block text-[15px] font-medium leading-snug">{t.title}</span>
               <span className="mt-1 block text-xs text-muted-foreground">{t.blurb}</span>
             </button>
           ))}
         </div>
       </section>
 
-      <Link href="/assistant" data-testid="link-dates-assistant" className="mt-4 flex items-center gap-3 rounded-[22px] border border-dashed border-primary/40 px-4 py-3 text-sm transition active:scale-[.99]">
+      <Link href="/assistant" data-testid="link-dates-assistant" className="mt-3 flex min-h-12 items-center gap-3 rounded-xl px-1 text-sm text-muted-foreground transition-colors hover:text-foreground">
         <Lightbulb className="h-4 w-4 text-primary" /><span className="flex-1">Stuck? Ask the date concierge for ideas.</span><ChevronRight className="h-4 w-4 opacity-50" />
       </Link>
 
-      <div className="mt-5">
+      <div className="mt-4">
         {q.isLoading ? <ListSkeleton /> : q.isError ? <ErrorState error={q.error} onRetry={() => q.refetch()} label="Dates" /> : list.length === 0 ? (
-          current === 'inbox' ? <EmptyState title="Inbox zero." body="No proposals waiting. Suggest something — a walk after dinner counts." action={<button data-testid="button-empty-new-date" onClick={() => openNew()} className="rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Propose a date</button>} />
-            : current === 'upcoming' ? <EmptyState title="The calendar is open." body="Accepted proposals land here. Propose one and wait for the yes." action={<button data-testid="button-empty-upcoming" onClick={() => openNew()} className="rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Propose a date</button>} />
+          current === 'inbox' ? <EmptyState title="Inbox zero." body="No proposals waiting. Suggest something — a walk after dinner counts." action={<button data-testid="button-empty-new-date" onClick={() => openNew()} className="min-h-11 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Propose a date</button>} />
+            : current === 'upcoming' ? <EmptyState title="The calendar is open." body="Accepted proposals land here. Propose one and wait for the yes." action={<button data-testid="button-empty-upcoming" onClick={() => openNew()} className="min-h-11 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Propose a date</button>} />
             : current === 'past' ? <EmptyState title="No finished dates yet." body="Start a planned date on the day, then mark it complete to rate it together." />
             : <EmptyState title="Nothing declined." body="Turned-down proposals rest here, in case you want to try again." />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-2.5">
             {list.map((d, i) => <DateCard key={d.id} d={d} i={i} solo={solo} partnerName="your partner" />)}
           </div>
         )}
@@ -127,34 +127,36 @@ function DateCard({ d, i, solo, partnerName }: { d: DatePlan; i: number; solo: b
   const owe = whoOwes(d, solo, partnerName);
   const overdue = d.status === 'planned' && d.date.slice(0, 10) < todayISO();
   const warm = d.status === 'proposed' && d.canRespond;
+  const live = d.status === 'active';
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 8) * 0.03, duration: 0.25 }}>
       <Link href={`/dates/${d.id}`} data-testid={`card-date-${d.id}`}
-        className={cn('block overflow-hidden rounded-[26px] transition active:scale-[.99]',
-          d.status === 'active' ? 'bg-primary text-primary-foreground' : warm ? 'bg-accent text-accent-foreground' : d.status === 'declined' ? 'bg-card/60 opacity-75' : 'bg-card shadow-[0_1px_0_hsl(var(--border))]')}>
-        <div className="flex">
-          <div className="flex w-20 shrink-0 flex-col items-center justify-center border-r-2 border-dashed border-current/15 py-4" style={{ borderColor: 'color-mix(in srgb, currentColor 18%, transparent)' }}>
-            <span className="font-mono text-[10px] uppercase tracking-widest">{dt.toLocaleDateString(undefined, { month: 'short' })}</span>
-            <span className="font-display text-4xl leading-none">{dt.getDate()}</span>
-            <span className="font-mono text-[10px] opacity-60">{dt.toLocaleDateString(undefined, { weekday: 'short' })}</span>
-          </div>
-          <div className="min-w-0 flex-1 p-4">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <StatusBadge status={d.status} className={d.status === 'active' ? 'bg-background/20 text-current' : undefined} />
-              <CategoryChip category={d.category} className="bg-foreground/10 text-current" />
-              {overdue && <span className="font-mono text-[10px] uppercase text-destructive">Day passed</span>}
-            </div>
-            <h3 className="font-display mt-1.5 text-xl leading-tight">{d.title}</h3>
-            <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs opacity-75">
-              {d.time && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{fmtTime(d.time)}</span>}
-              {d.mode === 'remote' ? <span className="flex items-center gap-1"><Video className="h-3 w-3" />Online{d.location ? ` · ${d.location}` : ''}</span>
-                : d.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{d.location}</span>}
-            </div>
-            {owe && <p data-testid={`text-owes-${d.id}`} className={cn('mt-2.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium', owe.urgent ? 'bg-foreground text-background' : 'bg-foreground/[0.07]')}>{owe.urgent && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />}{owe.text}</p>}
-            {d.status === 'completed' && d.rating != null && <p className="mt-2 font-mono text-xs">{d.rating.toFixed(1)} / 5 together</p>}
-          </div>
-          <ChevronRight className="m-4 h-5 w-5 shrink-0 self-center opacity-40" />
+        className={cn('surface surface-link relative flex items-stretch overflow-hidden',
+          live && 'border-primary bg-primary text-primary-foreground hover:border-primary',
+          warm && 'border-[hsl(38_60%_75%)] bg-[hsl(41_78%_95%)]',
+          d.status === 'declined' && 'bg-card/60 text-muted-foreground')}>
+        {warm && <span className="absolute inset-y-0 left-0 w-[3px] bg-primary" aria-hidden />}
+        <div className={cn('flex w-[68px] shrink-0 flex-col items-center justify-center border-r py-4', live ? 'border-primary-foreground/20' : 'border-border')}>
+          <span className={cn('text-[11px] font-medium uppercase tracking-wide', live ? 'opacity-85' : 'text-primary')}>{dt.toLocaleDateString(undefined, { month: 'short' })}</span>
+          <span className="font-display text-[1.9rem] leading-none tnum">{dt.getDate()}</span>
+          <span className="mt-0.5 text-[11px] opacity-70">{dt.toLocaleDateString(undefined, { weekday: 'short' })}</span>
         </div>
+        <div className="min-w-0 flex-1 px-4 py-3.5">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <StatusBadge status={d.status} className={live ? 'bg-primary-foreground/15 text-current' : undefined} />
+            <CategoryChip category={d.category} className={live ? 'bg-primary-foreground/15 text-current' : undefined} />
+            {overdue && <span className="text-[11px] font-medium text-destructive">Day passed</span>}
+          </div>
+          <h3 className={cn('font-display mt-1.5 text-lg leading-snug break-words', d.status === 'declined' && 'line-through decoration-1')}>{d.title}</h3>
+          <div className={cn('mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[13px]', live ? 'opacity-85' : 'text-muted-foreground')}>
+            {d.time && <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{fmtTime(d.time)}</span>}
+            {d.mode === 'remote' ? <span className="flex min-w-0 items-center gap-1"><Video className="h-3.5 w-3.5 shrink-0" /><span className="truncate">Online{d.location ? ` · ${d.location}` : ''}</span></span>
+              : d.location && <span className="flex min-w-0 items-center gap-1"><MapPin className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{d.location}</span></span>}
+          </div>
+          {owe && <p data-testid={`text-owes-${d.id}`} className={cn('mt-2 inline-flex items-center gap-1.5 text-[13px] font-medium', owe.urgent ? 'text-primary' : 'text-muted-foreground')}>{owe.urgent && <span className="h-1.5 w-1.5 rounded-full bg-primary" />}{owe.text}</p>}
+          {d.status === 'completed' && d.rating != null && <p className="mt-2 text-[13px] text-muted-foreground tnum">{d.rating.toFixed(1)} / 5 together</p>}
+        </div>
+        <ChevronRight className="mr-3 h-4 w-4 shrink-0 self-center opacity-40" />
       </Link>
     </motion.div>
   );

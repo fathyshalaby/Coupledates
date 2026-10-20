@@ -1,3 +1,4 @@
 - [AI planning boundaries](ai-planning-boundaries.md) — user-triggered recommendations; usage safeguards are not paid-plan entitlements.
 - [Node test outputs](runtime-testing.md) — Node 24 test discovery excludes bundles under dependency directories, even with explicit paths.
 - [Whop billing contracts](whop-contracts.md) — pin runtime/webhook API dates and retain provider-enforced one-purchase checkout safeguards.
+- [Visual refinement intent](visual-refinement.md) — the user wants a less “vibe coded” Couple Dates interface, refined in place without replacing working flows.

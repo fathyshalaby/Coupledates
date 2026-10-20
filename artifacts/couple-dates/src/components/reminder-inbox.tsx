@@ -7,12 +7,15 @@ export function ReminderInbox() {
   const q = useListReminders({ query: { queryKey: getListRemindersQueryKey(), ...REFRESH } });
   const qc = useQueryClient();
   const dismiss = useDismissReminder({ mutation: { onSuccess: () => qc.invalidateQueries({ queryKey: getListRemindersQueryKey() }) } });
-  return <aside aria-label="Your reminder inbox" data-testid="reminder-inbox" className="mb-5 rounded-[24px] border border-foreground/10 bg-card p-4">
+  // Keep the shared space focused when there is nothing to act on.
+  // Preferences remain available in Settings; due reminders and failures stay visible.
+  if (!q.isError && !q.data?.length) return null;
+  return <aside aria-label="Your reminder inbox" data-testid="reminder-inbox" className="surface mb-6 p-4">
     <div className="flex items-center justify-between gap-3">
-      <p className="text-sm font-medium">Your reminder inbox{q.data?.length ? ` · ${q.data.length}` : ''}</p>
-      <button data-testid="button-refresh-reminders" disabled={q.isFetching} onClick={() => q.refetch()} className="text-xs text-primary disabled:opacity-50">Refresh</button>
+      <p className="text-sm font-medium">Reminders{q.data?.length ? ` · ${q.data.length}` : ''}</p>
+      <button data-testid="button-refresh-reminders" disabled={q.isFetching} onClick={() => q.refetch()} className="min-h-11 px-2 text-xs text-primary disabled:opacity-50">Refresh</button>
     </div>
-    {q.isLoading ? <p className="mt-1 text-xs text-muted-foreground">Checking reminders…</p> : q.isError ? <p role="alert" className="mt-2 text-xs text-destructive">{errMsg(q.error)}</p> : !q.data?.length && <p className="mt-1 text-xs text-muted-foreground">No reminders due. <Link href="/settings" className="underline">Manage your opt-in preferences</Link></p>}
+    {q.isError && <p role="alert" className="mt-2 text-xs text-destructive">{errMsg(q.error)}</p>}
     {q.data?.map(r => <div key={r.id} className="mt-3 flex items-center justify-between gap-3 border-t border-foreground/10 pt-3">
       <Link href={r.href} data-testid={`link-reminder-${r.id}`} className="min-w-0 text-sm">
         <span className="block font-medium">{r.kind === 'photo' ? 'Save photos from your date' : 'Your agreed date is coming up'}</span>

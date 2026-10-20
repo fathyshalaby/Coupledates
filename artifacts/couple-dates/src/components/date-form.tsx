@@ -20,7 +20,7 @@ export const MODE_LABEL: Record<string, string> = { in_person: 'In person', remo
 
 export const DATE_AFFECTED = ['dates', 'detail', 'summary', 'recap'] as const;
 
-const lbl = 'font-mono text-[11px] uppercase tracking-widest text-muted-foreground';
+const lbl = 'text-[13px] font-medium text-muted-foreground';
 
 export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
   plan: DatePlan | null; prefill?: DatePrefill; requireTime?: boolean; onDone: () => void; onCreated?: (d: DatePlan) => void;
@@ -105,11 +105,11 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
 
   return (
     <form onSubmit={submit} className="mx-auto w-full max-w-xl overflow-y-auto px-5 pb-8 pt-2">
-      <DrawerTitle className="font-display text-3xl">{plan ? 'Edit the plan' : 'Propose a date'}</DrawerTitle>
-      <DrawerDescription className="text-sm text-muted-foreground">{plan ? 'Changes are shared with your partner.' : 'It lands in your partner’s inbox to accept, decline, or counter.'}</DrawerDescription>
+      <DrawerTitle className="font-display text-[1.75rem] font-medium">{plan ? 'Edit the plan' : 'Propose a date'}</DrawerTitle>
+      <DrawerDescription className="mt-1 text-sm text-muted-foreground">{plan ? 'Changes are shared with your partner.' : 'It lands in your partner’s inbox to accept, decline, or counter.'}</DrawerDescription>
 
       {resetsApproval && (
-        <p data-testid="text-edit-resets" className="mt-4 flex gap-2 rounded-2xl bg-accent/60 px-4 py-3 text-sm">
+        <p data-testid="text-edit-resets" className="mt-4 flex gap-2 rounded-xl border border-[hsl(38_60%_75%)] bg-[hsl(41_78%_94%)] px-4 py-3 text-sm">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           Saving turns this into a fresh proposal from you{plan?.status === 'planned' ? ' — your partner’s earlier yes is reset and they’ll need to accept again.' : '.'}
         </p>
@@ -117,52 +117,52 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
 
       <div className="mt-5 space-y-4">
         <div><Label htmlFor="df-title" className="sr-only">Title</Label>
-          <Input id="df-title" data-testid="input-date-title" required maxLength={150} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What's the plan?" className="font-display h-14 rounded-2xl text-xl" /></div>
+          <Input id="df-title" data-testid="input-date-title" required maxLength={150} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="What's the plan?" className="font-display h-14 rounded-xl bg-card text-xl" /></div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5"><Label htmlFor="df-date" className={lbl}>Day</Label>
-            <Input id="df-date" data-testid="input-date-date" required type="date" min={plan ? undefined : todayISO()} value={date} onChange={(e) => setDate(e.target.value)} className="h-12 rounded-2xl" /></div>
+            <Input id="df-date" data-testid="input-date-date" required type="date" min={plan ? undefined : todayISO()} value={date} onChange={(e) => setDate(e.target.value)} className="h-12 rounded-xl bg-card" /></div>
           <div className="space-y-1.5"><Label htmlFor="df-time" className={lbl}>Time{requireTime ? '' : ' · optional'}</Label>
-            <Input id="df-time" data-testid="input-date-time" required={requireTime} type="time" value={time} onChange={(e) => setTime(e.target.value)} className="h-12 rounded-2xl" /></div>
+            <Input id="df-time" data-testid="input-date-time" required={requireTime} type="time" value={time} onChange={(e) => setTime(e.target.value)} className="h-12 rounded-xl bg-card" /></div>
         </div>
 
-        <div className="grid grid-cols-[1fr_auto] gap-3">
-          <div className="space-y-1.5"><Label htmlFor="df-tz" className={lbl}>Timezone</Label>
+        <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-3">
+          <div className="flex min-w-0 flex-col gap-1.5"><Label htmlFor="df-tz" className={lbl}>Timezone</Label>
             <div className="relative"><Globe2 className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="df-tz" data-testid="input-date-timezone" list="df-tz-list" maxLength={100} value={timezone} onChange={(e) => setTimezone(e.target.value)} aria-invalid={!isValidTz(timezone)} className={cn('h-12 rounded-2xl pl-10 font-mono text-sm', !isValidTz(timezone) && 'border-destructive')} /></div>
+              <Input id="df-tz" data-testid="input-date-timezone" list="df-tz-list" maxLength={100} value={timezone} onChange={(e) => setTimezone(e.target.value)} aria-invalid={!isValidTz(timezone)} className={cn('h-12 rounded-xl pl-10 font-mono text-sm', !isValidTz(timezone) && 'border-destructive')} /></div>
             <datalist id="df-tz-list">{tzOptions.map((z) => <option key={z} value={z} />)}</datalist></div>
-          <div className="space-y-1.5"><Label htmlFor="df-dur" className={lbl}>Length</Label>
-            <select id="df-dur" data-testid="select-date-duration" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="h-12 rounded-2xl border border-input bg-background px-3 text-sm">
+          <div className="flex min-w-0 flex-col gap-1.5"><Label htmlFor="df-dur" className={lbl}>Length</Label>
+            <select id="df-dur" data-testid="select-date-duration" value={duration} onChange={(e) => setDuration(Number(e.target.value))} className="h-12 w-full rounded-xl border border-input bg-card px-3 text-sm">
               {Array.from(new Set([...DURATIONS, duration])).sort((a, b) => a - b).map((m) => <option key={m} value={m}>{fmtDuration(m)}</option>)}
             </select></div>
         </div>
         {(localCheck === 'gap' || localCheck === 'ambiguous') && (
-          <p data-testid="text-dst-warning" className="flex gap-2 rounded-2xl bg-accent/60 px-4 py-3 text-xs"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          <p data-testid="text-dst-warning" className="flex gap-2 rounded-xl border border-[hsl(38_60%_75%)] bg-[hsl(41_78%_94%)] px-4 py-3 text-xs"><AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             {localCheck === 'gap' ? 'Clocks jump forward at this time in this timezone, so it doesn’t exist that day — pick another time.' : 'Clocks fall back here, so this time happens twice that day. Pick a time outside the change — it can’t be saved.'}</p>
         )}
 
-        <div className="grid grid-cols-2 rounded-full bg-foreground/[0.06] p-1" role="radiogroup" aria-label="In person or online">
+        <div className="grid grid-cols-2 rounded-xl bg-foreground/[0.05] p-1" role="radiogroup" aria-label="In person or online">
           {([['in_person', 'In person', Users], ['remote', 'Online', Video]] as const).map(([m, label, Icon]) => (
-            <button type="button" role="radio" aria-checked={mode === m} key={m} data-testid={`option-mode-${m}`} onClick={() => setMode(m)} className={cn('flex items-center justify-center gap-1.5 rounded-full py-2.5 text-sm transition', mode === m && 'bg-card shadow-sm')}><Icon className="h-4 w-4" />{label}</button>
+            <button type="button" role="radio" aria-checked={mode === m} key={m} data-testid={`option-mode-${m}`} onClick={() => setMode(m)} className={cn('flex min-h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-medium transition-colors', mode === m ? 'border border-border bg-card text-foreground shadow-[0_1px_2px_hsl(335_30%_20%/.06)]' : 'text-muted-foreground hover:text-foreground')}><Icon className="h-4 w-4" />{label}</button>
           ))}
         </div>
 
         <div className="space-y-1.5"><Label htmlFor="df-loc" className={lbl}>{mode === 'remote' ? 'Where (or what)' : 'Where'}</Label>
-          <Input id="df-loc" data-testid="input-date-location" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={mode === 'remote' ? 'Video call, same playlist' : 'Neighbourhood, venue name'} className="h-12 rounded-2xl" /></div>
+          <Input id="df-loc" data-testid="input-date-location" maxLength={200} value={location} onChange={(e) => setLocation(e.target.value)} placeholder={mode === 'remote' ? 'Video call, same playlist' : 'Neighbourhood, venue name'} className="h-12 rounded-xl bg-card" /></div>
 
         {mode === 'remote' ? (
           <div className="space-y-1.5"><Label htmlFor="df-url" className={lbl}>Call link · optional</Label>
             <div className="relative"><Link2 className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input id="df-url" data-testid="input-date-meeting-url" type="url" inputMode="url" maxLength={1000} value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} placeholder="https://" className="h-12 rounded-2xl pl-10" /></div></div>
+              <Input id="df-url" data-testid="input-date-meeting-url" type="url" inputMode="url" maxLength={1000} value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} placeholder="https://" className="h-12 rounded-xl pl-10" /></div></div>
         ) : (
-          <div className="rounded-[22px] border border-dashed border-foreground/20 p-4">
+          <div className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-medium">Meeting point <span className="font-normal text-muted-foreground">· optional</span></p>
                 <p className="mt-0.5 text-xs text-muted-foreground">{point ? `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}` : 'Lets you check "are we here?" on the day. Asks for location only when you tap.'}</p>
               </div>
-              {point && <button type="button" data-testid="button-clear-meeting-point" onClick={() => { setPoint(null); setGeoMsg(null); }} aria-label="Clear meeting point" className="rounded-full p-1.5 hover:bg-foreground/5"><X className="h-4 w-4" /></button>}
+              {point && <button type="button" data-testid="button-clear-meeting-point" onClick={() => { setPoint(null); setGeoMsg(null); }} aria-label="Clear meeting point" className="grid h-10 w-10 place-items-center rounded-full hover:bg-foreground/5"><X className="h-4 w-4" /></button>}
             </div>
-            <button type="button" data-testid="button-set-meeting-point" disabled={locating} onClick={usePoint} className="mt-3 flex items-center gap-1.5 rounded-full bg-foreground/[0.07] px-3.5 py-2 text-xs font-medium active:scale-95 transition-transform disabled:opacity-60">
+            <button type="button" data-testid="button-set-meeting-point" disabled={locating} onClick={usePoint} className="mt-3 flex min-h-10 items-center gap-1.5 rounded-full border border-border px-3.5 text-[13px] font-medium transition-colors hover:bg-foreground/5 disabled:opacity-60">
               {locating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : point ? <MapPin className="h-3.5 w-3.5" /> : <Crosshair className="h-3.5 w-3.5" />}
               {locating ? 'Finding you…' : point ? 'Re-pin to where I am now' : 'Use where I am now'}
             </button>
@@ -172,14 +172,14 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
 
         <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Category">
           {CATEGORIES.map((c) => (
-            <button type="button" role="radio" aria-checked={category === c} key={c} data-testid={`option-date-category-${c.toLowerCase()}`} onClick={() => setCategory(c)} className={cn('rounded-full px-3.5 py-2 text-sm transition', category === c ? 'bg-foreground text-background' : 'bg-card')}>{c}</button>
+            <button type="button" role="radio" aria-checked={category === c} key={c} data-testid={`option-date-category-${c.toLowerCase()}`} onClick={() => setCategory(c)} className={cn('min-h-10 rounded-full border px-3.5 text-sm transition-colors', category === c ? 'border-foreground bg-foreground text-background' : 'border-border bg-card text-muted-foreground hover:text-foreground')}>{c}</button>
           ))}
         </div>
         <div><Label htmlFor="df-notes" className="sr-only">Notes</Label>
-          <Textarea id="df-notes" data-testid="input-date-notes" maxLength={5000} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes, things to bring, the vibe" className="min-h-28 rounded-2xl" /></div>
+          <Textarea id="df-notes" data-testid="input-date-notes" maxLength={5000} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes, things to bring, the vibe" className="min-h-28 rounded-xl bg-card" /></div>
       </div>
-      {error && <p role="alert" data-testid="text-date-error" className="mt-4 rounded-2xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>}
-      <button data-testid="button-save-date" disabled={pending} className="mt-6 w-full rounded-full bg-primary py-4 font-medium text-primary-foreground transition active:scale-[.98] disabled:opacity-50">
+      {error && <p role="alert" data-testid="text-date-error" className="mt-4 rounded-xl border border-destructive/25 bg-destructive/[0.06] px-4 py-2.5 text-sm text-destructive">{error}</p>}
+      <button data-testid="button-save-date" disabled={pending} className="mt-6 min-h-[52px] w-full rounded-full bg-primary font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-[.99] disabled:opacity-50">
         {pending ? 'Saving...' : plan ? (resetsApproval ? 'Save & re-propose' : 'Save changes') : 'Send proposal'}
       </button>
     </form>

@@ -54,57 +54,57 @@ export default function MemoriesPage() {
 
   return (
     <div>
-      <PageHeader kicker={`${total} kept`} title={<>Our <em className="text-primary">pages</em></>}>
-        <button data-testid="button-new-memory" onClick={() => setEditing('new')} className="grid h-12 w-12 place-items-center rounded-full bg-primary text-primary-foreground shadow-[0_10px_24px_-10px_hsl(12_76%_45%/.8)] transition active:scale-90" aria-label="New memory"><Plus className="h-5 w-5" /></button>
+      <PageHeader kicker={`${total} kept`} title={<>Our <em className="font-normal text-primary">pages</em></>}>
+        <button data-testid="button-new-memory" onClick={() => setEditing('new')} className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-primary pl-3.5 pr-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-95" aria-label="New memory"><Plus className="h-4 w-4" /><span className="hidden min-[400px]:inline" aria-hidden>Add</span></button>
       </PageHeader>
 
-      <div className="sticky top-0 z-20 -mx-5 bg-background/85 px-5 pb-3 pt-1 backdrop-blur-md">
+      <div className="sticky top-14 z-20 -mx-5 border-b border-transparent bg-background/90 px-5 pb-3 pt-2 backdrop-blur-md">
         <div className="relative">
           <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input data-testid="input-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search titles and notes" className="h-12 rounded-full border-0 bg-card pl-11 shadow-[0_1px_0_hsl(var(--border))]" />
-          {search && <button data-testid="button-clear-search" onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1" aria-label="Clear"><X className="h-4 w-4" /></button>}
+          <Input data-testid="input-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search titles and notes" className="h-11 rounded-xl border-border bg-card pl-11" />
+          {search && <button data-testid="button-clear-search" onClick={() => setSearch('')} className="absolute right-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:text-foreground" aria-label="Clear"><X className="h-4 w-4" /></button>}
         </div>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          <button data-testid="filter-favorites" onClick={() => setFavOnly((v) => !v)} className={cn('flex shrink-0 items-center gap-1 rounded-full px-3.5 py-1.5 text-sm transition', favOnly ? 'bg-primary text-primary-foreground' : 'bg-card')}>
+        <div className="no-scrollbar mt-2.5 flex gap-1.5 overflow-x-auto">
+          <button data-testid="filter-favorites" onClick={() => setFavOnly((v) => !v)} aria-pressed={favOnly} className={cn('flex min-h-9 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors', favOnly ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-card text-muted-foreground hover:text-foreground')}>
             <Heart className={cn('h-3.5 w-3.5', favOnly && 'fill-current')} /> Favorites
           </button>
           {['All', ...CATEGORIES].map((c) => (
-            <button key={c} data-testid={`filter-${c.toLowerCase()}`} onClick={() => setCat(c)} className={cn('shrink-0 rounded-full px-3.5 py-1.5 text-sm transition', cat === c ? 'bg-foreground text-background' : 'bg-card')}>{c}</button>
+            <button key={c} data-testid={`filter-${c.toLowerCase()}`} onClick={() => setCat(c)} aria-pressed={cat === c} className={cn('min-h-9 shrink-0 rounded-full border px-3.5 text-[13px] font-medium transition-colors', cat === c ? 'border-foreground bg-foreground text-background' : 'border-border bg-card text-muted-foreground hover:text-foreground')}>{c}</button>
           ))}
         </div>
       </div>
 
       <div className="mt-4">
         {q.isLoading ? <ListSkeleton /> : q.isError ? <ErrorState error={q.error} onRetry={() => q.refetch()} label="Memories" /> : total === 0 ? (
-          <EmptyState title="Nothing written yet." body="The first memory doesn't need to be big. What made you laugh this week?" action={<button data-testid="button-empty-new-memory" onClick={() => setEditing('new')} className="rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Write the first one</button>} />
+          <EmptyState title="Nothing written yet." body="The first memory doesn't need to be big. What made you laugh this week?" action={<button data-testid="button-empty-new-memory" onClick={() => setEditing('new')} className="min-h-11 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Write the first one</button>} />
         ) : filtered.length === 0 ? (
-          <EmptyState title="No matches." body="Try another word, or clear the filters." action={<button data-testid="button-reset-filters" onClick={() => { setSearch(''); setCat('All'); setFavOnly(false); }} className="rounded-full bg-foreground px-5 py-3 text-sm text-background">Reset filters</button>} />
+          <EmptyState title="No matches." body="Try another word, or clear the filters." action={<button data-testid="button-reset-filters" onClick={() => { setSearch(''); setCat('All'); setFavOnly(false); }} className="min-h-11 rounded-full border border-foreground/15 bg-card px-5 text-sm font-medium hover:bg-foreground/5">Reset filters</button>} />
         ) : (
-          <div className="relative space-y-8 before:absolute before:bottom-0 before:left-[7px] before:top-2 before:w-px before:bg-foreground/15">
+          <div className="relative space-y-8 before:absolute before:bottom-0 before:left-[5px] before:top-3 before:w-px before:bg-border">
             {groups.map((g) => (
-              <section key={g.key} className="relative pl-7">
-                <span className="absolute left-0 top-1.5 h-[15px] w-[15px] rounded-full border-[3px] border-background bg-primary" />
-                <h2 className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{g.label}</h2>
-                <div className="mt-3 space-y-4">
+              <section key={g.key} className="relative pl-6 sm:pl-8">
+                <span className="absolute left-0 top-[9px] h-[11px] w-[11px] rounded-full border-2 border-background bg-primary ring-1 ring-primary/30" aria-hidden />
+                <h2 className="font-display text-lg font-medium">{g.label} <span className="ml-1 font-sans text-xs font-normal text-muted-foreground tnum">{g.items.length}</span></h2>
+                <div className="mt-3 space-y-3">
                   <AnimatePresence initial={false}>
                     {g.items.map((m) => (
-                      <motion.article layout key={m.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} data-testid={`card-memory-${m.id}`} className="overflow-hidden rounded-[26px] bg-card shadow-[0_1px_0_hsl(var(--border))]">
+                      <motion.article layout key={m.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96 }} data-testid={`card-memory-${m.id}`} className="surface overflow-hidden">
                         {m.photoPath && <Photo path={m.photoPath} alt={m.title} className="aspect-[4/3] w-full" />}
                         <div className="p-4">
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
-                              <div className="flex items-center gap-2"><CategoryChip category={m.category} /><span className="font-mono text-[10px] text-muted-foreground">{fmtDate(m.date, { weekday: 'short', month: 'short', day: 'numeric' })}</span></div>
-                              <h3 className="font-display mt-2 text-xl leading-tight">{m.title}</h3>
+                              <div className="flex items-center gap-2"><CategoryChip category={m.category} /><span className="text-xs text-muted-foreground">{fmtDate(m.date, { weekday: 'short', month: 'short', day: 'numeric' })}</span></div>
+                              <h3 className="font-display mt-2 text-xl leading-snug break-words">{m.title}</h3>
                             </div>
-                            <motion.button whileTap={{ scale: 0.7 }} data-testid={`button-favorite-${m.id}`} aria-label="Favorite" onClick={() => update.mutate({ id: m.id, data: memoryToInput(m, { favorite: !m.favorite }) })} className="shrink-0 p-1">
-                              <Heart className={cn('h-6 w-6 transition', m.favorite ? 'fill-primary text-primary' : 'text-foreground/30')} />
+                            <motion.button whileTap={{ scale: 0.7 }} data-testid={`button-favorite-${m.id}`} aria-label="Favorite" aria-pressed={m.favorite} onClick={() => update.mutate({ id: m.id, data: memoryToInput(m, { favorite: !m.favorite }) })} className="-mr-1.5 -mt-1 grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-foreground/5">
+                              <Heart className={cn('h-[22px] w-[22px] transition-colors', m.favorite ? 'fill-primary text-primary' : 'text-foreground/35')} />
                             </motion.button>
                           </div>
-                          {m.dateId != null && <Link href={`/dates/${m.dateId}`} data-testid={`link-memory-date-${m.id}`} className="mt-2 inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs"><CalendarHeart className="h-3 w-3" /> From a date · open album</Link>}
+                          {m.dateId != null && <Link href={`/dates/${m.dateId}`} data-testid={`link-memory-date-${m.id}`} className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-primary hover:underline"><CalendarHeart className="h-3.5 w-3.5" /> From a date · open album</Link>}
                           {m.note && <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-foreground/80">{m.note}</p>}
-                          <div className="mt-3 flex justify-end gap-1">
-                            <button data-testid={`button-edit-memory-${m.id}`} onClick={() => setEditing(m)} className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs hover:bg-foreground/5"><Pencil className="h-3.5 w-3.5" /> Edit</button>
-                            <button data-testid={`button-delete-memory-${m.id}`} onClick={() => setDeleting(m)} className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-destructive hover:bg-destructive/5"><Trash2 className="h-3.5 w-3.5" /> Delete</button>
+                          <div className="-mx-2 -mb-1 mt-3 flex justify-end gap-1 border-t border-border pt-2">
+                            <button data-testid={`button-edit-memory-${m.id}`} onClick={() => setEditing(m)} className="flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-[13px] text-muted-foreground hover:bg-foreground/5 hover:text-foreground"><Pencil className="h-3.5 w-3.5" /> Edit</button>
+                            <button data-testid={`button-delete-memory-${m.id}`} onClick={() => setDeleting(m)} className="flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-[13px] text-destructive hover:bg-destructive/5"><Trash2 className="h-3.5 w-3.5" /> Delete</button>
                           </div>
                         </div>
                       </motion.article>
@@ -124,7 +124,7 @@ export default function MemoriesPage() {
       </Drawer>
 
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
-        <AlertDialogContent className="rounded-[28px]">
+        <AlertDialogContent className="rounded-[20px]">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-display text-2xl">Remove this memory?</AlertDialogTitle>
             <AlertDialogDescription>"{deleting?.title}" will be gone for both of you. This can't be undone.</AlertDialogDescription>

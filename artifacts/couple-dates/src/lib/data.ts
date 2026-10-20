@@ -24,11 +24,11 @@ export const CATEGORIES = ['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone
 export type Category = (typeof CATEGORIES)[number];
 
 export const CATEGORY_TONE: Record<string, string> = {
-  Everyday: 'bg-secondary text-secondary-foreground',
-  Adventure: 'bg-[hsl(170_30%_86%)] text-[hsl(170_40%_20%)]',
-  Food: 'bg-accent text-accent-foreground',
-  Travel: 'bg-[hsl(205_45%_88%)] text-[hsl(210_45%_24%)]',
-  Milestone: 'bg-primary text-primary-foreground',
+  Everyday: 'bg-secondary text-[hsl(335_30%_30%)]',
+  Adventure: 'bg-[hsl(165_28%_90%)] text-[hsl(170_40%_22%)]',
+  Food: 'bg-[hsl(38_70%_89%)] text-[hsl(28_55%_28%)]',
+  Travel: 'bg-[hsl(208_40%_91%)] text-[hsl(210_45%_26%)]',
+  Milestone: 'bg-[hsl(11_60%_92%)] text-[hsl(11_60%_34%)]',
 };
 
 export function useMemoriesQ() {
@@ -140,11 +140,11 @@ export function getPosition(): Promise<GeolocationPosition> {
 }
 
 export const STATUS_META: Record<string, { label: string; tone: string }> = {
-  proposed: { label: 'Proposed', tone: 'bg-accent text-accent-foreground' },
-  planned: { label: 'Planned', tone: 'bg-[hsl(170_30%_86%)] text-[hsl(170_40%_20%)]' },
+  proposed: { label: 'Proposed', tone: 'bg-[hsl(38_70%_89%)] text-[hsl(28_55%_28%)]' },
+  planned: { label: 'Planned', tone: 'bg-[hsl(165_28%_90%)] text-[hsl(170_40%_22%)]' },
   active: { label: 'Happening now', tone: 'bg-primary text-primary-foreground' },
-  completed: { label: 'Done', tone: 'bg-foreground text-background' },
-  declined: { label: 'Declined', tone: 'bg-muted text-muted-foreground line-through decoration-1' },
+  completed: { label: 'Done', tone: 'bg-muted text-foreground' },
+  declined: { label: 'Declined', tone: 'bg-muted text-muted-foreground' },
 };
 
 export function fmtTime(t?: string | null): string {

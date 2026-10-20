@@ -80,17 +80,17 @@
   --elevate-1: rgba(0, 0, 0, 0.03);
   --elevate-2: rgba(0, 0, 0, 0.08);
 
-  --background: 36 45% 95%;
+  --background: 38 36% 96%;
 
-  --foreground: 330 32% 15%;
+  --foreground: 335 26% 14%;
 
-  --border: 30 24% 84%;
+  --border: 32 20% 86%;
 
-  --card: 38 60% 98%;
+  --card: 40 50% 99%;
 
   --card-foreground: 330 32% 15%;
 
-  --card-border: 30 24% 86%;
+  --card-border: 32 20% 87%;
 
   --sidebar: 36 40% 93%;
 
@@ -114,19 +114,19 @@
 
   --popover-border: 30 24% 84%;
 
-  --primary: 12 76% 52%;
+  --primary: 11 64% 47%;
 
   --primary-foreground: 38 60% 98%;
 
-  --secondary: 320 32% 91%;
+  --secondary: 340 30% 93%;
 
   --secondary-foreground: 330 32% 18%;
 
-  --muted: 34 30% 90%;
+  --muted: 36 24% 92%;
 
-  --muted-foreground: 330 10% 40%;
+  --muted-foreground: 335 9% 37%;
 
-  --accent: 44 92% 72%;
+  --accent: 41 78% 85%;
 
   --accent-foreground: 330 32% 15%;
 
@@ -134,8 +134,8 @@
 
   --destructive-foreground: 38 60% 98%;
 
-  --input: 30 22% 80%;
-  --ring: 12 76% 52%;
+  --input: 32 18% 80%;
+  --ring: 11 64% 47%;
   --chart-1: 12 76% 52%;
   --chart-2: 330 40% 35%;
   --chart-3: 44 92% 60%;
@@ -145,7 +145,7 @@
   --app-font-sans: 'Outfit', sans-serif;
   --app-font-serif: 'Fraunces', Georgia, serif;
   --app-font-mono: 'Spline Sans Mono', monospace;
-  --radius: 1rem; /* 8px */
+  --radius: 1rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); /*replace with H S L */
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); /*replace with H S L */
   --shadow-sm:
@@ -434,21 +434,42 @@
   }
 }
 
-body { background-image: radial-gradient(circle at 15% -10%, hsl(12 76% 52% / 0.10), transparent 45%), radial-gradient(circle at 110% 20%, hsl(320 40% 70% / 0.18), transparent 40%); background-attachment: fixed; }
-body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:60; opacity:.35; mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .15 0 0 0 0 .2 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-.font-display { font-family: var(--app-font-serif); font-optical-sizing: auto; letter-spacing: -0.02em; }
-.font-mono { font-family: var(--app-font-mono); }
+/* ---------- Couple Dates foundation ---------- */
+html { -webkit-tap-highlight-color: transparent; scroll-padding-bottom: calc(7rem + env(safe-area-inset-bottom)); }
+body { font-feature-settings: 'ss01', 'cv11'; text-rendering: optimizeLegibility; }
+::selection { background: hsl(var(--primary) / .18); }
+:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; border-radius: 10px; }
+
+.font-display { font-family: var(--app-font-serif); font-optical-sizing: auto; letter-spacing: -0.018em; font-variation-settings: 'SOFT' 50; }
+.font-mono { font-family: var(--app-font-mono); font-variant-numeric: tabular-nums; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Small section label: quiet sans, not shouting mono */
+.eyebrow { font-size: 12px; font-weight: 500; letter-spacing: .02em; color: hsl(var(--muted-foreground)); }
+
+/* One surface recipe for every card in the app */
+.surface { background: hsl(var(--card)); border: 1px solid hsl(var(--card-border)); border-radius: 20px; box-shadow: 0 1px 2px hsl(335 30% 20% / .04); }
+.surface-link { transition: border-color .15s ease, transform .15s ease; }
+.surface-link:hover { border-color: hsl(var(--foreground) / .22); }
+.surface-link:active { transform: scale(.99); }
+.icon-tile { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; background: hsl(var(--secondary)); color: hsl(var(--primary)); }
+
+/* Legacy decorative hooks, now restrained so older pages inherit the calmer system */
 .stub { position: relative; }
-.stub::before, .stub::after { content:''; position:absolute; top:50%; width:18px; height:18px; border-radius:999px; background:hsl(var(--background)); transform:translateY(-50%); }
-.stub::before { left:-9px; } .stub::after { right:-9px; }
-.perf { background-image: linear-gradient(to right, hsl(var(--border)) 50%, transparent 0); background-size: 8px 1px; background-repeat: repeat-x; height:1px; }
-.polaroid { background: hsl(38 60% 98%); padding: 8px 8px 28px; box-shadow: 0 1px 0 hsl(30 24% 84%), 0 14px 30px -14px hsl(330 40% 20% / .35); }
-@keyframes rise { from { opacity:0; transform: translateY(14px);} to {opacity:1; transform:none;} }
-.rise { animation: rise .6s cubic-bezier(.2,.7,.2,1) both; }
-@keyframes stamp { 0% { opacity:0; transform: scale(1.6) rotate(-14deg);} 60% {opacity:1; transform: scale(.94) rotate(-6deg);} 100% {transform: scale(1) rotate(-6deg);} }
-.stamp-in { animation: stamp .5s cubic-bezier(.2,.7,.2,1) both; }
-.pb-nav { padding-bottom: calc(8rem + env(safe-area-inset-bottom)); }
-html { scroll-padding-bottom: calc(8rem + env(safe-area-inset-bottom)); }
-.cl-formFieldInput::placeholder { color: hsl(330 10% 55%); opacity: 1; }
+.perf { height: 1px; background: hsl(var(--border)); }
+.polaroid { background: hsl(var(--card)); padding: 6px; border-radius: 14px; border: 1px solid hsl(var(--card-border)); box-shadow: 0 10px 24px -18px hsl(335 30% 20% / .35); }
+.polaroid img { border-radius: 9px; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.rise { animation: rise .4s cubic-bezier(.2,.7,.2,1) both; }
+.stamp-in { animation: rise .4s ease both; }
+.pb-nav { padding-bottom: calc(7.5rem + env(safe-area-inset-bottom)); }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+.cl-formFieldInput::placeholder { color: hsl(335 9% 50%); opacity: 1; }
 .cl-formButtonPrimary:hover { filter: brightness(1.05); }
