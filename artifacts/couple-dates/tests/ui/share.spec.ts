@@ -13,6 +13,14 @@ test('memory sharing requires explicit consent before download or caption copy',
 
   const dialog = page.getByTestId('dialog-share-preview');
   await expect(dialog).toBeVisible();
+  const photoOption = page.getByTestId('checkbox-share-photo');
+  await expect(photoOption).not.toBeChecked();
+  const originalPreview = await page.getByTestId('img-share-preview').getAttribute('src');
+  await photoOption.check();
+  await expect.poll(() => page.getByTestId('img-share-preview').getAttribute('src')).not.toBe(originalPreview);
+  await photoOption.uncheck();
+  await expect.poll(() => page.getByTestId('img-share-preview').getAttribute('src')).not.toBe(originalPreview);
+  await expect(page.getByTestId('text-share-caption-preview')).toContainText('Food');
   await expect(page.getByTestId('text-share-warning')).toContainText('may save or repost');
   await expect(page.getByTestId('button-share-confirm')).toHaveText('I understand — continue');
   await expect(page.getByTestId('button-share-download')).toHaveCount(0);
@@ -77,7 +85,7 @@ test('supported native file share happens only after the second confirmation act
   await expect(page.getByTestId('dialog-share-preview')).not.toBeVisible();
 });
 
-test('recap sharing includes aggregate details but not private memory titles or notes', async ({ page, network }) => {
+test('recap sharing includes only selected details and keeps the caption aligned with its preview', async ({ page, network }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false });
     Object.defineProperty(navigator, 'clipboard', {
@@ -89,11 +97,19 @@ test('recap sharing includes aggregate details but not private memory titles or 
   const year = await page.getByTestId('text-recap-year').textContent();
   await page.getByTestId('button-share-recap').click();
   await expect(page.getByTestId('img-share-preview')).toHaveAttribute('alt', `Preview of ${year} recap share card`);
+  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(year || '');
+  await expect(page.getByTestId('checkbox-share-memory-count')).not.toBeChecked();
+  await expect(page.getByTestId('checkbox-share-date-count')).not.toBeChecked();
+  await page.getByTestId('checkbox-share-memory-count').check();
+  await page.getByTestId('checkbox-share-date-count').check();
+  await page.getByTestId('checkbox-share-top-category').check();
+  const previewCaption = `${year}: 1 memory · 2 dates · Food`;
+  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(previewCaption);
   await page.getByTestId('button-share-confirm').click();
   await page.getByTestId('button-share-copy-caption').click();
 
   const caption = await page.evaluate(() => (window as Window & { __copiedCaption?: string }).__copiedCaption);
-  expect(caption).toBe(`${year}: 1 memory, 2 dates · Food`);
+  expect(caption).toBe(previewCaption);
   expect(caption).not.toContain('A very long synthetic date title');
   expect(caption).not.toContain('Original synthetic note');
   expect(network.writes).toEqual([]);

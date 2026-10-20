@@ -18,7 +18,29 @@ type RecapShare = {
   year: number;
   memoryCount: number;
   dateCount: number;
+  averageRating: number;
+  activeDays: number;
+  longestStreak: number;
   topCategory: string | null;
+};
+type ShareOptions = {
+  includePhoto: boolean;
+  memoryCount: boolean;
+  dateCount: boolean;
+  averageRating: boolean;
+  activeDays: boolean;
+  longestStreak: boolean;
+  topCategory: boolean;
+};
+
+const DEFAULT_OPTIONS: ShareOptions = {
+  includePhoto: false,
+  memoryCount: false,
+  dateCount: false,
+  averageRating: false,
+  activeDays: false,
+  longestStreak: false,
+  topCategory: false,
 };
 
 export function ShareCardDialog({ open, onOpenChange, content }: {
@@ -37,6 +59,10 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
   const [fallbackReady, setFallbackReady] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const contentKey = content ? JSON.stringify(content) : '';
+  const [savedOptions, setSavedOptions] = useState<{ contentKey: string; options: ShareOptions } | null>(null);
+  const options = savedOptions?.contentKey === contentKey ? savedOptions.options : DEFAULT_OPTIONS;
+  const optionsKey = JSON.stringify(options);
+  const caption = content ? captionFor(content, options) : '';
 
   useEffect(() => {
     if (!open || !content) return;
@@ -52,7 +78,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
     setPreviewUrl('');
     setFile(null);
 
-    void buildShareCard(content).then(({ blob, photoFailed }) => {
+    void buildShareCard(content, options).then(({ blob, photoFailed }) => {
       if (cancelled) return;
       const nextFile = new File([blob], content.kind === 'memory' ? 'memory-card.png' : `year-${content.year}-recap.png`, { type: 'image/png' });
       objectUrl = URL.createObjectURL(blob);
@@ -74,16 +100,30 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [open, contentKey, attempt]);
+  }, [open, contentKey, optionsKey, attempt]);
 
-  const caption = content ? captionFor(content) : '';
+  function updateOption(key: keyof ShareOptions, value: boolean) {
+    setConsented(false);
+    setCopied(false);
+    setFallbackReady(false);
+    setError('');
+    setSavedOptions({
+      contentKey,
+      options: { ...options, [key]: value },
+    });
+  }
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) setSavedOptions(null);
+    onOpenChange(nextOpen);
+  }
 
   async function shareNative() {
     if (!file) return;
     const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
     try {
       await nav.share?.({ files: [file], text: caption });
-      onOpenChange(false);
+      handleOpenChange(false);
     } catch (reason) {
       if ((reason as { name?: string } | null)?.name === 'AbortError') {
         setError('Sharing was canceled. Nothing was sent.');
@@ -123,14 +163,35 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent data-testid="dialog-share-preview" className="max-h-[92dvh] max-w-md overflow-y-auto rounded-[24px] p-5 sm:p-6">
         <DialogHeader className="pr-7 text-left">
           <DialogTitle className="font-display text-2xl">Share a little of this</DialogTitle>
-          <DialogDescription>Review the image before choosing whether to share it.</DialogDescription>
+          <DialogDescription>Choose what to include, then review the image and caption before sharing.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
+          <section aria-label="Choose what to include" className="space-y-2 rounded-xl border border-border bg-secondary/25 p-3.5">
+            <h3 className="text-sm font-medium">Choose what to include</h3>
+            {content?.kind === 'memory' && content.photoPath && (
+              <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-sm">
+                <input data-testid="checkbox-share-photo" type="checkbox" checked={options.includePhoto} disabled={consented} onChange={(e) => updateOption('includePhoto', e.target.checked)} className="h-4 w-4 accent-primary" />
+                Include photo
+              </label>
+            )}
+            {content?.kind === 'recap' && (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                <OptionCheckbox testId="checkbox-share-memory-count" label="Memories" checked={options.memoryCount} disabled={consented} onChange={(value) => updateOption('memoryCount', value)} />
+                <OptionCheckbox testId="checkbox-share-date-count" label="Dates" checked={options.dateCount} disabled={consented} onChange={(value) => updateOption('dateCount', value)} />
+                {content.averageRating > 0 && <OptionCheckbox testId="checkbox-share-average-rating" label="Average rating" checked={options.averageRating} disabled={consented} onChange={(value) => updateOption('averageRating', value)} />}
+                <OptionCheckbox testId="checkbox-share-active-days" label="Active days" checked={options.activeDays} disabled={consented} onChange={(value) => updateOption('activeDays', value)} />
+                <OptionCheckbox testId="checkbox-share-longest-streak" label="Longest streak" checked={options.longestStreak} disabled={consented} onChange={(value) => updateOption('longestStreak', value)} />
+                {content.topCategory && <OptionCheckbox testId="checkbox-share-top-category" label="Top category" checked={options.topCategory} disabled={consented} onChange={(value) => updateOption('topCategory', value)} />}
+              </div>
+            )}
+            {content?.kind === 'recap' && <p className="text-xs text-muted-foreground">Recap details are off until you choose them.</p>}
+          </section>
+
           <div className="overflow-hidden rounded-2xl border border-border bg-secondary/40">
             {loading ? (
               <div data-testid="share-card-loading" role="status" className="grid aspect-[4/5] place-items-center bg-secondary/40">
@@ -149,6 +210,12 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
           <p data-testid="text-share-warning" className="rounded-xl border border-[hsl(34_55%_74%)] bg-[hsl(38_65%_94%)] px-3.5 py-3 text-sm leading-relaxed text-[hsl(28_45%_25%)]">
             Once shared, recipients may save or repost this image. Only the details shown in this preview are included.
           </p>
+          {previewUrl && (
+            <section data-testid="share-caption-preview" aria-label="Caption preview" className="space-y-1 rounded-xl border border-border px-3.5 py-3">
+              <h3 className="text-xs font-medium text-muted-foreground">Caption</h3>
+              <p data-testid="text-share-caption-preview" className="break-words text-sm">{caption}</p>
+            </section>
+          )}
           <p className="text-xs text-muted-foreground">On mobile, press and hold the preview to save the image if your browser does not offer a download.</p>
           {photoWarning && <p data-testid="text-share-photo-warning" className="text-sm text-muted-foreground">The saved photo could not be loaded; the card uses a text-only design.</p>}
           {error && previewUrl && <p role="alert" data-testid="text-share-error" className="text-sm text-destructive">{error}</p>}
@@ -185,12 +252,34 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
   );
 }
 
-function captionFor(content: MemoryShare | RecapShare) {
-  if (content.kind === 'memory') return `${content.title} · ${content.date} · ${content.category}`;
-  return `${content.year}: ${content.memoryCount} ${content.memoryCount === 1 ? 'memory' : 'memories'}, ${content.dateCount} ${content.dateCount === 1 ? 'date' : 'dates'}${content.topCategory ? ` · ${content.topCategory}` : ''}`;
+function OptionCheckbox({ testId, label, checked, disabled, onChange }: {
+  testId: string;
+  label: string;
+  checked: boolean;
+  disabled: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-sm">
+      <input data-testid={testId} type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 accent-primary" />
+      {label}
+    </label>
+  );
 }
 
-async function buildShareCard(content: MemoryShare | RecapShare): Promise<{ blob: Blob; photoFailed: boolean }> {
+function captionFor(content: MemoryShare | RecapShare, options: ShareOptions) {
+  if (content.kind === 'memory') return `${content.title} · ${content.date} · ${content.category}`;
+  const details: string[] = [];
+  if (options.memoryCount) details.push(`${content.memoryCount} ${content.memoryCount === 1 ? 'memory' : 'memories'}`);
+  if (options.dateCount) details.push(`${content.dateCount} ${content.dateCount === 1 ? 'date' : 'dates'}`);
+  if (options.averageRating) details.push(`${content.averageRating.toFixed(1)} average rating`);
+  if (options.activeDays) details.push(`${content.activeDays} active days`);
+  if (options.longestStreak) details.push(`${content.longestStreak}-day longest streak`);
+  if (options.topCategory && content.topCategory) details.push(content.topCategory);
+  return `${content.year}${details.length ? `: ${details.join(' · ')}` : ''}`;
+}
+
+async function buildShareCard(content: MemoryShare | RecapShare, options: ShareOptions): Promise<{ blob: Blob; photoFailed: boolean }> {
   const canvas = document.createElement('canvas');
   canvas.width = 1080;
   canvas.height = 1350;
@@ -201,7 +290,7 @@ async function buildShareCard(content: MemoryShare | RecapShare): Promise<{ blob
   context.fillRect(0, 0, canvas.width, canvas.height);
   let photoFailed = false;
   let photo: HTMLImageElement | null = null;
-  if (content.kind === 'memory' && content.photoPath) {
+  if (content.kind === 'memory' && options.includePhoto && content.photoPath) {
     const src = photoUrl(content.photoPath);
     if (src) {
       try {
@@ -242,15 +331,17 @@ async function buildShareCard(content: MemoryShare | RecapShare): Promise<{ blob
     context.font = '32px sans-serif';
     context.fillText(`${content.date}  ·  ${content.category}`, 88, 1196, 880);
   } else {
-    context.fillText(String(content.year), 88, 1030);
-    context.font = '42px Georgia, serif';
-    context.fillText(`${content.memoryCount} ${content.memoryCount === 1 ? 'memory' : 'memories'}`, 88, 1112, 880);
-    context.fillText(`${content.dateCount} ${content.dateCount === 1 ? 'date' : 'dates'}`, 88, 1170, 880);
-    if (content.topCategory) {
-      context.fillStyle = '#79645e';
-      context.font = '28px sans-serif';
-      context.fillText(`Most-kept category · ${content.topCategory}`, 88, 1232, 880);
-    }
+    context.fillText(String(content.year), 88, 1010);
+    const details: string[] = [];
+    if (options.memoryCount) details.push(`${content.memoryCount} ${content.memoryCount === 1 ? 'memory' : 'memories'}`);
+    if (options.dateCount) details.push(`${content.dateCount} ${content.dateCount === 1 ? 'date' : 'dates'}`);
+    if (options.averageRating) details.push(`${content.averageRating.toFixed(1)} average rating`);
+    if (options.activeDays) details.push(`${content.activeDays} active days`);
+    if (options.longestStreak) details.push(`${content.longestStreak}-day longest streak`);
+    if (options.topCategory && content.topCategory) details.push(`Top category · ${content.topCategory}`);
+    context.fillStyle = '#79645e';
+    context.font = '30px sans-serif';
+    details.forEach((detail, index) => context.fillText(detail, 88, 1070 + index * 45, 880));
   }
 
   const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error('Could not encode image')), 'image/png'));

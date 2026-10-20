@@ -87,7 +87,16 @@ export default function RecapPage() {
       <ShareCardDialog
         open={shareOpen}
         onOpenChange={setShareOpen}
-        content={r && !empty ? { kind: 'recap', year, memoryCount: r.memoryCount, dateCount: r.dateCount, topCategory: r.topCategory || null } : null}
+        content={r && !empty ? {
+          kind: 'recap',
+          year,
+          memoryCount: r.memoryCount,
+          dateCount: r.dateCount,
+          averageRating: r.averageRating,
+          activeDays: r.activeDays,
+          longestStreak: r.longestStreak,
+          topCategory: r.topCategory || null,
+        } : null}
       />
     </div>
   );
