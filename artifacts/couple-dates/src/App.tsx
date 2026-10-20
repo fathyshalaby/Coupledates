@@ -13,7 +13,7 @@ import { AppShell } from '@/components/shell';
 import { ErrorState, TwoRings } from '@/components/bits';
 import { CoupleContext } from '@/lib/couple-context';
 import {
-  NotFound, Landing, Onboarding, HomePage, MemoriesPage, DatesPage,
+  NotFound, Landing, HowItWorksPage, LongDistancePage, PricingPage, Onboarding, HomePage, MemoriesPage, DatesPage,
   StreaksPage, RecapPage, SettingsPage, DateDetailPage, PreferencesPage,
   AssistantPage, CalendarPage, BillingPage, AccountRecoveryPage,
 } from '@/lib/lazy-pages';
@@ -195,13 +195,24 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   useEffect(() => {
     const seg = location.split('/');
     const key = seg[1] === 'dates' && seg[2] ? 'date-detail' : seg[1] || '';
-    const names: Record<string, string> = { '': 'A private space for two', home: 'Our space', memories: 'Our memories', dates: 'Date night', streaks: 'Daily connection', recap: 'Our year together', settings: 'Our settings', 'date-detail': 'Date details', preferences: 'Date preferences', assistant: 'Date ideas', calendar: 'Calendar', billing: 'Our plan', 'sign-in': 'Sign in', 'sign-up': 'Create your account' };
+    const names: Record<string, string> = { '': 'A private space for two', 'how-it-works': 'How it works', 'long-distance': 'Long-distance dates', pricing: 'Pricing', home: 'Our space', memories: 'Our memories', dates: 'Date night', streaks: 'Daily connection', recap: 'Our year together', settings: 'Our settings', 'date-detail': 'Date details', preferences: 'Date preferences', assistant: 'Date ideas', calendar: 'Calendar', billing: 'Our plan', 'sign-in': 'Sign in', 'sign-up': 'Create your account' };
     names['recover-space'] = 'Recover your existing space';
-    const title = `${names[key] ?? 'Page not found'} · Couple Dates`;
+    const publicPage = ['', 'how-it-works', 'long-distance', 'pricing'].includes(key);
+    const title = `${names[key] ?? 'Page not found'} · ${publicPage ? 'Tuesday' : 'Couple Dates'}`;
+    const descriptions: Record<string, string> = {
+      '': 'A private shared space for exactly two: plan dates together, save everyday memories, and make room for the ordinary lovely days.',
+      'how-it-works': 'See how Tuesday works: one person creates a shared space, the other joins with an invite code, and both partners shape it together.',
+      'long-distance': 'Plan thoughtful online dates and keep shared memories across the distance. Tuesday helps you plan; calls happen wherever you choose.',
+      pricing: 'Every Tuesday feature is free during beta. Paid plans and checkout are paused.',
+    };
+    const description = descriptions[key] ?? 'A private shared space for exactly two to plan dates together and remember everyday moments.';
     document.title = title;
+    document.querySelector('meta[name="description"]')?.setAttribute('content', description);
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+    document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
     document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', title);
-    document.querySelector('meta[name="robots"]')?.setAttribute('content', key ? 'noindex, nofollow' : 'index, follow');
+    document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', description);
+    document.querySelector('meta[name="robots"]')?.setAttribute('content', publicPage ? 'index, follow' : 'noindex, nofollow');
   }, [location]);
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
@@ -229,6 +240,9 @@ function ClerkProviderWithRoutes() {
           <RoutedErrorBoundary>
             <Switch>
               <Route path="/" component={HomeRedirect} />
+              <Route path="/how-it-works" component={HowItWorksPage} />
+              <Route path="/long-distance" component={LongDistancePage} />
+              <Route path="/pricing" component={PricingPage} />
               <Route path="/sign-in/*?" component={SignInPage} />
               <Route path="/sign-up/*?" component={SignUpPage} />
               <Route path="/recover-space" component={AccountRecoveryRoute} />

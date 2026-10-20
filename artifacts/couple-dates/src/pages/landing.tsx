@@ -2,6 +2,7 @@ import { Link } from 'wouter';
 import { motion } from 'framer-motion';
 import { ArrowRight, Lock, MapPin, Heart } from 'lucide-react';
 import { CategoryChip, TwoRings } from '@/components/bits';
+import { MarketingNav, MarketingFooter } from '@/components/marketing';
 
 const base = import.meta.env.BASE_URL;
 
@@ -16,16 +17,7 @@ const WEEK = [true, true, false, true, true, true, false];
 export default function Landing() {
   return (
     <div className="min-h-[100dvh] overflow-x-hidden">
-      <nav className="mx-auto flex max-w-5xl items-center justify-between px-5 py-5">
-        <div className="flex items-center gap-2">
-          <img src={`${base}logo.svg`} alt="" className="h-8 w-8" />
-          <span className="font-display text-[17px] font-medium">Couple Dates</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link href="/sign-in" data-testid="link-sign-in" className="inline-flex min-h-10 items-center rounded-full px-4 text-sm font-medium hover:bg-foreground/5">Sign in</Link>
-          <Link href="/sign-up" data-testid="link-sign-up-nav" className="inline-flex min-h-10 items-center rounded-full bg-foreground px-4 text-sm font-medium text-background transition hover:bg-foreground/90">Start yours</Link>
-        </div>
-      </nav>
+      <MarketingNav />
 
       {/* HERO */}
       <section className="mx-auto grid max-w-5xl gap-10 px-5 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:items-center md:pt-16">
@@ -162,7 +154,8 @@ export default function Landing() {
           </Link>
         </div>
       </section>
-      <footer className="border-t border-foreground/10 py-6 text-center text-xs text-muted-foreground">Couple Dates / sample content on this page is illustrative</footer>
+      <div className="mx-auto max-w-5xl px-5 pb-5 text-xs text-muted-foreground">Sample content on this page is illustrative.</div>
+      <MarketingFooter />
     </div>
   );
 }

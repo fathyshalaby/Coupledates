@@ -3,6 +3,9 @@ import { lazyPage } from '@/components/page-loader';
 // Explicit imports let Vite emit independently loadable, base-path-aware chunks.
 export const NotFound = lazyPage(() => import('@/pages/not-found'));
 export const Landing = lazyPage(() => import('@/pages/landing'));
+export const HowItWorksPage = lazyPage(() => import('@/pages/marketing-how'));
+export const LongDistancePage = lazyPage(() => import('@/pages/marketing-distance'));
+export const PricingPage = lazyPage(() => import('@/pages/marketing-pricing'));
 export const Onboarding = lazyPage(() => import('@/pages/onboarding'));
 export const HomePage = lazyPage(() => import('@/pages/home'));
 export const MemoriesPage = lazyPage(() => import('@/pages/memories'));
