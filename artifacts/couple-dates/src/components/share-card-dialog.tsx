@@ -34,6 +34,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
   const [canNativeShare, setCanNativeShare] = useState(false);
   const [consented, setConsented] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [fallbackReady, setFallbackReady] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const contentKey = content ? JSON.stringify(content) : '';
 
@@ -47,6 +48,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
     setCanNativeShare(false);
     setConsented(false);
     setCopied(false);
+    setFallbackReady(false);
     setPreviewUrl('');
     setFile(null);
 
@@ -93,13 +95,16 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
   }
 
   async function copyCaption() {
+    setFallbackReady(false);
     try {
       await navigator.clipboard.writeText(caption);
       setCopied(true);
       setError('');
+      return true;
     } catch {
       setCopied(false);
       setError('The caption could not be copied. Check clipboard permission and try again.');
+      return false;
     }
   }
 
@@ -110,6 +115,11 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
     link.download = file.name;
     link.rel = 'noopener';
     link.click();
+  }
+
+  async function downloadAndCopy() {
+    downloadImage();
+    if (await copyCaption()) setFallbackReady(true);
   }
 
   return (
@@ -142,7 +152,14 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
           <p className="text-xs text-muted-foreground">On mobile, press and hold the preview to save the image if your browser does not offer a download.</p>
           {photoWarning && <p data-testid="text-share-photo-warning" className="text-sm text-muted-foreground">The saved photo could not be loaded; the card uses a text-only design.</p>}
           {error && previewUrl && <p role="alert" data-testid="text-share-error" className="text-sm text-destructive">{error}</p>}
-          {copied && <p role="status" data-testid="text-share-copied" className="flex items-center gap-1.5 text-sm text-primary"><Check className="h-4 w-4" /> Caption copied.</p>}
+          {copied && <p role="status" data-testid="text-share-copied" className="flex items-center gap-1.5 text-sm text-primary"><Check className="h-4 w-4" />{fallbackReady ? 'Image downloaded and caption copied.' : 'Caption copied.'}</p>}
+          {consented && !canNativeShare && previewUrl && (
+            <section data-testid="share-manual-fallback" className="space-y-2 rounded-xl border border-border bg-secondary/35 p-3.5">
+              <h3 className="text-sm font-medium">Ready to post manually</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">This browser can’t send the image directly to another app. Download the card and copy its caption to post them there. Nothing is uploaded and no private link is shared.</p>
+              <p data-testid="text-share-caption" className="break-words rounded-lg bg-background/70 px-3 py-2 text-sm">{caption}</p>
+            </section>
+          )}
         </div>
 
         <DialogFooter className="gap-2 sm:flex-col sm:space-x-0">
@@ -156,6 +173,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
             )
           ) : (
             <>
+              <Button data-testid="button-share-download-copy" disabled={!file} onClick={() => void downloadAndCopy()} className="w-full rounded-full"><Download className="h-4 w-4" />Download image + copy caption</Button>
               <Button data-testid="button-share-download" variant="outline" disabled={!file} onClick={downloadImage} className="w-full rounded-full"><Download className="h-4 w-4" />Download image</Button>
               <Button data-testid="button-share-copy-caption" variant="outline" onClick={() => void copyCaption()} className="w-full rounded-full"><Copy className="h-4 w-4" />{copied ? 'Copy caption again' : 'Copy caption'}</Button>
             </>
