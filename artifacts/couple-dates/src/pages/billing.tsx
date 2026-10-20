@@ -78,6 +78,7 @@ export default function BillingPage() {
   return (
     <div>
       <PageHeader kicker="Plan" title={<>Couple Dates <em className="text-primary">Plus</em></>} />
+      <p data-testid="text-beta-free-access" className="mb-4 rounded-[20px] bg-secondary/70 px-4 py-3 text-sm">Beta access: the AI date assistant, yearly recap and all other features are free. Existing subscription renewals are not changed automatically; use Manage subscription below if you need to turn one off.</p>
 
       {(checking || timedOut) && (
         <div role="status" data-testid="state-billing-checking" className="rise mb-4 flex items-start gap-3 rounded-[24px] bg-accent/60 p-4 text-sm">
@@ -98,13 +99,9 @@ export default function BillingPage() {
       <div className="mt-4 space-y-2.5">
         {phase === 'verifying' && <Btn testid="button-billing-verify" onClick={() => refresh.mutate()} disabled={refresh.isPending} primary>{refresh.isPending ? 'Checking...' : 'Check status again'}</Btn>}
 
-        {phase === 'free' && (s.checkoutAvailable
-          ? <Btn testid="button-billing-checkout" onClick={() => { trackUpgradeEntry('billing'); checkout.mutate(); }} disabled={busy} primary>{checkout.isPending ? 'Opening secure checkout...' : 'Upgrade our space'}</Btn>
-          : <p className="px-1 text-sm text-muted-foreground">Upgrading isn't available right now. Please check back later.</p>)}
+        {phase === 'free' && <p className="px-1 text-sm text-muted-foreground">All beta features are free. Paid plans and checkout are paused.</p>}
 
-        {phase === 'pending' && (s.isPayer
-          ? <Btn testid="button-billing-resume-checkout" onClick={() => { trackUpgradeEntry('billing_pending'); checkout.mutate(); }} disabled={busy} primary>{checkout.isPending ? 'Opening...' : 'Continue my checkout'}</Btn>
-          : <p data-testid="text-billing-partner-checkout" className="rounded-2xl border border-foreground/10 px-4 py-3 text-sm">Your partner has started checkout. Once it is confirmed, Plus turns on for both of you. No action needed from you.</p>)}
+        {phase === 'pending' && <p data-testid="text-billing-partner-checkout" className="rounded-2xl border border-foreground/10 px-4 py-3 text-sm">Beta access is free. Starting or continuing paid checkout is paused.</p>}
 
         {(phase === 'active' || phase === 'ending' || phase === 'past_due') && (s.canManage ? (
           <>
@@ -174,7 +171,7 @@ function StatusCard({ s, phase, end }: { s: BillingStatus; phase: BillingPhase; 
     ending: { tag: 'Plus, ending', title: `Plus stays on until ${end ?? 'the end of this period'}.`, body: 'Renewal is off. After that date your space returns to the free plan. Nothing is deleted.' },
     past_due: { tag: 'Payment issue', title: 'The last payment didn\'t go through.', body: s.canManage ? 'Update your payment method to keep Plus going.' : 'Your partner can update the payment method.' },
     pending: { tag: 'Checkout pending', title: s.isPayer ? 'Your checkout is waiting.' : 'Checkout in progress.', body: 'Plus turns on once the payment provider confirms it.' },
-    free: { tag: 'Free plan', title: 'Your space is on the free plan.', body: 'Everything you two save stays free. Plus adds the concierge and the yearly recap.' },
+    free: { tag: 'Free beta', title: 'All features are free during beta.', body: 'The AI date assistant, yearly recap and everything else are included.' },
   };
   const c = m[phase];
   const plus = phase === 'active' || phase === 'ending';

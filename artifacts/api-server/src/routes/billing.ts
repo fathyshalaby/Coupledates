@@ -18,8 +18,8 @@ router.get("/billing/status", async (_req, res): Promise<void> => {
 router.post("/billing/refresh", async (_req, res): Promise<void> => {
   res.json(RefreshBillingResponse.parse(await billingStatus(res.locals.couple.id, res.locals.userId, true)));
 });
-router.post("/billing/checkout", async (_req, res): Promise<void> => {
-  res.json(CreateBillingCheckoutResponse.parse(await createCheckout(res.locals.couple.id, res.locals.userId)));
+router.post("/billing/checkout", async (_req, _res): Promise<void> => {
+  fail(403, "Paid plans are paused during beta. All features are free.");
 });
 router.post("/billing/manage", async (_req, res): Promise<void> => {
   res.json(ManageBillingResponse.parse(await manageSubscription(res.locals.couple.id, res.locals.userId, "manage")));
@@ -29,7 +29,6 @@ router.post("/billing/cancel", async (_req, res): Promise<void> => {
   res.json(CancelBillingResponse.parse(await billingStatus(res.locals.couple.id, res.locals.userId)));
 });
 router.post("/billing/resume", async (_req, res): Promise<void> => {
-  await manageSubscription(res.locals.couple.id, res.locals.userId, "resume");
-  res.json(ResumeBillingResponse.parse(await billingStatus(res.locals.couple.id, res.locals.userId)));
+  fail(403, "New paid renewals are paused during beta. Existing subscriptions remain unchanged.");
 });
 export default router;

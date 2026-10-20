@@ -7,6 +7,12 @@ import { requireUser, requireCouple, findCouple, fail } from "../lib/couple";
 import { googleOwnership, issueRecovery, verifyRecovery } from "../lib/recovery-policy";
 
 const router: IRouter = Router();
+type VerifiedExternalAccount = { provider: string; externalId: string; verification: { status: string | null } | null };
+let googleAccountLoader = async (userId: string): Promise<VerifiedExternalAccount[]> => (await clerkClient.users.getUser(userId)).externalAccounts;
+export function setGoogleAccountLoaderForIsolatedTests(loader: typeof googleAccountLoader) {
+  if (process.env.BILLING_CONTRACT_TEST !== "isolated") throw new Error("Google recovery fixtures are only available in the isolated contract runner.");
+  googleAccountLoader = loader;
+}
 const production = () => process.env.NODE_ENV === "production";
 function key() {
   const value = process.env.SESSION_SECRET;
@@ -14,13 +20,13 @@ function key() {
   return value!;
 }
 async function google(userId: string) {
-  let user;
+  let accounts: VerifiedExternalAccount[];
   try {
-    user = await clerkClient.users.getUser(userId);
+    accounts = await googleAccountLoader(userId);
   } catch {
     fail(503, "Google account ownership could not be checked. Please try again.");
   }
-  const owned = googleOwnership(user!.externalAccounts, key());
+  const owned = googleOwnership(accounts!, key());
   if (!owned.length) fail(403, "Sign in with the verified Google account that owns your space before using recovery.");
   return owned;
 }

@@ -4,10 +4,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import type { Server } from "node:http";
 import express from "express";
-import { clerkClient } from "@clerk/express";
 import { eq } from "drizzle-orm";
 import { db, pool, couplesTable, membersTable, memoriesTable, datesTable, accountLinksTable, calendarConnectionsTable } from "@workspace/db";
-import recoveryRouter from "../src/routes/account-recovery";
+import recoveryRouter, { setGoogleAccountLoaderForIsolatedTests } from "../src/routes/account-recovery";
 import coupleRouter from "../src/routes/couple";
 import { effectiveMemberId, calendarAuthUserId } from "../src/lib/account-identity";
 import { googleOwnership, issueRecovery } from "../src/lib/recovery-policy";
@@ -19,7 +18,6 @@ assert.equal(database.pathname, "/billing_contract");
 assert.match(database.searchParams.get("host")!, /^\/tmp\/cd-billing-[^/]+\/socket$/);
 const origin = "https://billing.example.test";
 const legacy = "user_previewOwner", current = "user_liveOwner", partner = "user_partner", outsider = "user_outsider";
-const originalGet = clerkClient.users.getUser;
 let server: Server, url: string, originalId: number, newerId: number;
 let subject = "same-google-subject";
 const external = () => ({ provider: "oauth_google", externalId: subject, verification: { status: "verified" } });
@@ -34,11 +32,14 @@ before(async () => {
   await pool.query(await readFile(process.env.BILLING_CONTRACT_SCHEMA!, "utf8"));
   // Only the fixture server bypasses Clerk middleware. The actual getAuth/requireUser
   // and membership resolver run; the production app has no fixture header support.
-  clerkClient.users.getUser = async () => ({ externalAccounts: [external()] }) as unknown as Awaited<ReturnType<typeof originalGet>>;
+  setGoogleAccountLoaderForIsolatedTests(async () => [external()]);
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
-    Object.assign(req, { auth: () => ({ userId: req.get("x-fixture-user") || null, tokenType: "session_token" }), log: { info() {} } });
+    const auth = Object.assign(() => ({ userId: req.get("x-fixture-user") || null, tokenType: "session_token" }), {
+      [Symbol.for("@clerk/express.auth")]: true,
+    });
+    Object.assign(req, { auth, log: { info() {} } });
     next();
   });
   app.use("/api", recoveryRouter, coupleRouter);
@@ -68,7 +69,7 @@ beforeEach(async () => {
   subject = "same-google-subject";
   process.env.NODE_ENV = "production";
 });
-after(async () => { clerkClient.users.getUser = originalGet; server?.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await pool.end(); });
+after(async () => { server?.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await pool.end(); });
 
 test("anonymous and cross-origin recovery requests are rejected without links", async () => {
   assert.equal((await call("/api/account/recovery", "")).status, 401);

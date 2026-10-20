@@ -5,3 +5,4 @@
 - [Subscription analytics boundaries](subscription-analytics.md) — measure the upgrade funnel without relationship/payment data; checkout returns are not purchase proof.
 - [Isolated layout tests](ui-layout-testing.md) — a separate Vite root needs production Tailwind sources; enlarge text without also enlarging spacing.
 - [Lazy route recovery](lazy-route-recovery.md) — failed page imports need a real reload, not just an error-boundary reset; keep navigation usable.
+- [Cross-environment account recovery](account-recovery-identity.md) — prove ownership with the same verified Google provider identity; never link spaces by email or names.
