@@ -30,7 +30,7 @@ test('memory sharing requires explicit consent before download or caption copy',
 
   await page.getByTestId('button-share-confirm').click();
   await expect(page.getByTestId('share-manual-fallback')).toContainText('This browser can’t send the image directly to another app.');
-  await expect(page.getByTestId('text-share-caption')).toContainText('Food');
+  await expect(page.getByTestId('text-share-caption')).toHaveValue(/Food/);
   await expect(page.getByTestId('share-manual-fallback').getByRole('link')).toHaveCount(0);
   await expect(page.getByTestId('button-share-download')).toBeVisible();
   const download = page.waitForEvent('download');
@@ -43,7 +43,7 @@ test('memory sharing requires explicit consent before download or caption copy',
   expect(network.writes).toEqual([]);
 });
 
-test('manual fallback reports clipboard failure while still downloading the image', async ({ page }) => {
+test('manual fallback keeps the exact caption selectable when clipboard access fails', async ({ page, network }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false });
     Object.defineProperty(navigator, 'clipboard', {
@@ -53,13 +53,27 @@ test('manual fallback reports clipboard failure while still downloading the imag
   });
   await page.goto('/memories');
   await page.getByTestId('button-share-memory-900003').click();
+  const approvedCaption = await page.getByTestId('text-share-caption-preview').textContent();
   await page.getByTestId('button-share-confirm').click();
 
   const download = page.waitForEvent('download');
   await page.getByTestId('button-share-download-copy').click();
   await expect(download).resolves.toBeTruthy();
-  await expect(page.getByTestId('text-share-error')).toContainText('The caption could not be copied. Check clipboard permission and try again.');
-  await expect(page.getByTestId('share-manual-fallback')).toContainText('Nothing is uploaded and no private link is shared.');
+  await expect(page.getByTestId('text-share-error')).toContainText('Clipboard access is blocked.');
+  const manualFallback = page.getByTestId('share-manual-fallback');
+  await expect(manualFallback).toContainText('Nothing is uploaded and no private link is shared.');
+  await expect(manualFallback).toContainText('On a phone, press and hold the caption, choose Select All, then Copy.');
+  await expect(manualFallback).toContainText('On a computer, use Ctrl+C or ⌘C.');
+  const captionField = page.getByTestId('text-share-caption');
+  await expect(captionField).toHaveValue(approvedCaption || '');
+  await page.getByTestId('button-share-select-caption').click();
+  const selection = await captionField.evaluate((element: HTMLTextAreaElement) => ({
+    selectedText: element.value.slice(element.selectionStart, element.selectionEnd),
+    value: element.value,
+  }));
+  expect(selection.selectedText).toBe(approvedCaption);
+  expect(selection.value).toBe(approvedCaption);
+  expect(network.writes).toEqual([]);
 });
 
 test('supported native file share happens only after the second confirmation action', async ({ page }) => {

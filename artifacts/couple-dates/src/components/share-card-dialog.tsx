@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Check, Copy, Download, ImageOff, LoaderCircle, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -58,6 +58,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
   const [nativeShareFailed, setNativeShareFailed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fallbackReady, setFallbackReady] = useState(false);
+  const captionField = useRef<HTMLTextAreaElement>(null);
   const [attempt, setAttempt] = useState(0);
   const contentKey = content ? JSON.stringify(content) : '';
   const [savedOptions, setSavedOptions] = useState<{ contentKey: string; options: ShareOptions } | null>(null);
@@ -148,9 +149,14 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
       return true;
     } catch {
       setCopied(false);
-      setError('The caption could not be copied. Check clipboard permission and try again.');
+      setError('Clipboard access is blocked. Use “Select caption text” below, then copy it manually.');
       return false;
     }
+  }
+
+  function selectCaption() {
+    captionField.current?.focus();
+    captionField.current?.select();
   }
 
   function downloadImage() {
@@ -229,7 +235,21 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
             <section data-testid="share-manual-fallback" className="space-y-2 rounded-xl border border-border bg-secondary/35 p-3.5">
               <h3 className="text-sm font-medium">Ready to post manually</h3>
               <p className="text-sm leading-relaxed text-muted-foreground">{nativeShareFailed ? 'The image could not be sent to another app. Download the card and copy its caption to post them there.' : 'This browser can’t send the image directly to another app. Download the card and copy its caption to post them there.'} Nothing is uploaded and no private link is shared.</p>
-              <p data-testid="text-share-caption" className="break-words rounded-lg bg-background/70 px-3 py-2 text-sm">{caption}</p>
+              <label htmlFor="share-manual-caption" className="block text-xs font-medium text-muted-foreground">Caption to copy</label>
+              <textarea
+                ref={captionField}
+                id="share-manual-caption"
+                data-testid="text-share-caption"
+                aria-label="Caption to copy"
+                value={caption}
+                readOnly
+                rows={3}
+                className="w-full resize-y select-text rounded-lg border border-border bg-background/70 px-3 py-2 text-base leading-relaxed text-foreground"
+              />
+              <Button data-testid="button-share-select-caption" type="button" variant="outline" onClick={selectCaption} className="min-h-11 w-full rounded-full">
+                Select caption text
+              </Button>
+              <p className="text-xs leading-relaxed text-muted-foreground">If copying is blocked, select the text above and copy it manually. On a phone, press and hold the caption, choose Select All, then Copy. On a computer, use Ctrl+C or ⌘C.</p>
             </section>
           )}
         </div>
