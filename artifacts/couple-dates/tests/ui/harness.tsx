@@ -3,9 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch } from 'wouter';
 import { CoupleContext } from '@/lib/couple-context';
 import { AppShell } from '@/components/shell';
-import HomePage from '@/pages/home';
-import DatesPage from '@/pages/dates';
-import MemoriesPage from '@/pages/memories';
+import { HomePage, DatesPage, MemoriesPage } from '@/lib/lazy-pages';
 import { couple } from './records';
 import './harness.css';
 

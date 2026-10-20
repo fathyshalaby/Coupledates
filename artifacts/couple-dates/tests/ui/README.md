@@ -35,10 +35,14 @@ Do not change the test base URL to the normal app preview or a deployed URL.
 ## What is covered
 
 Each case runs at **320×568**, **390×844**, **1280×900**, and **390×844 with
-200% text** (24 cases total):
+200% text** (32 cases total):
 
 - Real `AppShell`, home, dates and memories pages render long synthetic partner
   names/date titles without horizontal page overflow; navigation stays reachable.
+- The harness uses the same lazy page wrappers as the app. Pages download only
+  on navigation; a held download announces loading without hiding navigation.
+  A failed download offers reload, leaves home reachable, and recovers after
+  reload. Browser back and direct page reload also work.
 - The visible **Propose** text stays inside its button and separate from the
   heading. Date tabs and bottom navigation labels stay within their controls.
 - Date timezone/length labels and inputs stay separate and within the drawer.

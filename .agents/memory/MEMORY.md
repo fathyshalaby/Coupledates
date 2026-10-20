@@ -4,3 +4,4 @@
 - [Visual refinement intent](visual-refinement.md) — the user wants a less “vibe coded” Couple Dates interface, refined in place without replacing working flows.
 - [Subscription analytics boundaries](subscription-analytics.md) — measure the upgrade funnel without relationship/payment data; checkout returns are not purchase proof.
 - [Isolated layout tests](ui-layout-testing.md) — a separate Vite root needs production Tailwind sources; enlarge text without also enlarging spacing.
+- [Lazy route recovery](lazy-route-recovery.md) — failed page imports need a real reload, not just an error-boundary reset; keep navigation usable.

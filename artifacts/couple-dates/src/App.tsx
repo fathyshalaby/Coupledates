@@ -8,24 +8,15 @@ import { getGetCoupleQueryKey, useGetCouple } from '@workspace/api-client-react'
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Skeleton } from '@/components/ui/skeleton';
+import { PageLoading } from '@/components/page-loader';
 import { AppShell } from '@/components/shell';
 import { ErrorState, TwoRings } from '@/components/bits';
 import { CoupleContext } from '@/lib/couple-context';
-import NotFound from '@/pages/not-found';
-import Landing from '@/pages/landing';
-import Onboarding from '@/pages/onboarding';
-import HomePage from '@/pages/home';
-import MemoriesPage from '@/pages/memories';
-import DatesPage from '@/pages/dates';
-import StreaksPage from '@/pages/streaks';
-import RecapPage from '@/pages/recap';
-import SettingsPage from '@/pages/settings';
-import DateDetailPage from '@/pages/date-detail';
-import PreferencesPage from '@/pages/preferences';
-import AssistantPage from '@/pages/assistant';
-import CalendarPage from '@/pages/calendar';
-import BillingPage from '@/pages/billing';
+import {
+  NotFound, Landing, Onboarding, HomePage, MemoriesPage, DatesPage,
+  StreaksPage, RecapPage, SettingsPage, DateDetailPage, PreferencesPage,
+  AssistantPage, CalendarPage, BillingPage,
+} from '@/lib/lazy-pages';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: true } },
@@ -155,21 +146,10 @@ function HomeRedirect() {
   );
 }
 
-function GateSkeleton() {
-  return (
-    <div className="mx-auto max-w-xl space-y-4 px-5 pt-20" data-testid="state-loading-space">
-      <Skeleton className="h-4 w-32" />
-      <Skeleton className="h-12 w-3/4" />
-      <Skeleton className="h-32 w-full rounded-[28px]" />
-      <div className="grid grid-cols-2 gap-3"><Skeleton className="h-24 rounded-[24px]" /><Skeleton className="h-24 rounded-[24px]" /></div>
-    </div>
-  );
-}
-
 function CoupleGate({ page: Page }: { page: ComponentType }) {
   const { isSignedIn } = useAuth();
   const q = useGetCouple({ query: { queryKey: getGetCoupleQueryKey(), enabled: !!isSignedIn, refetchInterval: 30_000, refetchIntervalInBackground: false } });
-  if (q.isLoading || (!q.data && !q.isError)) return <GateSkeleton />;
+  if (q.isLoading || (!q.data && !q.isError)) return <PageLoading />;
   if (q.isError) return <div className="mx-auto max-w-md px-5 pt-24"><ErrorState error={q.error} onRetry={() => q.refetch()} label="Your space" /></div>;
   const couple = q.data?.couple ?? null;
   if (!couple) return <Onboarding />;
