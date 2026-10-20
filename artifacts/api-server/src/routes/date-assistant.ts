@@ -1,5 +1,4 @@
 import { Router, type IRouter } from "express";
-import { requirePlus } from "../lib/billing";
 import { db, couplesTable, preferencesTable, assistantTurnsTable, aiUsageTable, datesTable } from "@workspace/db";
 import { and, eq, desc, gte, count } from "drizzle-orm";
 import { openai } from "@workspace/integrations-openai-ai-server";
@@ -21,7 +20,6 @@ router.post("/openai/date-assistant", async (req, res): Promise<void> => {
   const { message } = AskDateAssistantBody.parse(req.body);
   if (!message.trim()) fail(400, "Tell your date assistant what you have in mind.");
   const coupleId: number = res.locals.couple.id;
-  await requirePlus(coupleId);
   const profiles = await db.select().from(preferencesTable).where(eq(preferencesTable.coupleId, coupleId));
   if (!profiles.some(p => p.userId === res.locals.userId)) fail(409, "Fill out your date preferences first so suggestions are personal.");
   if (pending.has(coupleId)) fail(429, "Your assistant is already planning something. Please wait a moment.");

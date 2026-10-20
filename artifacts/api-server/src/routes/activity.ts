@@ -1,5 +1,4 @@
 import { Router, type IRouter } from "express";
-import { requirePlus } from "../lib/billing";
 import { db, checkInsTable } from "@workspace/db";
 import { CheckInBody, CheckInResponse, GetSummaryResponse, GetRecapQueryParams, GetRecapResponse } from "@workspace/api-zod";
 import { requireUser, requireCouple, dayInZone, summary, records, longestRun } from "../lib/couple";
@@ -15,7 +14,6 @@ router.post("/check-ins", async (req, res): Promise<void> => {
   res.json(CheckInResponse.parse(await summary(res.locals.couple)));
 });
 router.get("/recap", async (req, res): Promise<void> => {
-  await requirePlus(res.locals.couple.id);
   const query = GetRecapQueryParams.parse(req.query);
   const year = query.year ?? Number(dayInZone(res.locals.couple.timezone).slice(0, 4));
   const all = await records(res.locals.couple.id);

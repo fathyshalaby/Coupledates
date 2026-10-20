@@ -78,7 +78,6 @@ router.post("/account/recovery/confirm", async (req, res) => {
         .where(and(eq(calendarConnectionsTable.userId, checked.claim.memberId), eq(calendarConnectionsTable.coupleId, checked.space.id)));
     }
   });
-  req.log.info({ event: "account_recovery_linked" }, "Ownership-proven space selected; original records preserved");
   res.json(await status(authId));
 });
 router.post("/account/recovery/select", async (req, res) => {
