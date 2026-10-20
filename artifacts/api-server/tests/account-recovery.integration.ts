@@ -63,7 +63,7 @@ beforeEach(async () => {
     { coupleId: originalId, title: "Original memory", note: "", date: "2026-10-01", category: "other", favorite: true },
     { coupleId: newerId, title: "Newer memory", note: "", date: "2026-10-02", category: "other", favorite: false },
   ]);
-  await db.insert(datesTable).values({ coupleId: originalId, title: "Existing proposal", date: "2026-10-21", category: "other", status: "proposed", proposedBy: legacy });
+  await db.insert(datesTable).values({ coupleId: originalId, title: "Existing proposal", date: "2026-10-21", location: "", category: "other", notes: "", status: "proposed", proposedBy: legacy });
   await db.insert(calendarConnectionsTable).values({ userId: legacy, coupleId: originalId, enabled: true, shareAvailability: true });
   subject = "same-google-subject";
   process.env.NODE_ENV = "production";
