@@ -10,12 +10,15 @@ globalThis.require = createRequire(import.meta.url);
 
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 
+// `node build.mjs vercel` bundles the serverless handler (dist/vercel.mjs) instead of the listening server (dist/index.mjs).
+const entry = process.argv[2] === "vercel" ? "src/vercel.ts" : "src/index.ts";
+
 async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
   await esbuild({
-    entryPoints: [path.resolve(artifactDir, "src/index.ts")],
+    entryPoints: [path.resolve(artifactDir, entry)],
     platform: "node",
     bundle: true,
     format: "esm",

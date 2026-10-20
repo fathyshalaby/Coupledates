@@ -27,6 +27,14 @@ node_modules
 !.vscode/launch.json
 !.vscode/extensions.json
 
+# local environment files hold secrets; .env.example is the committed template
+.env
+.env.*
+!.env.example
+
+# Vercel CLI link and pulled settings
+.vercel
+
 # misc
 /.sass-cache
 /connect.lock

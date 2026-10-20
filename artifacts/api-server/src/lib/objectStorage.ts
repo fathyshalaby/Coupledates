@@ -12,23 +12,60 @@ import {
 
 const REPLIT_SIDECAR_ENDPOINT = 'http://127.0.0.1:1106';
 
-export const objectStorageClient = new Storage({
-  credentials: {
-    audience: 'replit',
-    subject_token_type: 'access_token',
-    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-    type: 'external_account',
-    credential_source: {
-      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-      format: {
-        type: 'json',
-        subject_token_field_name: 'access_token',
+interface ServiceAccountKey {
+  client_email: string;
+  private_key: string;
+  project_id?: string;
+}
+
+/**
+ * Off Replit (e.g. Vercel), GCS_CREDENTIALS_JSON holds a service-account key
+ * for the bucket, either as raw JSON or base64-encoded JSON. Unset means the
+ * Replit sidecar is used instead.
+ */
+export function readServiceAccountKey(raw: string | undefined): ServiceAccountKey | null {
+  const value = raw?.trim();
+  if (!value) return null;
+  let key: Partial<ServiceAccountKey>;
+  try {
+    key = JSON.parse(
+      value.startsWith('{') ? value : Buffer.from(value, 'base64').toString('utf8'),
+    );
+  } catch {
+    throw new Error('GCS_CREDENTIALS_JSON is not valid JSON (or base64-encoded JSON).');
+  }
+  if (!key.client_email || !key.private_key) {
+    throw new Error(
+      'GCS_CREDENTIALS_JSON must be a service-account key with client_email and private_key.',
+    );
+  }
+  return key as ServiceAccountKey;
+}
+
+const serviceAccountKey = readServiceAccountKey(process.env.GCS_CREDENTIALS_JSON);
+
+export const objectStorageClient = serviceAccountKey
+  ? new Storage({
+      credentials: serviceAccountKey,
+      projectId: serviceAccountKey.project_id,
+    })
+  : new Storage({
+      credentials: {
+        audience: 'replit',
+        subject_token_type: 'access_token',
+        token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
+        type: 'external_account',
+        credential_source: {
+          url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
+          format: {
+            type: 'json',
+            subject_token_field_name: 'access_token',
+          },
+        },
+        universe_domain: 'googleapis.com',
       },
-    },
-    universe_domain: 'googleapis.com',
-  },
-  projectId: '',
-});
+      projectId: '',
+    });
 
 export class ObjectNotFoundError extends Error {
   constructor() {
@@ -243,6 +280,19 @@ async function signObjectURL({
   method: 'GET' | 'PUT' | 'DELETE' | 'HEAD';
   ttlSec: number;
 }): Promise<string> {
+  if (serviceAccountKey) {
+    // Signed locally with the service-account key; no network call. The
+    // content type is deliberately not signed, matching the Replit signer.
+    const [signedURL] = await objectStorageClient
+      .bucket(bucketName)
+      .file(objectName)
+      .getSignedUrl({
+        version: 'v4',
+        action: method === 'PUT' ? 'write' : method === 'DELETE' ? 'delete' : 'read',
+        expires: Date.now() + ttlSec * 1000,
+      });
+    return signedURL;
+  }
   const request = {
     bucket_name: bucketName,
     object_name: objectName,
