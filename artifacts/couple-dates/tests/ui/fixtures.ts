@@ -6,11 +6,30 @@ export const png = Buffer.from(
   'base64',
 );
 type Write = { method: string; path: string; data: Record<string, unknown> };
-type Network = { writes: Write[]; unexpected: string[] };
+type UploadStage = 'request-url' | 'put';
+type UploadResponse = { status: number; ready: Promise<void> };
+type Network = {
+  writes: Write[];
+  unexpected: string[];
+  // Responses are consumed once; subsequent attempts succeed by default.
+  queueUploadResponse: (stage: UploadStage, status: number, hold?: boolean) => () => void;
+};
 
 export const test = base.extend<{ network: Network }>({
   network: [async ({ page }, use) => {
-    const network: Network = { writes: [], unexpected: [] };
+    const responses: Record<UploadStage, UploadResponse[]> = { 'request-url': [], put: [] };
+    const releases: (() => void)[] = [];
+    const network: Network = {
+      writes: [], unexpected: [],
+      queueUploadResponse(stage, status, hold = false) {
+        let release!: () => void;
+        const ready = new Promise<void>((resolve) => { release = resolve; });
+        releases.push(release);
+        responses[stage].push({ status, ready });
+        if (!hold) release();
+        return release;
+      },
+    };
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.route('**/*', async (route) => {
@@ -45,10 +64,19 @@ export const test = base.extend<{ network: Network }>({
           data: path === '/synthetic-upload' ? {} : request.postDataJSON(),
         });
         if (path === '/api/storage/uploads/request-url') {
+          const response = responses['request-url'].shift();
+          if (response) {
+            await response.ready;
+            if (response.status !== 200) {
+              return route.fulfill({ status: response.status, json: { message: 'Synthetic upload URL unavailable. Try again.' } });
+            }
+          }
           return json({ uploadURL: `${url.origin}/synthetic-upload`, objectPath: '/synthetic/replacement.png' });
         }
         if (path === '/synthetic-upload') {
-          return route.fulfill({ status: 200, body: '' });
+          const response = responses.put.shift();
+          if (response) await response.ready;
+          return route.fulfill({ status: response?.status ?? 200, body: '' });
         }
         if (path === '/api/dates' && request.method() === 'POST') {
           return json({ ...plan, ...request.postDataJSON(), id: 900005 });
@@ -63,7 +91,12 @@ export const test = base.extend<{ network: Network }>({
       network.unexpected.push(`${request.method()} ${path}`);
       return route.abort();
     });
-    await use(network);
+    try {
+      await use(network);
+    } finally {
+      // Never leave an intercepted request held when a test assertion fails.
+      for (const release of releases) release();
+    }
     expect(network.unexpected, 'Unexpected requests must fail closed, never reach a provider').toEqual([]);
     expect(errors, 'No uncaught browser errors').toEqual([]);
   }, { auto: true }],

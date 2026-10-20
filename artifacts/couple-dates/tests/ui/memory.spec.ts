@@ -17,16 +17,20 @@ async function assertDraft(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('toggle-favorite')).toHaveAttribute('aria-pressed', 'true');
 }
 
+async function openDraft(page: import('@playwright/test').Page) {
+  await page.goto('/memories');
+  await page.getByTestId(`button-edit-memory-${memory.id}`).click();
+  await expect(page.getByRole('dialog').getByRole('heading')).toHaveText('Edit memory');
+  await page.getByTestId('input-memory-title').fill(draft.title);
+  await page.getByTestId('input-memory-note').fill(draft.note);
+  await page.getByTestId('input-memory-date').fill(draft.date);
+  await page.getByTestId('option-category-adventure').click();
+  await page.getByTestId('toggle-favorite').click();
+}
+
 for (const action of ['change', 'remove'] as const) {
   test(`photo ${action} preserves every draft field and only saves on explicit submit`, async ({ page, network }) => {
-    await page.goto('/memories');
-    await page.getByTestId(`button-edit-memory-${memory.id}`).click();
-    await expect(page.getByRole('dialog').getByRole('heading')).toHaveText('Edit memory');
-    await page.getByTestId('input-memory-title').fill(draft.title);
-    await page.getByTestId('input-memory-note').fill(draft.note);
-    await page.getByTestId('input-memory-date').fill(draft.date);
-    await page.getByTestId('option-category-adventure').click();
-    await page.getByTestId('toggle-favorite').click();
+    await openDraft(page);
 
     const photoAction = page.getByTestId(`button-${action}-photo`);
     await reachable(photoAction);
@@ -54,6 +58,114 @@ for (const action of ['change', 'remove'] as const) {
       photoPath: action === 'remove' ? null : '/synthetic/replacement.png',
     });
     await expect(page.getByRole('dialog')).not.toBeVisible();
+  });
+}
+
+for (const stage of ['request-url', 'put'] as const) {
+  for (const recovery of ['retry', 'discard'] as const) {
+    test(`${stage} failure preserves the draft through pending, failure and ${recovery}`, async ({ page, network }) => {
+      const releaseFailure = network.queueUploadResponse(stage, 503, true);
+      const failedPath = stage === 'request-url' ? '/api/storage/uploads/request-url' : '/synthetic-upload';
+      const memoryWrites = () => network.writes.filter((w) => w.path.startsWith('/api/memories'));
+      const uploadWrites = (path: string) => network.writes.filter((w) => w.path === path);
+      await openDraft(page);
+      await page.getByTestId('input-photo').setInputFiles({ name: 'synthetic.png', mimeType: 'image/png', buffer: png });
+
+      await expect.poll(() => uploadWrites(failedPath)).toHaveLength(1);
+      const save = page.getByTestId('button-save-memory');
+      await expect(save).toBeDisabled();
+      await expect(save).toHaveText('Waiting for photo...');
+      await expect(page.getByText('Uploading', { exact: true })).toBeVisible();
+      await assertDraft(page);
+      expect(memoryWrites()).toEqual([]);
+      // Even native form submission must not bypass the pending/failed guard.
+      await save.evaluate((button: HTMLButtonElement) => button.form!.requestSubmit());
+      expect(memoryWrites()).toEqual([]);
+      releaseFailure();
+
+      await expect(page.getByTestId('text-memory-error')).toContainText(
+        stage === 'request-url' ? 'Synthetic upload URL unavailable' : 'Photo upload failed (503)',
+      );
+      await expect(save).toBeDisabled();
+      await expect(page.getByTestId('button-retry-photo')).toBeVisible();
+      await expect(page.getByTestId('button-skip-failed-photo')).toBeVisible();
+      await assertDraft(page);
+      await save.evaluate((button: HTMLButtonElement) => button.form!.requestSubmit());
+      expect(memoryWrites()).toEqual([]);
+      expect(uploadWrites('/api/storage/uploads/request-url')).toHaveLength(1);
+      expect(uploadWrites('/synthetic-upload')).toHaveLength(stage === 'put' ? 1 : 0);
+
+      if (recovery === 'retry') {
+        const releaseRetry = network.queueUploadResponse('put', 200, true);
+        await page.getByTestId('button-retry-photo').click();
+        await expect.poll(() => uploadWrites('/synthetic-upload')).toHaveLength(stage === 'put' ? 2 : 1);
+        await expect(save).toBeDisabled();
+        await expect(save).toHaveText('Waiting for photo...');
+        await assertDraft(page);
+        expect(memoryWrites()).toEqual([]);
+        releaseRetry();
+        await expect(save).toBeEnabled();
+        expect(uploadWrites('/api/storage/uploads/request-url')).toHaveLength(2);
+        for (const write of uploadWrites('/api/storage/uploads/request-url')) {
+          expect(write.data).toEqual({ name: 'synthetic.png', size: png.length, contentType: 'image/png' });
+        }
+        await expect(page.getByRole('img', { name: 'Selected photo' })).toHaveAttribute('src', /^blob:/);
+      } else {
+        await page.getByTestId('button-skip-failed-photo').click();
+        await expect(save).toBeEnabled();
+        await expect(page.getByRole('img', { name: 'Selected photo' })).toHaveAttribute('src', '/api/storage/synthetic/original.png');
+        expect(uploadWrites('/api/storage/uploads/request-url')).toHaveLength(1);
+        expect(uploadWrites('/synthetic-upload')).toHaveLength(stage === 'put' ? 1 : 0);
+      }
+      await expect(page.getByTestId('text-memory-error')).toHaveCount(0);
+      await expect(page.getByTestId('button-retry-photo')).toHaveCount(0);
+      await expect(page.getByTestId('button-skip-failed-photo')).toHaveCount(0);
+      await assertDraft(page);
+      expect(memoryWrites()).toEqual([]);
+      await save.click();
+      await expect(page.getByRole('dialog')).not.toBeVisible();
+      // The full payload proves the hidden album link survives every stage too.
+      expect(memoryWrites()).toEqual([{
+        method: 'PATCH', path: `/api/memories/${memory.id}`,
+        data: {
+          ...draft, favorite: true, dateId: memory.dateId,
+          photoPath: recovery === 'retry' ? '/synthetic/replacement.png' : memory.photoPath,
+        },
+      }]);
+    });
+  }
+}
+
+for (const file of [
+  { name: 'not-a-photo.pdf', mimeType: 'application/pdf' },
+  { name: 'unknown-photo.xyz', mimeType: '' },
+]) {
+  test(`rejecting ${file.name} preserves the draft and discard restores the original photo`, async ({ page, network }) => {
+    await openDraft(page);
+    await page.getByTestId('input-photo').setInputFiles({ ...file, buffer: Buffer.from('synthetic non-photo') });
+    const save = page.getByTestId('button-save-memory');
+    for (const attempt of ['selection', 'retry']) {
+      if (attempt === 'retry') await page.getByTestId('button-retry-photo').click();
+      await expect(page.getByTestId('text-memory-error')).toContainText(`"${file.name}" isn't a supported photo`);
+      await expect(save).toBeDisabled();
+      await assertDraft(page);
+      await save.evaluate((button: HTMLButtonElement) => button.form!.requestSubmit());
+      expect(network.writes).toEqual([]);
+    }
+    await page.getByTestId('button-skip-failed-photo').click();
+    await assertDraft(page);
+    await expect(save).toBeEnabled();
+    await expect(page.getByTestId('text-memory-error')).toHaveCount(0);
+    await expect(page.getByTestId('button-retry-photo')).toHaveCount(0);
+    await expect(page.getByTestId('button-skip-failed-photo')).toHaveCount(0);
+    await expect(page.getByRole('img', { name: 'Selected photo' })).toHaveAttribute('src', '/api/storage/synthetic/original.png');
+    expect(network.writes).toEqual([]);
+    await save.click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    expect(network.writes).toEqual([{
+      method: 'PATCH', path: `/api/memories/${memory.id}`,
+      data: { ...draft, favorite: true, dateId: memory.dateId, photoPath: memory.photoPath },
+    }]);
   });
 }
 
