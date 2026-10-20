@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { Link } from 'wouter';
-import { ArrowUpRight, CalendarClock, Camera, ClipboardList, Clock, Inbox, Lightbulb, MapPin, Plus } from 'lucide-react';
+import { ArrowUpRight, CalendarClock, Clock, Lightbulb, MapPin, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { CategoryChip, ErrorState, Photo, StatusBadge } from '@/components/bits';
+import { CoupleFlywheel } from '@/components/couple-flywheel';
 import { useCouple } from '@/lib/couple-context';
 import { fmtDate, fmtTime, todayISO, useDatesQ, useMemoriesQ, usePreferencesQ, useSummaryQ } from '@/lib/data';
 
@@ -21,9 +22,6 @@ export default function HomePage() {
   const memories = useMemoriesQ();
   const dates = useDatesQ();
   const prefs = usePreferencesQ();
-  const needsProfile = prefs.isSuccess && !prefs.data.some((p) => p.isYou);
-  const inbox = useMemo(() => (dates.data ?? []).filter((d) => d.status === 'proposed' && d.canRespond), [dates.data]);
-  const active = useMemo(() => (dates.data ?? []).find((d) => d.status === 'active'), [dates.data]);
 
   const nextDate = useMemo(() => {
     const t = todayISO();
@@ -44,31 +42,15 @@ export default function HomePage() {
         <p className="mt-2 text-sm text-muted-foreground">Together since {fmtDate(couple.anniversary, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
       </section>
 
-      {(active || inbox.length > 0 || needsProfile) && (
-        <section className="mt-6 space-y-2.5" aria-label="Needs you">
-          {active && (
-            <Link href={`/dates/${active.id}`} data-testid="card-action-active" className="rise flex items-center gap-4 rounded-[20px] bg-primary p-4 text-primary-foreground transition active:scale-[.99]">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-background/15"><Camera className="h-5 w-5" /></span>
-              <span className="min-w-0 flex-1"><span className="block text-xs font-medium opacity-85">Happening now</span><span className="font-display block truncate text-lg">{active.title}</span><span className="block text-sm opacity-85">Snap a photo for the album.</span></span>
-              <ArrowUpRight className="h-5 w-5 shrink-0 opacity-80" />
-            </Link>
-          )}
-          {inbox.length > 0 && (
-            <Link href={inbox.length === 1 ? `/dates/${inbox[0].id}` : '/dates'} data-testid="card-action-inbox" className="rise surface surface-link flex items-center gap-4 border-[hsl(38_60%_75%)] bg-[hsl(41_78%_94%)] p-4">
-              <span className="relative grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[hsl(38_70%_85%)] text-[hsl(28_55%_28%)]"><Inbox className="h-5 w-5" /><span className="absolute -right-1.5 -top-1.5 grid h-5 min-w-5 place-items-center rounded-full border-2 border-[hsl(41_78%_94%)] bg-primary px-1 text-[10px] font-semibold text-primary-foreground tnum">{inbox.length}</span></span>
-              <span className="min-w-0 flex-1"><span className="block font-medium">{inbox.length === 1 ? 'Your partner asked you out' : `${inbox.length} proposals need you`}</span><span className="block truncate text-sm text-muted-foreground">{inbox.length === 1 ? inbox[0].title : 'Accept, decline or suggest another time.'}</span></span>
-              <ArrowUpRight className="h-5 w-5 shrink-0 text-primary" />
-            </Link>
-          )}
-          {needsProfile && (
-            <Link href="/preferences" data-testid="card-action-profile" className="rise surface surface-link flex items-center gap-4 p-4">
-              <span className="icon-tile h-11 w-11"><ClipboardList className="h-5 w-5" /></span>
-              <span className="min-w-0 flex-1"><span className="block font-medium">What do you love doing?</span><span className="block text-sm text-muted-foreground">Four quick steps so date ideas fit you both. Skip anytime.</span></span>
-              <ArrowUpRight className="h-5 w-5 shrink-0 text-primary" />
-            </Link>
-          )}
-        </section>
-      )}
+      <CoupleFlywheel
+        couple={couple}
+        dates={dates.data}
+        memories={memories.data}
+        preferences={prefs.data}
+        isLoading={dates.isLoading || memories.isLoading || prefs.isLoading}
+        isError={dates.isError || memories.isError || prefs.isError}
+        onRetry={() => { void dates.refetch(); void memories.refetch(); void prefs.refetch(); }}
+      />
 
       {summary.isError ? (
         <div className="mt-6"><ErrorState error={summary.error} onRetry={() => summary.refetch()} label="Your overview" /></div>

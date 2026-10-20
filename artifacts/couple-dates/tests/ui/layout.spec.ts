@@ -9,6 +9,9 @@ test('shell and real pages retain long content, navigation and the Propose label
   await expect(names).toContainText(couple.partnerName);
   await inside(names, page.locator('main'));
   expect(await names.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  await expect(page.getByTestId('couple-flywheel')).toBeVisible();
+  await expect(page.getByTestId('link-flywheel-preferences')).toHaveAttribute('href', '/preferences');
+  await expect(page.getByTestId('stage-flywheel-idea')).toHaveAttribute('aria-current', 'step');
   await expect(page.getByTestId('card-next-date')).toContainText(longTitle);
   await expect(page.getByTestId('badge-nav-inbox')).toHaveText('1');
   await noHorizontalOverflow(page);
