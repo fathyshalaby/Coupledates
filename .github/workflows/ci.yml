@@ -1,0 +1,25 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run typecheck
+      - run: pnpm --filter @workspace/api-server run test
+      # The same two builds Vercel runs (see vercel.json).
+      - run: pnpm --filter @workspace/api-server run build:vercel
+      - run: pnpm --filter @workspace/couple-dates run build
+        env:
+          PORT: "3000"
+          BASE_PATH: /
