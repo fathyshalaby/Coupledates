@@ -8,3 +8,4 @@
 - [Cross-environment account recovery](account-recovery-identity.md) — prove ownership with the same verified Google provider identity; never link spaces by email or names.
 - [Tuesday public marketing boundaries](tuesday-marketing.md) — Tuesday is the provisional public brand; keep draft legal pages hidden until accurate business contact details are available.
 - [Couple growth flywheel](couple-growth-flywheel.md) — connect partner invitation with the private idea → agreement → date → memory → next-idea loop, without relationship scoring or guilt.
+- [Mobile platform support](mobile-platform-support.md) — Android and iOS are both first-class targets for Tuesday's mobile web experience.

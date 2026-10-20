@@ -66,6 +66,14 @@ export const test = base.extend<{ network: Network }>({
         if (path === '/api/dates') return json([plan, { ...plan, id: 900004, status: 'proposed', canRespond: true }]);
         if (path === '/api/memories') return json([memory]);
         if (path === '/api/summary') return json(summary);
+        if (path === '/api/recap') {
+          const year = Number(url.searchParams.get('year')) || new Date().getFullYear();
+          return json({
+            year, memoryCount: 1, dateCount: 2, averageRating: 4.5, topCategory: 'Food',
+            topMemories: [memory], longestStreak: 3, activeDays: 4,
+            monthlyCounts: [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0],
+          });
+        }
         if (path === '/api/preferences') return json([]);
         if (path === '/api/reminders') return json([]);
         if (!path.startsWith('/api/')) return route.continue();

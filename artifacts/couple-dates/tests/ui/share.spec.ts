@@ -33,6 +33,7 @@ test('supported native file share happens only after the second confirmation act
       configurable: true,
       value: async (data: ShareData) => {
         (window as Window & { __sharedFileName?: string }).__sharedFileName = data.files?.[0]?.name;
+        (window as Window & { __sharedText?: string }).__sharedText = data.text;
       },
     });
   });
@@ -43,5 +44,29 @@ test('supported native file share happens only after the second confirmation act
   expect(await page.evaluate(() => (window as Window & { __sharedFileName?: string }).__sharedFileName)).toBeUndefined();
   await confirm.click();
   await expect.poll(() => page.evaluate(() => (window as Window & { __sharedFileName?: string }).__sharedFileName)).toBe('memory-card.png');
+  await expect.poll(() => page.evaluate(() => (window as Window & { __sharedText?: string }).__sharedText)).toContain('Food');
+  expect(await page.evaluate(() => (window as Window & { __sharedText?: string }).__sharedText)).not.toContain('Original synthetic note');
   await expect(page.getByTestId('dialog-share-preview')).not.toBeVisible();
+});
+
+test('recap sharing includes aggregate details but not private memory titles or notes', async ({ page, network }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false });
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (text: string) => { (window as Window & { __copiedCaption?: string }).__copiedCaption = text; } },
+    });
+  });
+  await page.goto('/recap');
+  const year = await page.getByTestId('text-recap-year').textContent();
+  await page.getByTestId('button-share-recap').click();
+  await expect(page.getByTestId('img-share-preview')).toHaveAttribute('alt', `Preview of ${year} recap share card`);
+  await page.getByTestId('button-share-confirm').click();
+  await page.getByTestId('button-share-copy-caption').click();
+
+  const caption = await page.evaluate(() => (window as Window & { __copiedCaption?: string }).__copiedCaption);
+  expect(caption).toBe(`${year}: 1 memory, 2 dates · Food`);
+  expect(caption).not.toContain('A very long synthetic date title');
+  expect(caption).not.toContain('Original synthetic note');
+  expect(network.writes).toEqual([]);
 });

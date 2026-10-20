@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch } from 'wouter';
 import { CoupleContext } from '@/lib/couple-context';
 import { AppShell } from '@/components/shell';
-import { HomePage, DatesPage, MemoriesPage } from '@/lib/lazy-pages';
+import { HomePage, DatesPage, MemoriesPage, RecapPage } from '@/lib/lazy-pages';
 import { couple } from './records';
 import './harness.css';
 
@@ -18,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
         <Switch>
           <Route path="/dates" component={DatesPage} />
           <Route path="/memories" component={MemoriesPage} />
+          <Route path="/recap" component={RecapPage} />
           <Route component={HomePage} />
         </Switch>
       </AppShell>

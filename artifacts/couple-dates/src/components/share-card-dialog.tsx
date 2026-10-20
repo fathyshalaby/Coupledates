@@ -80,7 +80,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
     if (!file) return;
     const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
     try {
-      await nav.share?.({ files: [file] });
+      await nav.share?.({ files: [file], text: caption });
       onOpenChange(false);
     } catch (reason) {
       if ((reason as { name?: string } | null)?.name === 'AbortError') {
@@ -139,6 +139,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
           <p data-testid="text-share-warning" className="rounded-xl border border-[hsl(34_55%_74%)] bg-[hsl(38_65%_94%)] px-3.5 py-3 text-sm leading-relaxed text-[hsl(28_45%_25%)]">
             Once shared, recipients may save or repost this image. Only the details shown in this preview are included.
           </p>
+          <p className="text-xs text-muted-foreground">On mobile, press and hold the preview to save the image if your browser does not offer a download.</p>
           {photoWarning && <p data-testid="text-share-photo-warning" className="text-sm text-muted-foreground">The saved photo could not be loaded; the card uses a text-only design.</p>}
           {error && previewUrl && <p role="alert" data-testid="text-share-error" className="text-sm text-destructive">{error}</p>}
           {copied && <p role="status" data-testid="text-share-copied" className="flex items-center gap-1.5 text-sm text-primary"><Check className="h-4 w-4" /> Caption copied.</p>}
