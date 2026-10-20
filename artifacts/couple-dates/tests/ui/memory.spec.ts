@@ -9,6 +9,17 @@ const draft = {
   category: 'Adventure',
 };
 
+// Pin the product boundary independently of MAX_BYTES so changing the
+// implementation's limit cannot silently change the regression expectation.
+const tenMB = 10 * 1024 * 1024;
+function syntheticPhoto(size: number) {
+  return {
+    name: `synthetic-${size}.png`,
+    mimeType: 'image/png',
+    buffer: Buffer.concat([png, Buffer.alloc(size - png.length)]),
+  };
+}
+
 async function assertDraft(page: import('@playwright/test').Page) {
   await expect(page.getByTestId('input-memory-title')).toHaveValue(draft.title);
   await expect(page.getByTestId('input-memory-note')).toHaveValue(draft.note);
@@ -165,6 +176,94 @@ for (const file of [
     expect(network.writes).toEqual([{
       method: 'PATCH', path: `/api/memories/${memory.id}`,
       data: { ...draft, favorite: true, dateId: memory.dateId, photoPath: memory.photoPath },
+    }]);
+  });
+}
+
+for (const size of [tenMB - 1, tenMB]) {
+  test(`a ${size}-byte photo is accepted without losing the draft or album link`, async ({ page, network }) => {
+    const releaseUpload = network.queueUploadResponse('put', 200, true);
+    const file = syntheticPhoto(size);
+    await openDraft(page);
+    await page.getByTestId('input-photo').setInputFiles(file);
+    await expect.poll(() => network.writes.filter((w) => w.path === '/synthetic-upload')).toHaveLength(1);
+    expect(network.writes).toEqual([
+      {
+        method: 'POST', path: '/api/storage/uploads/request-url',
+        data: { name: file.name, size, contentType: file.mimeType },
+      },
+      { method: 'PUT', path: '/synthetic-upload', data: {} },
+    ]);
+    const save = page.getByTestId('button-save-memory');
+    await expect(save).toBeDisabled();
+    await expect(save).toHaveText('Waiting for photo...');
+    await assertDraft(page);
+    releaseUpload();
+    await expect(save).toBeEnabled();
+    await expect(page.getByTestId('text-memory-error')).toHaveCount(0);
+    await expect(page.getByRole('img', { name: 'Selected photo' })).toHaveAttribute('src', /^blob:/);
+    await assertDraft(page);
+    expect(network.writes.filter((w) => w.path.startsWith('/api/memories'))).toEqual([]);
+    await save.click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    expect(network.writes.filter((w) => w.path.startsWith('/api/memories'))).toEqual([{
+      method: 'PATCH', path: `/api/memories/${memory.id}`,
+      data: { ...draft, favorite: true, dateId: memory.dateId, photoPath: '/synthetic/replacement.png' },
+    }]);
+  });
+}
+
+for (const recovery of ['replacement', 'discard'] as const) {
+  test(`a photo one byte over 10 MB is rejected locally and preserves the draft through ${recovery}`, async ({ page, network }) => {
+    await openDraft(page);
+    await page.getByTestId('input-photo').setInputFiles(syntheticPhoto(tenMB + 1));
+    const save = page.getByTestId('button-save-memory');
+    for (const attempt of ['selection', 'retry']) {
+      if (attempt === 'retry') await page.getByTestId('button-retry-photo').click();
+      await expect(page.getByTestId('text-memory-error')).toHaveText(
+        'That photo is 10.0 MB — the limit is 10 MB. Try a smaller one.',
+      );
+      await expect(save).toBeDisabled();
+      await expect(page.getByTestId('button-retry-photo')).toBeVisible();
+      await expect(page.getByTestId('button-skip-failed-photo')).toBeVisible();
+      await expect(page.getByRole('img', { name: 'Selected photo' })).toHaveAttribute('src', '/api/storage/synthetic/original.png');
+      // A disabled button and the submit handler both protect the draft.
+      await save.evaluate((button: HTMLButtonElement) => button.form!.requestSubmit());
+      await assertDraft(page);
+      // Includes the URL request, storage PUT and memory write: none may occur.
+      expect(network.writes).toEqual([]);
+    }
+
+    if (recovery === 'replacement') {
+      await page.getByTestId('input-photo').setInputFiles({ name: 'smaller.png', mimeType: 'image/png', buffer: png });
+      await expect(save).toBeEnabled();
+      expect(network.writes).toEqual([
+        {
+          method: 'POST', path: '/api/storage/uploads/request-url',
+          data: { name: 'smaller.png', size: png.length, contentType: 'image/png' },
+        },
+        { method: 'PUT', path: '/synthetic-upload', data: {} },
+      ]);
+      await expect(page.getByRole('img', { name: 'Selected photo' })).toHaveAttribute('src', /^blob:/);
+    } else {
+      await page.getByTestId('button-skip-failed-photo').click();
+      await expect(save).toBeEnabled();
+      await expect(page.getByRole('img', { name: 'Selected photo' })).toHaveAttribute('src', '/api/storage/synthetic/original.png');
+      expect(network.writes).toEqual([]);
+    }
+    await expect(page.getByTestId('text-memory-error')).toHaveCount(0);
+    await expect(page.getByTestId('button-retry-photo')).toHaveCount(0);
+    await expect(page.getByTestId('button-skip-failed-photo')).toHaveCount(0);
+    await assertDraft(page);
+    expect(network.writes.filter((w) => w.path.startsWith('/api/memories'))).toEqual([]);
+    await save.click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    expect(network.writes.filter((w) => w.path.startsWith('/api/memories'))).toEqual([{
+      method: 'PATCH', path: `/api/memories/${memory.id}`,
+      data: {
+        ...draft, favorite: true, dateId: memory.dateId,
+        photoPath: recovery === 'replacement' ? '/synthetic/replacement.png' : memory.photoPath,
+      },
     }]);
   });
 }
