@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 const cwd = fileURLToPath(new URL('../..', import.meta.url));
 const replitChromium = '/repl/tools/bin/chromium';
@@ -21,10 +21,6 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:5189',
     browserName: 'chromium',
-    launchOptions: {
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
-        || (existsSync(replitChromium) ? replitChromium : undefined),
-    },
     locale: 'en-US',
     timezoneId: 'America/New_York',
     reducedMotion: 'reduce',
@@ -39,7 +35,22 @@ export default defineConfig({
     // Text-only enlargement: deviceScaleFactor changes pixels, not CSS layout.
     // The fixture doubles text utilities without changing rem-based spacing.
     { name: 'phone-large-text', use: { viewport: { width: 390, height: 844 } } },
-  ],
+    {
+      name: 'keyboard-chromium',
+      testMatch: 'keyboard.spec.ts',
+      use: { ...devices['Pixel 7'], browserName: 'chromium' as const },
+    },
+  ].map((project) => ({
+    ...project,
+    testIgnore: project.name.startsWith('keyboard-') ? undefined : 'keyboard.spec.ts',
+    use: {
+      ...project.use,
+      launchOptions: {
+        executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+          || (existsSync(replitChromium) ? replitChromium : undefined),
+      },
+    },
+  })),
   webServer: {
     command: 'pnpm exec vite --config tests/ui/vite.config.ts',
     cwd,

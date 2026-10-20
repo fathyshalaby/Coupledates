@@ -1,0 +1,26 @@
+name: mobile-drawers
+on:
+  workflow_dispatch:
+jobs:
+  isolated-mobile:
+    runs-on: macos-14
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @workspace/couple-dates exec playwright install chromium webkit
+      - run: pnpm --filter @workspace/couple-dates test:ui:types
+      - run: pnpm --filter @workspace/couple-dates test:ui:mobile
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-drawer-results
+          path: generated-artifacts/couple-dates-ui/
+          retention-days: 7

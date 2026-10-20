@@ -9,6 +9,7 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test:ui": "playwright test --config tests/ui/playwright.config.ts",
+    "test:ui:mobile": "playwright test --config tests/ui/mobile.config.ts",
     "test:ui:types": "tsc -p tests/ui/tsconfig.json --noEmit"
   },
   "devDependencies": {
