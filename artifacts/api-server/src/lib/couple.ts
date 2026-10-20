@@ -2,13 +2,15 @@ import type { Request, Response, NextFunction } from "express";
 import { getAuth } from "@clerk/express";
 import { db, couplesTable, membersTable, memoriesTable, datesTable, checkInsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { effectiveMemberId } from "./account-identity";
 
 export { fail, validateDay } from "./validation";
 
-export function requireUser(req: Request, res: Response, next: NextFunction) {
+export async function requireUser(req: Request, res: Response, next: NextFunction) {
   const id = getAuth(req).userId;
   if (!id) { res.status(401).json({ error: "Please sign in to your private space." }); return; }
-  res.locals.userId = id;
+  res.locals.clerkUserId = id;
+  res.locals.userId = await effectiveMemberId(id);
   res.setHeader("Cache-Control", "no-store");
   next();
 }

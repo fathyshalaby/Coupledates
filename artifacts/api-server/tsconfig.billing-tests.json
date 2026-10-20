@@ -4,5 +4,5 @@
     "rootDir": ".",
     "incremental": false
   },
-  "include": ["tests/billing-contract.integration.ts", "tests/fixtures/whop-transport.ts"]
+  "include": ["tests/billing-contract.integration.ts", "tests/fixtures/whop-transport.ts", "tests/account-recovery.integration.ts", "tests/recovery-policy.test.ts"]
 }

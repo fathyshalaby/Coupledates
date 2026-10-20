@@ -9,6 +9,7 @@
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit && pnpm run typecheck:billing-tests",
     "test:billing-contract": "node tests/run-billing-contract.mjs",
+    "test:account-recovery": "node tests/run-billing-contract.mjs recovery",
     "typecheck:billing-tests": "tsc -p tsconfig.billing-tests.json --noEmit",
     "test:reminders-db": "esbuild tests/reminders.integration.ts --bundle --platform=node --format=cjs --external:pg-native --outfile=node_modules/.cache/couple-tests/reminders.integration.cjs && node node_modules/.cache/couple-tests/reminders.integration.cjs",
     "test": "esbuild tests/*.test.ts --bundle --platform=node --format=esm --outdir=node_modules/.cache/couple-tests --out-extension:.js=.mjs && for test in node_modules/.cache/couple-tests/*.test.mjs; do node \"$test\" || exit 1; done",

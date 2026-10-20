@@ -6,6 +6,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './accountRecoveryInput';
+export * from './accountRecoveryPreview';
+export * from './accountRecoveryProof';
+export * from './accountRecoveryStatus';
+export * from './accountRecoveryStatusEnvironment';
+export * from './accountSpaceSelection';
 export * from './assistantInput';
 export * from './assistantTurn';
 export * from './billingCheckout';

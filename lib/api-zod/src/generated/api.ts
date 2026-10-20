@@ -8,6 +8,70 @@
 import * as zod from 'zod';
 
 
+export const GetAccountRecoveryResponse = zod.object({
+  "environment": zod.enum(['preview', 'production']),
+  "linked": zod.boolean(),
+  "usingRecovered": zod.boolean(),
+  "effectiveUserId": zod.string(),
+  "recoveredSpaceName": zod.string().nullable(),
+  "currentSpaceName": zod.string().nullable()
+})
+
+
+export const IssueAccountRecoveryResponse = zod.object({
+  "code": zod.string(),
+  "expiresAt": zod.string()
+})
+
+
+export const checkAccountRecoveryBodyCodeMin = 20;
+export const checkAccountRecoveryBodyCodeMax = 4000;
+
+
+
+export const CheckAccountRecoveryBody = zod.object({
+  "code": zod.string().min(checkAccountRecoveryBodyCodeMin).max(checkAccountRecoveryBodyCodeMax)
+})
+
+export const CheckAccountRecoveryResponse = zod.object({
+  "spaceName": zod.string(),
+  "alreadyLinked": zod.boolean()
+})
+
+
+export const confirmAccountRecoveryBodyCodeMin = 20;
+export const confirmAccountRecoveryBodyCodeMax = 4000;
+
+
+
+export const ConfirmAccountRecoveryBody = zod.object({
+  "code": zod.string().min(confirmAccountRecoveryBodyCodeMin).max(confirmAccountRecoveryBodyCodeMax)
+})
+
+export const ConfirmAccountRecoveryResponse = zod.object({
+  "environment": zod.enum(['preview', 'production']),
+  "linked": zod.boolean(),
+  "usingRecovered": zod.boolean(),
+  "effectiveUserId": zod.string(),
+  "recoveredSpaceName": zod.string().nullable(),
+  "currentSpaceName": zod.string().nullable()
+})
+
+
+export const SelectAccountSpaceBody = zod.object({
+  "useRecovered": zod.boolean()
+})
+
+export const SelectAccountSpaceResponse = zod.object({
+  "environment": zod.enum(['preview', 'production']),
+  "linked": zod.boolean(),
+  "usingRecovered": zod.boolean(),
+  "effectiveUserId": zod.string(),
+  "recoveredSpaceName": zod.string().nullable(),
+  "currentSpaceName": zod.string().nullable()
+})
+
+
 export const getReminderPreferencesResponseTimezoneMax = 100;
 
 

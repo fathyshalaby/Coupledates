@@ -7,6 +7,8 @@ import { spawn } from "node:child_process";
 import { build } from "esbuild";
 
 const cwd = fileURLToPath(new URL("../", import.meta.url));
+const suite = process.argv[2] ?? "billing";
+if (!["billing", "recovery"].includes(suite)) throw new Error("Unknown isolated contract suite.");
 const scratch = await mkdtemp(path.join(tmpdir(), "cd-billing-"));
 const socket = path.join(scratch, "socket");
 const env = {
@@ -51,7 +53,7 @@ try {
   env.BILLING_CONTRACT_SCHEMA = path.join(scratch, "migrations", migrations[0]);
   const outfile = path.join(scratch, "billing-contract.cjs");
   await build({
-    absWorkingDir: cwd, entryPoints: ["tests/billing-contract.integration.ts"],
+    absWorkingDir: cwd, entryPoints: [suite === "recovery" ? "tests/account-recovery.integration.ts" : "tests/billing-contract.integration.ts"],
     bundle: true, platform: "node", format: "cjs", external: ["pg-native"], outfile,
   });
   await run(process.execPath, [outfile]);

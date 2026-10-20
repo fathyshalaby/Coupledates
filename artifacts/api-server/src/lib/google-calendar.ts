@@ -2,6 +2,7 @@ import { clerkClient } from "@clerk/express";
 import { db, calendarConnectionsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { fail } from "./validation";
+import { calendarAuthUserId } from "./account-identity";
 
 export const GOOGLE_CALENDAR_SCOPES = [
   "https://www.googleapis.com/auth/calendar.freebusy",
@@ -13,7 +14,7 @@ async function consentRequired(userId: string): Promise<never> {
 }
 async function tokenFor(userId: string) {
   let tokens;
-  try { tokens = await clerkClient.users.getUserOauthAccessToken(userId, "google"); }
+  try { tokens = await clerkClient.users.getUserOauthAccessToken(await calendarAuthUserId(userId), "google"); }
   catch (e) {
     const status = (e as { status?: number }).status;
     if (status && status >= 500 || status === 429) fail(503, "Google authorization is temporarily unavailable. Please try again.");

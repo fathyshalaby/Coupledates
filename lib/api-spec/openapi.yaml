@@ -11,6 +11,66 @@ tags:
   - name: health
     description: Health operations
 paths:
+  /account/recovery:
+    get:
+      operationId: getAccountRecovery
+      responses:
+        "200":
+          description: Current login and ownership-proven space selection
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountRecoveryStatus" }
+  /account/recovery/proof:
+    post:
+      operationId: issueAccountRecovery
+      responses:
+        "200":
+          description: Short-lived private ownership proof, generated only in preview
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountRecoveryProof" }
+  /account/recovery/check:
+    post:
+      operationId: checkAccountRecovery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountRecoveryInput" }
+      responses:
+        "200":
+          description: Ownership verified, no account link changed
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountRecoveryPreview" }
+  /account/recovery/confirm:
+    post:
+      operationId: confirmAccountRecovery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountRecoveryInput" }
+      responses:
+        "200":
+          description: Ownership-proven existing space selected, without merging or deleting records
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountRecoveryStatus" }
+  /account/recovery/select:
+    post:
+      operationId: selectAccountSpace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AccountSpaceSelection" }
+      responses:
+        "200":
+          description: Selected one of this account's ownership-proven spaces
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AccountRecoveryStatus" }
   /reminder-preferences:
     get:
       operationId: getReminderPreferences
@@ -472,6 +532,38 @@ paths:
                 $ref: "#/components/schemas/HealthStatus"
 components:
   schemas:
+    AccountRecoveryStatus:
+      type: object
+      required: [environment, linked, usingRecovered, effectiveUserId, recoveredSpaceName, currentSpaceName]
+      properties:
+        environment: { type: string, enum: [preview, production] }
+        linked: { type: boolean }
+        usingRecovered: { type: boolean }
+        effectiveUserId: { type: string }
+        recoveredSpaceName: { type: ["string", "null"] }
+        currentSpaceName: { type: ["string", "null"] }
+    AccountRecoveryProof:
+      type: object
+      required: [code, expiresAt]
+      properties:
+        code: { type: string }
+        expiresAt: { type: string }
+    AccountRecoveryInput:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, minLength: 20, maxLength: 4000 }
+    AccountRecoveryPreview:
+      type: object
+      required: [spaceName, alreadyLinked]
+      properties:
+        spaceName: { type: string }
+        alreadyLinked: { type: boolean }
+    AccountSpaceSelection:
+      type: object
+      required: [useRecovered]
+      properties:
+        useRecovered: { type: boolean }
     ReminderPreferences:
       type: object
       required: [timezone, dateEnabled, photoEnabled, leadMinutes]

@@ -5,6 +5,47 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type AccountRecoveryStatusEnvironment = typeof AccountRecoveryStatusEnvironment[keyof typeof AccountRecoveryStatusEnvironment];
+
+
+export const AccountRecoveryStatusEnvironment = {
+  preview: 'preview',
+  production: 'production',
+} as const;
+
+export interface AccountRecoveryStatus {
+  environment: AccountRecoveryStatusEnvironment;
+  linked: boolean;
+  usingRecovered: boolean;
+  effectiveUserId: string;
+  /** @nullable */
+  recoveredSpaceName: string | null;
+  /** @nullable */
+  currentSpaceName: string | null;
+}
+
+export interface AccountRecoveryProof {
+  code: string;
+  expiresAt: string;
+}
+
+export interface AccountRecoveryInput {
+  /**
+     * @minLength 20
+     * @maxLength 4000
+     */
+  code: string;
+}
+
+export interface AccountRecoveryPreview {
+  spaceName: string;
+  alreadyLinked: boolean;
+}
+
+export interface AccountSpaceSelection {
+  useRecovered: boolean;
+}
+
 export type ReminderPreferencesLeadMinutes = typeof ReminderPreferencesLeadMinutes[keyof typeof ReminderPreferencesLeadMinutes];
 
 

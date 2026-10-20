@@ -15,7 +15,7 @@ import { CoupleContext } from '@/lib/couple-context';
 import {
   NotFound, Landing, Onboarding, HomePage, MemoriesPage, DatesPage,
   StreaksPage, RecapPage, SettingsPage, DateDetailPage, PreferencesPage,
-  AssistantPage, CalendarPage, BillingPage,
+  AssistantPage, CalendarPage, BillingPage, AccountRecoveryPage,
 } from '@/lib/lazy-pages';
 
 const queryClient = new QueryClient({
@@ -146,6 +146,13 @@ function HomeRedirect() {
   );
 }
 
+function AccountRecoveryRoute() {
+  return <>
+    <Show when="signed-in"><AccountRecoveryPage /></Show>
+    <Show when="signed-out"><Redirect to="/sign-in" /></Show>
+  </>;
+}
+
 function CoupleGate({ page: Page }: { page: ComponentType }) {
   const { isSignedIn } = useAuth();
   const q = useGetCouple({ query: { queryKey: getGetCoupleQueryKey(), enabled: !!isSignedIn, refetchInterval: 30_000, refetchIntervalInBackground: false } });
@@ -189,6 +196,7 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
     const seg = location.split('/');
     const key = seg[1] === 'dates' && seg[2] ? 'date-detail' : seg[1] || '';
     const names: Record<string, string> = { '': 'A private space for two', home: 'Our space', memories: 'Our memories', dates: 'Date night', streaks: 'Daily connection', recap: 'Our year together', settings: 'Our settings', 'date-detail': 'Date details', preferences: 'Date preferences', assistant: 'Date ideas', calendar: 'Calendar', billing: 'Our plan', 'sign-in': 'Sign in', 'sign-up': 'Create your account' };
+    names['recover-space'] = 'Recover your existing space';
     const title = `${names[key] ?? 'Page not found'} · Couple Dates`;
     document.title = title;
     document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
@@ -223,6 +231,7 @@ function ClerkProviderWithRoutes() {
               <Route path="/" component={HomeRedirect} />
               <Route path="/sign-in/*?" component={SignInPage} />
               <Route path="/sign-up/*?" component={SignUpPage} />
+              <Route path="/recover-space" component={AccountRecoveryRoute} />
               <Route path="/home" component={HomeR} />
               <Route path="/memories" component={MemoriesR} />
               <Route path="/dates" component={DatesR} />

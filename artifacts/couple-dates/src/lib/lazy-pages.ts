@@ -15,3 +15,4 @@ export const PreferencesPage = lazyPage(() => import('@/pages/preferences'));
 export const AssistantPage = lazyPage(() => import('@/pages/assistant'));
 export const CalendarPage = lazyPage(() => import('@/pages/calendar'));
 export const BillingPage = lazyPage(() => import('@/pages/billing'));
+export const AccountRecoveryPage = lazyPage(() => import('@/pages/account-recovery'));

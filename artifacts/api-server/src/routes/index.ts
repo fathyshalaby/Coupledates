@@ -12,10 +12,12 @@ import calendarRouter from "./calendar";
 import dateCalendarRouter from "./date-calendar";
 import billingRouter from "./billing";
 import remindersRouter from "./reminders";
+import accountRecoveryRouter from "./account-recovery";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(accountRecoveryRouter);
 router.use(coupleRouter);
 router.use(memoriesRouter);
 router.use(datesRouter);

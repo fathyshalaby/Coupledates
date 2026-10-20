@@ -1,7 +1,8 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useClerk } from '@clerk/react';
-import { ArrowRight, KeyRound, Sparkle } from 'lucide-react';
+import { ArrowRight, KeyRound, LifeBuoy, Sparkle } from 'lucide-react';
+import { Link } from 'wouter';
 import { useJoinCouple, useSaveCouple } from '@workspace/api-client-react';
 import { TwoRings } from '@/components/bits';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,8 @@ export default function Onboarding() {
         </div>
         <h1 className="rise font-display mt-8 text-[2.8rem] leading-[0.95]" style={{ animationDelay: '60ms' }}>Let's set up <em className="text-primary">your</em> space.</h1>
         <p className="rise mt-3 text-muted-foreground" style={{ animationDelay: '120ms' }}>Start a new one, or join the space your partner already made.</p>
+
+        <Link href="/recover-space" data-testid="link-recover-space" className="mt-6 flex items-center gap-3 rounded-[22px] border border-foreground/10 px-4 py-3 text-sm"><LifeBuoy className="h-5 w-5 shrink-0 text-primary" /><span><span className="block font-medium">Already had a space? Recover existing space</span><span className="text-muted-foreground">Check this before creating a new one.</span></span></Link>
 
         <div className="mt-8 grid grid-cols-2 rounded-full bg-foreground/[0.06] p-1">
           {(['create', 'join'] as const).map((m) => (

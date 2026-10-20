@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useClerk, useUser } from '@clerk/react';
-import { CalendarClock, Gem, Check, ChevronRight, ClipboardList, Copy, Flame, LogOut, Share2 } from 'lucide-react';
+import { CalendarClock, Gem, Check, ChevronRight, ClipboardList, Copy, Flame, LifeBuoy, LogOut, Share2 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useSaveCouple } from '@workspace/api-client-react';
 import { Input } from '@/components/ui/input';
@@ -102,6 +102,7 @@ export default function SettingsPage() {
         </div>
         <button data-testid="button-sign-out" onClick={() => signOut({ redirectUrl: basePath || '/' })} className="flex items-center gap-1.5 rounded-full bg-foreground/5 px-4 py-2 text-sm active:scale-95 transition-transform"><LogOut className="h-4 w-4" /> Sign out</button>
       </section>
+      <Link href="/recover-space" data-testid="link-settings-recover-space" className="mt-3 flex items-center gap-3 rounded-[28px] bg-card px-5 py-4 shadow-[0_1px_0_hsl(var(--border))] hover:bg-foreground/[0.03]"><LifeBuoy className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Recover existing space</span><span className="text-sm text-muted-foreground">Signed in with a different account than before? Link your original space.</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>
     </div>
   );
 }
