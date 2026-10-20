@@ -61,9 +61,9 @@ export default function DatesPage() {
         <button data-testid="button-new-date" onClick={() => openNew()} aria-label="Propose a date" className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-primary pl-3.5 pr-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-95"><Plus className="h-4 w-4" /><span>Propose</span></button>
       </PageHeader>
 
-      <div role="tablist" aria-label="Date lists" className="grid grid-cols-4 rounded-xl bg-foreground/[0.05] p-1">
+      <div role="tablist" aria-label="Date lists" className="flex flex-wrap gap-1 rounded-xl bg-foreground/[0.05] p-1">
         {TABS.map((t) => (
-          <button role="tab" aria-selected={current === t.key} key={t.key} data-testid={`tab-${t.key}`} onClick={() => setTab(t.key)} className={cn('relative min-h-10 rounded-lg px-1 text-[13px] font-medium transition-colors', current === t.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
+          <button role="tab" aria-selected={current === t.key} key={t.key} data-testid={`tab-${t.key}`} onClick={() => setTab(t.key)} className={cn('relative min-h-10 min-w-fit flex-1 rounded-lg px-1 text-[13px] font-medium transition-colors', current === t.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
             {current === t.key && <motion.span layoutId="datetab" className="absolute inset-0 rounded-lg border border-border bg-card shadow-[0_1px_2px_hsl(335_30%_20%/.06)]" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
             <span className="relative">{t.label}</span>
             {t.key === 'inbox' && needsYou > 0 ? (

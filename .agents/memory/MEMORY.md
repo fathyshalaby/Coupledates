@@ -3,3 +3,4 @@
 - [Whop billing contracts](whop-contracts.md) — pin runtime/webhook API dates and retain provider-enforced one-purchase checkout safeguards.
 - [Visual refinement intent](visual-refinement.md) — the user wants a less “vibe coded” Couple Dates interface, refined in place without replacing working flows.
 - [Subscription analytics boundaries](subscription-analytics.md) — measure the upgrade funnel without relationship/payment data; checkout returns are not purchase proof.
+- [Isolated layout tests](ui-layout-testing.md) — a separate Vite root needs production Tailwind sources; enlarge text without also enlarging spacing.

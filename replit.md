@@ -63,6 +63,13 @@ Google saves and .ics downloads are explicit, one-time calendar copies, not back
 
 ## Gotchas
 
+UI layout/form regressions: `pnpm --filter @workspace/couple-dates run test:ui`
+runs isolated Chromium checks at 320px, 390px, desktop and 200% text. Run
+`pnpm --filter @workspace/couple-dates run test:ui:types` to typecheck the suite.
+No API server, database, sign-in or provider credentials are needed. All requests
+are intercepted using synthetic fixtures. Setup and coverage:
+`artifacts/couple-dates/tests/ui/README.md`.
+
 _Populate as you build — sharp edges, "always run X before Y" rules._
 
 ## Pointers

@@ -1,0 +1,105 @@
+import { test as base, expect } from '@playwright/test';
+import { memory, plan, summary } from './records';
+
+export const png = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=',
+  'base64',
+);
+type Write = { method: string; path: string; data: Record<string, unknown> };
+type Network = { writes: Write[]; unexpected: string[] };
+
+export const test = base.extend<{ network: Network }>({
+  network: [async ({ page }, use) => {
+    const network: Network = { writes: [], unexpected: [] };
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    await page.route('**/*', async (route) => {
+      const request = route.request();
+      const url = new URL(request.url());
+      const path = url.pathname;
+      // Fonts are intentionally offline; layout assertions use deterministic
+      // fallback fonts. No browser request can reach a real API/provider.
+      if (url.origin !== 'http://127.0.0.1:5189') {
+        if (!url.hostname.endsWith('googleapis.com') && !url.hostname.endsWith('gstatic.com')) {
+          network.unexpected.push(request.url());
+        }
+        return route.abort();
+      }
+      const json = (body: unknown) => route.fulfill({ json: body });
+      if (path === '/logo.svg') {
+        return route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28"><circle cx="14" cy="14" r="10" fill="#c45c43"/></svg>' });
+      }
+      if (request.method() === 'GET' && ['/api/storage/synthetic/original.png', '/api/storage/synthetic/replacement.png'].includes(path)) {
+        return route.fulfill({ contentType: 'image/png', body: png });
+      }
+      if (request.method() === 'GET') {
+        if (path === '/api/dates') return json([plan, { ...plan, id: 900004, status: 'proposed', canRespond: true }]);
+        if (path === '/api/memories') return json([memory]);
+        if (path === '/api/summary') return json(summary);
+        if (path === '/api/preferences') return json([]);
+        if (path === '/api/reminders') return json([]);
+        if (!path.startsWith('/api/')) return route.continue();
+      } else {
+        network.writes.push({
+          method: request.method(), path,
+          data: path === '/synthetic-upload' ? {} : request.postDataJSON(),
+        });
+        if (path === '/api/storage/uploads/request-url') {
+          return json({ uploadURL: `${url.origin}/synthetic-upload`, objectPath: '/synthetic/replacement.png' });
+        }
+        if (path === '/synthetic-upload') {
+          return route.fulfill({ status: 200, body: '' });
+        }
+        if (path === '/api/dates' && request.method() === 'POST') {
+          return json({ ...plan, ...request.postDataJSON(), id: 900005 });
+        }
+        if (path === `/api/memories/${memory.id}` && request.method() === 'PATCH') {
+          return json({ ...memory, ...request.postDataJSON() });
+        }
+        if (path === '/api/memories' && request.method() === 'POST') {
+          return json({ ...memory, ...request.postDataJSON(), id: 900006 });
+        }
+      }
+      network.unexpected.push(`${request.method()} ${path}`);
+      return route.abort();
+    });
+    await use(network);
+    expect(network.unexpected, 'Unexpected requests must fail closed, never reach a provider').toEqual([]);
+    expect(errors, 'No uncaught browser errors').toEqual([]);
+  }, { auto: true }],
+});
+
+test.beforeEach(async ({ page }, testInfo) => {
+  if (testInfo.project.name.endsWith('large-text')) {
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        const style = document.createElement('style');
+        // Double text, not rem-based spacing/controls. Cover Tailwind's named
+        // sizes and arbitrary pixel/rem sizes, including responsive headings.
+        style.textContent = `:root{
+          --text-xs:1.5rem;--text-sm:1.75rem;--text-base:2rem;
+          --text-lg:2.25rem;--text-xl:2.5rem;--text-2xl:3rem;
+          --text-3xl:3.75rem;--text-4xl:4.5rem
+        }.eyebrow{font-size:24px!important}`;
+        document.head.append(style);
+        const sizes = new Set<string>();
+        const enlargePixelUtilities = () => {
+          for (const el of document.querySelectorAll('[class]')) {
+            for (const name of el.classList) {
+              const match = /^(?:(sm):)?text-\[(\d+(?:\.\d+)?)(px|rem)\]$/.exec(name);
+              if (match && !sizes.has(name)) {
+                sizes.add(name);
+                const rule = `.${CSS.escape(name)}{font-size:${Number(match[2]) * 2}${match[3]}!important}`;
+                style.sheet!.insertRule(match[1] ? `@media(min-width:640px){${rule}}` : rule);
+              }
+            }
+          }
+        };
+        new MutationObserver(enlargePixelUtilities).observe(document.body, { childList: true, subtree: true });
+        enlargePixelUtilities();
+      });
+    });
+  }
+});
+
+export { expect };

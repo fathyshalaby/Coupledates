@@ -1,0 +1,3 @@
+@import '../../src/index.css';
+/* The test Vite root differs from production; scan the actual app utilities. */
+@source '../../src';
