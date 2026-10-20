@@ -55,6 +55,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
   const [error, setError] = useState('');
   const [canNativeShare, setCanNativeShare] = useState(false);
   const [consented, setConsented] = useState(false);
+  const [nativeShareFailed, setNativeShareFailed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [fallbackReady, setFallbackReady] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -73,6 +74,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
     setPhotoWarning(false);
     setCanNativeShare(false);
     setConsented(false);
+    setNativeShareFailed(false);
     setCopied(false);
     setFallbackReady(false);
     setPreviewUrl('');
@@ -104,6 +106,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
 
   function updateOption(key: keyof ShareOptions, value: boolean) {
     setConsented(false);
+    setNativeShareFailed(false);
     setCopied(false);
     setFallbackReady(false);
     setError('');
@@ -122,7 +125,8 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
     if (!file) return;
     const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
     try {
-      await nav.share?.({ files: [file], text: caption });
+      if (typeof nav.share !== 'function') throw new Error('Native sharing is unavailable');
+      await nav.share({ files: [file], text: caption });
       handleOpenChange(false);
     } catch (reason) {
       if ((reason as { name?: string } | null)?.name === 'AbortError') {
@@ -130,6 +134,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
       } else {
         setError('Sharing did not complete. You can still download the image or copy its caption.');
         setConsented(true);
+        setNativeShareFailed(true);
       }
     }
   }
@@ -220,10 +225,10 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
           {photoWarning && <p data-testid="text-share-photo-warning" className="text-sm text-muted-foreground">The saved photo could not be loaded; the card uses a text-only design.</p>}
           {error && previewUrl && <p role="alert" data-testid="text-share-error" className="text-sm text-destructive">{error}</p>}
           {copied && <p role="status" data-testid="text-share-copied" className="flex items-center gap-1.5 text-sm text-primary"><Check className="h-4 w-4" />{fallbackReady ? 'Image downloaded and caption copied.' : 'Caption copied.'}</p>}
-          {consented && !canNativeShare && previewUrl && (
+          {consented && previewUrl && (
             <section data-testid="share-manual-fallback" className="space-y-2 rounded-xl border border-border bg-secondary/35 p-3.5">
               <h3 className="text-sm font-medium">Ready to post manually</h3>
-              <p className="text-sm leading-relaxed text-muted-foreground">This browser can’t send the image directly to another app. Download the card and copy its caption to post them there. Nothing is uploaded and no private link is shared.</p>
+              <p className="text-sm leading-relaxed text-muted-foreground">{nativeShareFailed ? 'The image could not be sent to another app. Download the card and copy its caption to post them there.' : 'This browser can’t send the image directly to another app. Download the card and copy its caption to post them there.'} Nothing is uploaded and no private link is shared.</p>
               <p data-testid="text-share-caption" className="break-words rounded-lg bg-background/70 px-3 py-2 text-sm">{caption}</p>
             </section>
           )}

@@ -85,6 +85,56 @@ test('supported native file share happens only after the second confirmation act
   await expect(page.getByTestId('dialog-share-preview')).not.toBeVisible();
 });
 
+test('canceling native sharing says nothing was sent and leaves the reviewed card open', async ({ page, network }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: (data: ShareData) => !!data.files?.length });
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: async () => { throw new DOMException('User canceled', 'AbortError'); },
+    });
+  });
+  await page.goto('/memories');
+  await page.getByTestId('button-share-memory-900003').click();
+  const dialog = page.getByTestId('dialog-share-preview');
+  await page.getByTestId('button-share-confirm').click();
+
+  await expect(page.getByTestId('text-share-error')).toHaveText('Sharing was canceled. Nothing was sent.');
+  await expect(dialog).toBeVisible();
+  await expect(page.getByTestId('img-share-preview')).toBeVisible();
+  await expect(page.getByTestId('button-share-confirm')).toHaveText('Share image');
+  await expect(page.getByTestId('share-manual-fallback')).toHaveCount(0);
+  expect(network.writes).toEqual([]);
+});
+
+test('rejected native sharing exposes download-and-copy fallback without uploading or sharing private links', async ({ page, network }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: (data: ShareData) => !!data.files?.length });
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      value: async () => { throw new Error('Share target unavailable'); },
+    });
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (text: string) => { (window as Window & { __copiedCaption?: string }).__copiedCaption = text; } },
+    });
+  });
+  await page.goto('/memories');
+  await page.getByTestId('button-share-memory-900003').click();
+  await page.getByTestId('button-share-confirm').click();
+
+  await expect(page.getByTestId('text-share-error')).toContainText('Sharing did not complete.');
+  await expect(page.getByTestId('share-manual-fallback')).toContainText('Nothing is uploaded and no private link is shared.');
+  await expect(page.getByTestId('share-manual-fallback')).toContainText('could not be sent to another app');
+  await expect(page.getByTestId('share-manual-fallback').getByRole('link')).toHaveCount(0);
+  const download = page.waitForEvent('download');
+  await page.getByTestId('button-share-download-copy').click();
+  await expect(download).resolves.toBeTruthy();
+  await expect(page.getByTestId('text-share-copied')).toContainText('Image downloaded and caption copied.');
+  expect(await page.evaluate(() => (window as Window & { __copiedCaption?: string }).__copiedCaption)).toContain('Food');
+  expect(network.writes).toEqual([]);
+  await expect(page.getByTestId('dialog-share-preview')).toBeVisible();
+});
+
 test('recap sharing includes only selected details and keeps the caption aligned with its preview', async ({ page, network }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false });
