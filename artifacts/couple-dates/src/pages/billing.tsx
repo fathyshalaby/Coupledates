@@ -7,7 +7,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, PageHeader } from '@/components/bits';
 import { useToast } from '@/hooks/use-toast';
-import { billingPhase, fmtPeriod, priceLine, safeWhopUrl, useBillingStatusQ, useBillingSync, type BillingPhase } from '@/lib/billing';
+import { billingPhase, fmtPeriod, priceLine, safeWhopUrl, useBillingAnalytics, useBillingStatusQ, useBillingSync, type BillingPhase } from '@/lib/billing';
+import { trackUpgradeEntry } from '@/lib/billing-analytics';
 import { errMsg } from '@/lib/data';
 
 const POLL_WINDOW = 3 * 60_000;
@@ -19,6 +20,7 @@ export default function BillingPage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const sync = useBillingSync();
+  const analytics = useBillingAnalytics();
   const returning = useRef(new URLSearchParams(window.location.search).get('checkout') === 'return').current;
   const [pollUntil, setPollUntil] = useState<number | null>(returning ? Date.now() + POLL_WINDOW : null);
   const [now, setNow] = useState(Date.now());
@@ -32,7 +34,15 @@ export default function BillingPage() {
   const refreshRef = useRef(refresh.mutate);
   refreshRef.current = refresh.mutate;
 
-  useEffect(() => { if (returning) { refreshRef.current(); navigate('/billing', { replace: true }); } }, [returning, navigate]);
+  const returnHandled = useRef(false);
+  useEffect(() => {
+    if (returning && !returnHandled.current) {
+      returnHandled.current = true;
+      analytics.checkoutReturned();
+      refreshRef.current();
+      navigate('/billing', { replace: true });
+    }
+  }, [returning, navigate, analytics]);
   useEffect(() => {
     if (pollUntil === null) return;
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -49,12 +59,12 @@ export default function BillingPage() {
     window.location.assign(url);
   };
   const checkout = useCreateBillingCheckout({ mutation: {
-    onSuccess: (d) => { setPollUntil(Date.now() + POLL_WINDOW); sync(); go(d.url, 'Checkout'); },
+    onSuccess: (d) => { analytics.checkoutCreated(d.resumed); setPollUntil(Date.now() + POLL_WINDOW); sync(); go(d.url, 'Checkout'); },
     onError: (e) => { toast({ title: 'Checkout could not start', description: errMsg(e), variant: 'destructive' }); sync(); },
   } });
   const manage = useManageBilling({ mutation: { onSuccess: (d) => go(d.url, 'Billing'), onError: (e) => toast({ title: 'Could not open billing', description: errMsg(e), variant: 'destructive' }) } });
-  const cancel = useCancelBilling({ mutation: { onSuccess: (d) => { sync(d); setConfirm(null); toast({ title: 'Renewal stopped', description: 'Plus stays on until the end of the paid period.' }); }, onError: (e) => toast({ title: 'Could not stop renewal', description: errMsg(e), variant: 'destructive' }) } });
-  const resume = useResumeBilling({ mutation: { onSuccess: (d) => { sync(d); setConfirm(null); toast({ title: 'Renewal back on' }); }, onError: (e) => toast({ title: 'Could not resume', description: errMsg(e), variant: 'destructive' }) } });
+  const cancel = useCancelBilling({ mutation: { onSuccess: (d) => { analytics.renewalConfirmed('cancel', d); sync(d); setConfirm(null); toast({ title: 'Renewal stopped', description: 'Plus stays on until the end of the paid period.' }); }, onError: (e) => toast({ title: 'Could not stop renewal', description: errMsg(e), variant: 'destructive' }) } });
+  const resume = useResumeBilling({ mutation: { onSuccess: (d) => { analytics.renewalConfirmed('resume', d); sync(d); setConfirm(null); toast({ title: 'Renewal back on' }); }, onError: (e) => toast({ title: 'Could not resume', description: errMsg(e), variant: 'destructive' }) } });
   const busy = checkout.isPending || manage.isPending || cancel.isPending || resume.isPending;
 
   if (q.isLoading) return <div><PageHeader kicker="Plan" title={<>Couple Dates <em className="text-primary">Plus</em></>} /><div className="space-y-3" data-testid="state-billing-loading"><Skeleton className="h-48 rounded-[28px]" /><Skeleton className="h-32 rounded-[24px]" /></div></div>;
@@ -89,11 +99,11 @@ export default function BillingPage() {
         {phase === 'verifying' && <Btn testid="button-billing-verify" onClick={() => refresh.mutate()} disabled={refresh.isPending} primary>{refresh.isPending ? 'Checking...' : 'Check status again'}</Btn>}
 
         {phase === 'free' && (s.checkoutAvailable
-          ? <Btn testid="button-billing-checkout" onClick={() => checkout.mutate()} disabled={busy} primary>{checkout.isPending ? 'Opening secure checkout...' : 'Upgrade our space'}</Btn>
+          ? <Btn testid="button-billing-checkout" onClick={() => { trackUpgradeEntry('billing'); checkout.mutate(); }} disabled={busy} primary>{checkout.isPending ? 'Opening secure checkout...' : 'Upgrade our space'}</Btn>
           : <p className="px-1 text-sm text-muted-foreground">Upgrading isn't available right now. Please check back later.</p>)}
 
         {phase === 'pending' && (s.isPayer
-          ? <Btn testid="button-billing-resume-checkout" onClick={() => checkout.mutate()} disabled={busy} primary>{checkout.isPending ? 'Opening...' : 'Continue my checkout'}</Btn>
+          ? <Btn testid="button-billing-resume-checkout" onClick={() => { trackUpgradeEntry('billing_pending'); checkout.mutate(); }} disabled={busy} primary>{checkout.isPending ? 'Opening...' : 'Continue my checkout'}</Btn>
           : <p data-testid="text-billing-partner-checkout" className="rounded-2xl border border-foreground/10 px-4 py-3 text-sm">Your partner has started checkout. Once it is confirmed, Plus turns on for both of you. No action needed from you.</p>)}
 
         {(phase === 'active' || phase === 'ending' || phase === 'past_due') && (s.canManage ? (

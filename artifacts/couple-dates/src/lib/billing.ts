@@ -1,9 +1,30 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { getGetAssistantHistoryQueryKey, getGetBillingStatusQueryKey, useGetBillingStatus, type BillingStatus } from '@workspace/api-client-react';
+import { createBillingAnalytics } from './billing-analytics';
+
+const analyticsByClient = new WeakMap<QueryClient, ReturnType<typeof createBillingAnalytics>>();
+
+export function useBillingAnalytics() {
+  const qc = useQueryClient();
+  let analytics = analyticsByClient.get(qc);
+  if (!analytics) {
+    analytics = createBillingAnalytics();
+    analyticsByClient.set(qc, analytics);
+    const observer = analytics;
+    // The auth boundary clears queries when accounts change. Do not carry a
+    // pending activation or a previous subscriber's state into another account.
+    qc.getQueryCache().subscribe((event) => {
+      if (event.type === 'removed' && event.query.queryKey[0] === getGetBillingStatusQueryKey()[0]) observer.reset();
+    });
+  }
+  return analytics;
+}
 
 /** Shared space-level billing status. Both partners read the same key; polled to stay fresh. */
 export function useBillingStatusQ(fast = false) {
-  return useGetBillingStatus({
+  const analytics = useBillingAnalytics();
+  const result = useGetBillingStatus({
     query: {
       queryKey: getGetBillingStatusQueryKey(),
       staleTime: fast ? 0 : 30_000,
@@ -11,6 +32,10 @@ export function useBillingStatusQ(fast = false) {
       refetchIntervalInBackground: false,
     },
   });
+  useEffect(() => {
+    if (result.isSuccess && result.data) analytics.observe(result.data);
+  }, [analytics, result.isSuccess, result.data]);
+  return result;
 }
 
 /** Writes a fresh server status into the cache and invalidates gated data. */
