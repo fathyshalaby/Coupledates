@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CalendarHeart, Heart, Pencil, Plus, Search, Trash2, X } from 'lucide-react';
+import { CalendarHeart, Heart, Pencil, Plus, Search, Share2, Trash2, X } from 'lucide-react';
 import { Link } from 'wouter';
 import { useDeleteMemory, useUpdateMemory, type Memory } from '@workspace/api-client-react';
 import { MEMORY_AFFECTED, MemoryForm, memoryToInput } from '@/components/memory-form';
@@ -13,6 +13,7 @@ import { CategoryChip, EmptyState, ErrorState, ListSkeleton, PageHeader, Photo }
 import { useToast } from '@/hooks/use-toast';
 import { CATEGORIES, errMsg, fmtDate, parseISO, useInvalidate, useMemoriesQ } from '@/lib/data';
 import { cn } from '@/lib/utils';
+import { ShareCardDialog } from '@/components/share-card-dialog';
 
 const AFFECTED = MEMORY_AFFECTED;
 
@@ -25,6 +26,7 @@ export default function MemoriesPage() {
   const [favOnly, setFavOnly] = useState(false);
   const [editing, setEditing] = useState<Memory | 'new' | null>(null);
   const [deleting, setDeleting] = useState<Memory | null>(null);
+  const [sharing, setSharing] = useState<Memory | null>(null);
 
   const update = useUpdateMemory({ mutation: { onSuccess: () => invalidate([...AFFECTED]), onError: (e) => toast({ title: 'Could not update', description: errMsg(e), variant: 'destructive' }) } });
   const del = useDeleteMemory({ mutation: {
@@ -103,6 +105,7 @@ export default function MemoriesPage() {
                           {m.dateId != null && <Link href={`/dates/${m.dateId}`} data-testid={`link-memory-date-${m.id}`} className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-primary hover:underline"><CalendarHeart className="h-3.5 w-3.5" /> From a date · open album</Link>}
                           {m.note && <p className="mt-2 whitespace-pre-line text-[15px] leading-relaxed text-foreground/80">{m.note}</p>}
                           <div className="-mx-2 -mb-1 mt-3 flex justify-end gap-1 border-t border-border pt-2">
+                            <button data-testid={`button-share-memory-${m.id}`} onClick={() => setSharing(m)} className="flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-[13px] text-muted-foreground hover:bg-foreground/5 hover:text-foreground"><Share2 className="h-3.5 w-3.5" /> Share</button>
                             <button data-testid={`button-edit-memory-${m.id}`} onClick={() => setEditing(m)} className="flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-[13px] text-muted-foreground hover:bg-foreground/5 hover:text-foreground"><Pencil className="h-3.5 w-3.5" /> Edit</button>
                             <button data-testid={`button-delete-memory-${m.id}`} onClick={() => setDeleting(m)} className="flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-[13px] text-destructive hover:bg-destructive/5"><Trash2 className="h-3.5 w-3.5" /> Delete</button>
                           </div>
@@ -137,6 +140,12 @@ export default function MemoriesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ShareCardDialog
+        open={sharing !== null}
+        onOpenChange={(open) => !open && setSharing(null)}
+        content={sharing ? { kind: 'memory', title: sharing.title, date: fmtDate(sharing.date), category: sharing.category, photoPath: sharing.photoPath } : null}
+      />
     </div>
   );
 }

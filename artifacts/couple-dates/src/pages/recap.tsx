@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryChip, EmptyState, ErrorState, PageHeader, Photo } from '@/components/bits';
 import { useCouple } from '@/lib/couple-context';
 import { errStatus, fmtDate, parseISO, useRecapQ } from '@/lib/data';
+import { ShareCardDialog } from '@/components/share-card-dialog';
 
 const MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
 
@@ -13,6 +14,7 @@ export default function RecapPage() {
   const thisYear = new Date().getFullYear();
   const firstYear = Math.max(2000, Math.min(thisYear, parseISO(couple.anniversary).getFullYear()));
   const [year, setYear] = useState(thisYear);
+  const [shareOpen, setShareOpen] = useState(false);
   const q = useRecapQ(year, true);
   const r = q.data;
   const max = r ? Math.max(1, ...r.monthlyCounts) : 1;
@@ -51,6 +53,7 @@ export default function RecapPage() {
                 </div>
               ))}
             </div>
+            <button data-testid="button-share-recap" onClick={() => setShareOpen(true)} className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border border-primary-foreground/35 px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground" aria-label={`Share ${year} recap`}><Share2 className="h-4 w-4" />Share recap</button>
           </motion.section>
 
           <section className="grid grid-cols-2 gap-3">
@@ -81,6 +84,11 @@ export default function RecapPage() {
           )}
         </div>
       )}
+      <ShareCardDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        content={r && !empty ? { kind: 'recap', year, memoryCount: r.memoryCount, dateCount: r.dateCount, topCategory: r.topCategory || null } : null}
+      />
     </div>
   );
 }
