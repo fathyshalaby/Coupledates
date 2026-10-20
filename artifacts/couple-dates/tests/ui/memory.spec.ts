@@ -32,11 +32,91 @@ async function openDraft(page: import('@playwright/test').Page) {
   await page.goto('/memories');
   await page.getByTestId(`button-edit-memory-${memory.id}`).click();
   await expect(page.getByRole('dialog').getByRole('heading')).toHaveText('Edit memory');
+  await fillDraft(page);
+}
+
+async function fillDraft(page: import('@playwright/test').Page) {
   await page.getByTestId('input-memory-title').fill(draft.title);
   await page.getByTestId('input-memory-note').fill(draft.note);
   await page.getByTestId('input-memory-date').fill(draft.date);
   await page.getByTestId('option-category-adventure').click();
   await page.getByTestId('toggle-favorite').click();
+}
+
+for (const mode of ['create', 'edit'] as const) {
+  test(`${mode} save failure keeps the complete draft open until an explicit retry succeeds`, async ({ page, network }) => {
+    const method = mode === 'create' ? 'POST' : 'PATCH';
+    const path = mode === 'create' ? '/api/memories' : `/api/memories/${memory.id}`;
+    const memoryWrites = () => network.writes.filter((w) => w.path.startsWith('/api/memories'));
+    const releaseFailure = network.queueMemoryResponse(method, 503, true);
+    const releaseSuccess = network.queueMemoryResponse(method, 200, true);
+    if (mode === 'edit') {
+      await openDraft(page);
+    } else {
+      await page.goto('/memories');
+      await page.getByTestId('button-new-memory').click();
+      await fillDraft(page);
+    }
+    const dialog = page.getByRole('dialog');
+    const heading = mode === 'create' ? 'Keep a memory' : 'Edit memory';
+    await page.getByTestId('input-photo').setInputFiles({ name: 'synthetic.png', mimeType: 'image/png', buffer: png });
+    const save = page.getByTestId('button-save-memory');
+    await expect(save).toBeEnabled();
+    const photo = page.getByRole('img', { name: 'Selected photo' });
+    await expect(photo).toHaveAttribute('src', /^blob:/);
+    const photoSrc = await photo.getAttribute('src');
+    const expectedWrite = {
+      method, path,
+      data: { ...draft, favorite: true, photoPath: '/synthetic/replacement.png', dateId: mode === 'create' ? null : memory.dateId },
+    };
+    const assertOpenDraft = async () => {
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByRole('heading')).toHaveText(heading);
+      await assertDraft(page);
+      // A remount or reset must not discard the selected local preview.
+      await expect(photo).toHaveAttribute('src', photoSrc!);
+    };
+    expect(memoryWrites()).toEqual([]);
+    await save.click();
+    await expect.poll(memoryWrites).toHaveLength(1);
+    await expect(save).toBeDisabled();
+    await expect(save).toHaveText('Saving...');
+    await assertOpenDraft();
+    // Repeated activation of a pending save must not submit a second write.
+    await save.evaluate((button: HTMLButtonElement) => { button.click(); button.click(); });
+    expect(memoryWrites()).toEqual([expectedWrite]);
+    releaseFailure();
+
+    const error = page.getByTestId('text-memory-error');
+    await expect(error).toHaveAttribute('role', 'alert');
+    await expect(error).toHaveText('Synthetic memory save unavailable. Your draft is still here — try saving again.');
+    await expect(save).toBeEnabled();
+    await expect(save).toHaveText(mode === 'create' ? 'Keep this memory' : 'Save changes');
+    await assertOpenDraft();
+    // Observe beyond React Query's initial retry delay: failure must not
+    // silently retry, close the drawer, or write before the user's next click.
+    await page.waitForTimeout(1200);
+    expect(memoryWrites()).toEqual([expectedWrite]);
+    await assertOpenDraft();
+
+    await save.click();
+    await expect.poll(memoryWrites).toHaveLength(2);
+    await expect(save).toBeDisabled();
+    await expect(save).toHaveText('Saving...');
+    await expect(error).toHaveCount(0);
+    await assertOpenDraft();
+    await save.evaluate((button: HTMLButtonElement) => { button.click(); button.click(); });
+    expect(memoryWrites()).toEqual([expectedWrite, expectedWrite]);
+    // Retrying the memory write must reuse the successful upload, not upload
+    // the photo again or lose either the null/new or existing album link.
+    expect(network.writes.filter((w) => !w.path.startsWith('/api/memories'))).toEqual([
+      { method: 'POST', path: '/api/storage/uploads/request-url', data: { name: 'synthetic.png', size: png.length, contentType: 'image/png' } },
+      { method: 'PUT', path: '/synthetic-upload', data: {} },
+    ]);
+    releaseSuccess();
+    await expect(dialog).not.toBeVisible();
+    expect(memoryWrites()).toEqual([expectedWrite, expectedWrite]);
+  });
 }
 
 for (const action of ['change', 'remove'] as const) {

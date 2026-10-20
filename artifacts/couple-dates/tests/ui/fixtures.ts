@@ -8,16 +8,19 @@ export const png = Buffer.from(
 type Write = { method: string; path: string; data: Record<string, unknown> };
 type UploadStage = 'request-url' | 'put';
 type UploadResponse = { status: number; ready: Promise<void> };
+type MemoryMethod = 'POST' | 'PATCH';
 type Network = {
   writes: Write[];
   unexpected: string[];
   // Responses are consumed once; subsequent attempts succeed by default.
   queueUploadResponse: (stage: UploadStage, status: number, hold?: boolean) => () => void;
+  queueMemoryResponse: (method: MemoryMethod, status: number, hold?: boolean) => () => void;
 };
 
 export const test = base.extend<{ network: Network }>({
   network: [async ({ page }, use) => {
     const responses: Record<UploadStage, UploadResponse[]> = { 'request-url': [], put: [] };
+    const memoryResponses: Record<MemoryMethod, UploadResponse[]> = { POST: [], PATCH: [] };
     const releases: (() => void)[] = [];
     const network: Network = {
       writes: [], unexpected: [],
@@ -26,6 +29,14 @@ export const test = base.extend<{ network: Network }>({
         const ready = new Promise<void>((resolve) => { release = resolve; });
         releases.push(release);
         responses[stage].push({ status, ready });
+        if (!hold) release();
+        return release;
+      },
+      queueMemoryResponse(method, status, hold = false) {
+        let release!: () => void;
+        const ready = new Promise<void>((resolve) => { release = resolve; });
+        releases.push(release);
+        memoryResponses[method].push({ status, ready });
         if (!hold) release();
         return release;
       },
@@ -81,11 +92,23 @@ export const test = base.extend<{ network: Network }>({
         if (path === '/api/dates' && request.method() === 'POST') {
           return json({ ...plan, ...request.postDataJSON(), id: 900005 });
         }
-        if (path === `/api/memories/${memory.id}` && request.method() === 'PATCH') {
-          return json({ ...memory, ...request.postDataJSON() });
-        }
-        if (path === '/api/memories' && request.method() === 'POST') {
-          return json({ ...memory, ...request.postDataJSON(), id: 900006 });
+        if ((path === `/api/memories/${memory.id}` && request.method() === 'PATCH')
+          || (path === '/api/memories' && request.method() === 'POST')) {
+          const method = request.method() as MemoryMethod;
+          const response = memoryResponses[method].shift();
+          if (response) {
+            await response.ready;
+            if (response.status >= 400) {
+              return route.fulfill({
+                status: response.status,
+                json: { message: 'Synthetic memory save unavailable. Your draft is still here — try saving again.' },
+              });
+            }
+          }
+          return route.fulfill({
+            status: response?.status ?? 200,
+            json: { ...memory, ...request.postDataJSON(), id: method === 'POST' ? 900006 : memory.id },
+          });
         }
       }
       network.unexpected.push(`${request.method()} ${path}`);
