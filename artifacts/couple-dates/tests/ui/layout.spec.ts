@@ -51,6 +51,12 @@ test('date drawer separates timezone/length and keeps submit reachable by keyboa
   await page.getByTestId('button-new-date').click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('heading')).toHaveText('Propose a date');
+  if ((page.viewportSize()?.width ?? 0) >= 768) {
+    const panel = (await dialog.boundingBox())!;
+    const viewportWidth = page.viewportSize()!.width;
+    expect(panel.width).toBeLessThanOrEqual(672);
+    expect(Math.abs(panel.x + panel.width / 2 - viewportWidth / 2)).toBeLessThanOrEqual(1);
+  }
   await page.getByTestId('input-date-title').fill(longTitle);
   await page.getByTestId('input-date-date').fill('2099-06-15');
   await page.getByTestId('input-date-time').fill('18:30');

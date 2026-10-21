@@ -48,7 +48,7 @@ export default function RecapPage() {
             <div className="mt-6 flex h-28 items-end gap-1.5" data-testid="chart-monthly">
               {r.monthlyCounts.map((n, i) => (
                 <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                  <motion.span initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 0.1 + i * 0.04, type: 'spring', stiffness: 160, damping: 20 }} style={{ height: `${Math.max(4, (n / max) * 100)}%`, transformOrigin: 'bottom' }} className={`w-full rounded-t-md ${n ? 'bg-primary-foreground/90' : 'bg-primary-foreground/25'}`} title={`${n}`} />
+                  <motion.span initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 0.1 + i * 0.04, type: 'spring', stiffness: 160, damping: 20 }} style={{ height: `${Math.max(4, (n / max) * 72)}px`, transformOrigin: 'bottom' }} className={`w-full rounded-t-md ${n ? 'bg-primary-foreground/90' : 'bg-primary-foreground/25'}`} title={`${n}`} />
                   <span className="font-mono text-[9px] opacity-70">{MONTHS[i]}</span>
                 </div>
               ))}

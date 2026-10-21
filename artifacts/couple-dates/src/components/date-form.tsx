@@ -104,7 +104,7 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
   };
 
   return (
-    <form onSubmit={submit} className="mx-auto w-full max-w-xl overflow-y-auto px-5 pb-8 pt-2">
+    <form onSubmit={submit} className="mx-auto w-full max-w-xl overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2">
       <DrawerTitle className="font-display text-[1.75rem] font-medium">{plan ? 'Edit the plan' : 'Propose a date'}</DrawerTitle>
       <DrawerDescription className="mt-1 text-sm text-muted-foreground">{plan ? 'Changes are shared with your partner.' : 'It lands in your partner’s inbox to accept, decline, or counter.'}</DrawerDescription>
 

@@ -121,7 +121,7 @@ export default function MemoriesPage() {
       </div>
 
       <Drawer open={editing !== null} onOpenChange={(o) => !o && setEditing(null)}>
-        <DrawerContent className="max-h-[94dvh] bg-background">
+        <DrawerContent className="max-h-[94dvh] bg-background sm:max-h-[88dvh]">
           {editing !== null && <MemoryForm key={editing === 'new' ? 'new' : editing.id} memory={editing === 'new' ? null : editing} onDone={() => setEditing(null)} />}
         </DrawerContent>
       </Drawer>

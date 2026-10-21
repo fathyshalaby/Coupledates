@@ -31,7 +31,8 @@ export function HowItWorks() {
       {[['01', 'One of you makes the space', 'Add the basics and create your couple’s shared home. No group to manage, no audience to perform for.'], ['02', 'Invite your person', 'Share the invite code with your partner. When they join, the space belongs to the two of you.'], ['03', 'Make it yours, together', 'Propose dates, save the moments worth keeping, and build a record that sounds like you.']].map(([n, title, copy]) => <article className="story-step" key={n}><span>{n}</span><div><h2 className="font-display">{title}</h2><p>{copy}</p></div></article>)}
     </div><aside className="invite-card"><LockKeyhole size={20}/><p className="eyebrow">Just the two of you</p><div className="invite-code">A7K—M2Q</div><p>Illustrative invite code. Your real code is created inside your space and shared with your partner.</p><div className="invite-rule"><Users size={17}/> One shared space. Two people.</div></aside></section>
     <section className="feature-band"><p className="eyebrow">The good stuff, in one place</p><div className="feature-columns"><article><Heart/><h3 className="font-display">Keep the small things</h3><p>Either of you can save a memory in your shared space with a title, note, date, category, and one optional photo. Search and favorite the ones you want close.</p></article><article><Ticket/><h3 className="font-display">Make a plan</h3><p>Either of you can propose an online or in-person date. Talk it over, choose a time, and keep the plan in your shared space.</p></article><article><Sparkles/><h3 className="font-display">Find a starting point</h3><p>Preference-informed suggestions offer a few feasible ideas. Turn one into a proposal when it feels right.</p></article></div></section>
-    <MarketingCTA/>
+     <ProductGallery compact/>
+     <MarketingCTA/>
   </main>;
 }
 
@@ -53,4 +54,28 @@ export function Pricing() {
 
 export function MarketingCTA() {
   return <section className="marketing-cta"><div><p className="eyebrow">Whenever you’re ready</p><h2 className="font-display">Start with the next small thing.</h2></div><Link href="/sign-up" className="pill-button">Create your shared space <ArrowRight size={16}/></Link></section>;
+}
+
+const productScreens = [
+  { src: 'dates-mobile.jpg', label: 'Date night', detail: 'Proposals, online ideas, and the plans waiting for an answer.', kind: 'tall' },
+  { src: 'memories-mobile.jpg', label: 'Our pages', detail: 'A searchable timeline, with room for the photo and the detail you’d forget.', kind: 'tall' },
+  { src: 'recap-mobile.jpg', label: 'The recap', detail: 'A year in review, built from the memories and dates in your space.', kind: 'tall' },
+  { src: 'memories-desktop.jpg', label: 'Our pages', detail: 'A searchable timeline, with room for the photo and the detail you’d forget.', kind: 'wide' },
+] as const;
+
+export function ProductGallery({ compact = false }: { compact?: boolean }) {
+  const base = import.meta.env.BASE_URL;
+  return <section className={`product-gallery${compact ? ' product-gallery-compact' : ''}`} aria-labelledby="product-gallery-title">
+    <div className="product-gallery-heading">
+      <div><p className="eyebrow">Inside Couple Dates</p><h2 id="product-gallery-title" className="font-display">A real look at your shared space.</h2></div>
+      <p>These are actual app screens with illustrative demo details. Your space is private to the two people in it.</p>
+    </div>
+    <div className="product-screen-grid">
+      {productScreens.map((screen) => <figure className={`product-screen product-screen-${screen.kind}`} key={screen.src}>
+        <div className="product-screen-image"><img src={`${base}product-shots/${screen.src}`} alt={`${screen.label} screen in Couple Dates`} loading="lazy" /></div>
+        <figcaption><span className="font-display">{screen.label}</span><span>{screen.detail}</span></figcaption>
+      </figure>)}
+    </div>
+    <p className="product-demo-note">Names, dates, totals, and saved moments shown are illustrative demo data—not a real couple’s account.</p>
+  </section>;
 }

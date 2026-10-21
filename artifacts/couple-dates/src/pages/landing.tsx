@@ -2,7 +2,7 @@ import { Link } from 'wouter';
 import { motion } from 'framer-motion';
 import { ArrowRight, Lock, MapPin, Heart } from 'lucide-react';
 import { CategoryChip, TwoRings } from '@/components/bits';
-import { MarketingNav, MarketingFooter } from '@/components/marketing';
+import { MarketingNav, MarketingFooter, ProductGallery } from '@/components/marketing';
 
 const base = import.meta.env.BASE_URL;
 
@@ -38,24 +38,15 @@ export default function Landing() {
           <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Only you and the one person you invite can see it.</p>
         </div>
 
-        <div className="relative mx-auto h-[400px] w-full max-w-sm">
-          {SAMPLES.map((s, i) => (
-            <motion.figure
-              key={s.img}
-              initial={{ opacity: 0, y: 40, rotate: 0 }}
-              animate={{ opacity: 1, y: 0, rotate: s.rot }}
-              transition={{ delay: 0.25 + i * 0.15, type: 'spring', stiffness: 120, damping: 16 }}
-              whileHover={{ rotate: 0, y: -8, zIndex: 10 }}
-              className="polaroid absolute w-[64%]"
-              style={{ left: `${[0, 34, 14][i]}%`, top: `${[0, 60, 170][i]}px` }}
-            >
-              <img src={`${base}${s.img}`} alt={s.title} className="aspect-[4/5] w-full object-cover" />
-              <figcaption className="font-display mt-2 text-sm italic text-[hsl(330_32%_15%)]">{s.title}</figcaption>
-            </motion.figure>
-          ))}
-          <span className="absolute -bottom-2 right-0 rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground">Example photos</span>
-        </div>
+        <motion.figure initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .2 }}
+          className="hero-product-shot">
+          <div className="hero-shot-label"><span className="shot-live-dot" /> A look inside</div>
+          <img src={`${base}product-shots/home-mobile.jpg`} alt="Couple Dates shared home screen for Noor and Teo, shown with illustrative demo data" />
+          <figcaption><span className="font-display">Noor &amp; Teo’s shared home</span><span>Illustrative demo data · Couple Dates</span></figcaption>
+        </motion.figure>
       </section>
+
+      <ProductGallery compact />
 
       {/* PREVIEW: phone */}
       <section id="preview" className="bg-foreground py-20 text-background">

@@ -25,8 +25,18 @@ for (const orientation of ['portrait', 'landscape'] as const) {
         : kind === 'edit-memory' ? 'button-edit-memory-900003' : 'button-new-memory');
       await trigger.click();
       const dialog = page.getByRole('dialog');
+      const form = dialog.locator('form');
       const title = page.getByTestId(`input-${date ? 'date' : 'memory'}-title`);
       const submit = page.getByTestId(`button-save-${date ? 'date' : 'memory'}`);
+      const formBottomPadding = await form.evaluate((el) => parseFloat(getComputedStyle(el).paddingBottom));
+      expect(formBottomPadding).toBeGreaterThan(32 + inset - 1);
+      // Wait for the drawer's opening animation before measuring clearance.
+      await expect.poll(() => submit.evaluate((el) => {
+        const form = el.closest('form')!;
+        form.scrollTop = form.scrollHeight;
+        return el.getBoundingClientRect().bottom;
+      })).toBeLessThanOrEqual((await page.evaluate(() => innerHeight)) - inset + 1);
+      await form.evaluate((el) => { el.scrollTop = 0; });
       await title.fill(`Synthetic keyboard ${kind}`);
       if (date) await page.getByTestId('input-date-date').fill('2099-06-15');
       await title.focus();

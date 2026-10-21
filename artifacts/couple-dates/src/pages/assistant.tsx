@@ -125,7 +125,7 @@ export default function AssistantPage() {
       </div>
 
       <Drawer open={!!proposing} onOpenChange={(o) => !o && setProposing(null)}>
-        <DrawerContent className="max-h-[94dvh] bg-background">
+        <DrawerContent className="max-h-[94dvh] bg-background sm:max-h-[88dvh]">
           {proposing && <DateForm plan={null} prefill={proposing} requireTime onDone={() => setProposing(null)} onCreated={(d) => navigate(`/dates/${d.id}`)} />}
         </DrawerContent>
       </Drawer>

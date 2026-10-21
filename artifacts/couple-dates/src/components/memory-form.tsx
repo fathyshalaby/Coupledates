@@ -95,7 +95,7 @@ export function MemoryForm({ memory, defaults, initialFile, onDone }: { memory: 
   const preview = localPreview ?? photoUrl(photoPath);
 
   return (
-    <form onSubmit={submit} className="mx-auto w-full max-w-xl overflow-y-auto px-5 pb-8 pt-2">
+    <form onSubmit={submit} className="mx-auto w-full max-w-xl overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2">
       <DrawerTitle className="font-display text-[1.75rem] font-medium">{memory ? 'Edit memory' : defaults?.dateId ? 'Add to the album' : 'Keep a memory'}</DrawerTitle>
       <DrawerDescription className="mt-1 text-sm text-muted-foreground">
         {defaults?.dateTitle ? <>Pinned to <span className="font-medium text-foreground">{defaults.dateTitle}</span>. </> : null}

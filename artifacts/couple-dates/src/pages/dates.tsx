@@ -114,7 +114,7 @@ export default function DatesPage() {
       </div>
 
       <Drawer open={creating} onOpenChange={setCreating}>
-        <DrawerContent className="max-h-[94dvh] bg-background">
+        <DrawerContent className="max-h-[94dvh] bg-background sm:max-h-[88dvh]">
           {creating && <DateForm plan={null} prefill={prefill} onDone={() => setCreating(false)} onCreated={(d) => navigate(`/dates/${d.id}`)} />}
         </DrawerContent>
       </Drawer>

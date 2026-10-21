@@ -239,7 +239,7 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
 
       {/* Drawers */}
       <Drawer open={!!capture} onOpenChange={(o) => !o && setCapture(null)}>
-        <DrawerContent className="max-h-[94dvh] bg-background">
+        <DrawerContent className="max-h-[94dvh] bg-background sm:max-h-[88dvh]">
           {capture && <MemoryForm key={capture.memory?.id ?? 'new'} memory={capture.memory} initialFile={capture.file}
             defaults={{ dateId: d.id, date: d.date.slice(0, 10) <= todayISO() ? d.date.slice(0, 10) : todayISO(), category: d.category as MemoryInputCategory, title: d.title, dateTitle: d.title }}
             onDone={() => setCapture(null)} />}
@@ -247,7 +247,7 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
       </Drawer>
 
       <Drawer open={editing} onOpenChange={setEditing}>
-        <DrawerContent className="max-h-[94dvh] bg-background">{editing && <DateForm plan={d} onDone={() => setEditing(false)} />}</DrawerContent>
+        <DrawerContent className="max-h-[94dvh] bg-background sm:max-h-[88dvh]">{editing && <DateForm plan={d} onDone={() => setEditing(false)} />}</DrawerContent>
       </Drawer>
 
       <Drawer open={countering} onOpenChange={setCountering}>
@@ -256,7 +256,7 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
 
       <Drawer open={completing} onOpenChange={setCompleting}>
         <DrawerContent className="bg-background">
-          <div className="mx-auto w-full max-w-md px-5 pb-8 pt-2 text-center">
+          <div className="mx-auto w-full max-w-md px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2 text-center">
             <DrawerTitle className="font-display text-3xl">That’s a wrap?</DrawerTitle>
             <DrawerDescription className="mt-1 text-sm text-muted-foreground">Marks “{d.title}” complete for both of you. You can each rate it afterwards, and keep adding photos.</DrawerDescription>
             <button data-testid="button-confirm-complete" disabled={respond.isPending} onClick={() => act('complete')} className="mt-6 w-full rounded-full bg-primary py-4 font-medium text-primary-foreground transition active:scale-[.98] disabled:opacity-50">{busy('complete') ? 'Saving...' : 'Mark complete'}</button>
@@ -295,7 +295,7 @@ function CounterForm({ plan, zone, pending, onSubmit }: { plan: DatePlan; zone: 
   const [note, setNote] = useState('');
   const dst = date && time ? resolveLocal(date, time, zone).kind : 'ok';
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSubmit({ date, time, note: note.trim() }); }} className="mx-auto w-full max-w-md px-5 pb-8 pt-2">
+    <form onSubmit={(e) => { e.preventDefault(); onSubmit({ date, time, note: note.trim() }); }} className="mx-auto w-full max-w-md px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2">
       <DrawerTitle className="font-display text-3xl">Suggest another time</DrawerTitle>
       <DrawerDescription className="text-sm text-muted-foreground">It becomes your proposal back — they’ll get to accept, decline or counter. Was {fmtDate(plan.date, { weekday: 'short', month: 'short', day: 'numeric' })}{plan.time ? ` at ${fmtTime(plan.time)}` : ''}.</DrawerDescription>
       <div className="mt-5 grid grid-cols-2 gap-3">

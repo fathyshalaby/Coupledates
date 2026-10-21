@@ -24,3 +24,12 @@ local prerequisite blocks unrelated regressions without providing iOS evidence.
 for mobile changes, and report physical Safari keyboard/safe-area checks separately.
 Changing `visualViewport` or substituting CSS insets is deterministic stress
 coverage, not proof of actual iPhone keyboard, chrome panning or notch behavior.
+
+Poll drawer geometry until its opening transition settles before asserting
+viewport or safe-area clearance.
+
+**Why:** A visible drawer can still be moving; immediate bounding rectangles
+produced misleading off-screen button measurements during the launch audit.
+
+**How to apply:** For bottom-clearance checks, scroll the actual form to its end
+and poll the control bounds rather than measuring immediately after opening.
