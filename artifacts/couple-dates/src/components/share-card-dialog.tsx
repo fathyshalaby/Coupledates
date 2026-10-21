@@ -377,7 +377,8 @@ async function buildShareCard(content: MemoryShare | RecapShare, options: ShareO
     const details = recapDetails(content, options, true);
     context.fillStyle = '#79645e';
     context.font = '30px sans-serif';
-    details.forEach((detail, index) => context.fillText(detail, 88, 1070 + index * 45, 880));
+    const detailLineHeight = Math.min(45, Math.floor(190 / Math.max(details.length - 1, 1)));
+    details.forEach((detail, index) => context.fillText(detail, 88, 1070 + index * detailLineHeight, 880));
   }
 
   const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error('Could not encode image')), 'image/png'));

@@ -293,6 +293,82 @@ test('recap sharing includes only selected details and keeps the caption aligned
   expect(network.writes).toEqual([]);
 });
 
+test('recap sharing keeps every selected detail inside the card and in the copied caption', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false });
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: async (text: string) => { (window as Window & { __copiedCaption?: string }).__copiedCaption = text; } },
+    });
+
+    type DrawnLine = { text: string; x: number; y: number; font: string };
+    const exportedCards: DrawnLine[][] = [];
+    let currentCard: DrawnLine[] = [];
+    (window as Window & { __shareCardExportedText?: DrawnLine[][] }).__shareCardExportedText = exportedCards;
+    const originalFillText = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+      if (this.canvas.width === 1080 && this.canvas.height === 1350) {
+        currentCard.push({ text: String(text), x, y, font: this.font });
+      }
+      return originalFillText.call(this, text, x, y, maxWidth);
+    };
+    const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
+      if (this.width === 1080 && this.height === 1350) {
+        exportedCards.push(currentCard);
+        currentCard = [];
+      }
+      return originalToBlob.call(this, callback, type, quality);
+    };
+  });
+
+  await page.goto('/recap');
+  const year = await page.getByTestId('text-recap-year').textContent();
+  await page.getByTestId('button-share-recap').click();
+  const selectedOptions = [
+    'checkbox-share-memory-count',
+    'checkbox-share-date-count',
+    'checkbox-share-average-rating',
+    'checkbox-share-active-days',
+    'checkbox-share-longest-streak',
+    'checkbox-share-top-category',
+  ];
+  for (const option of selectedOptions) await page.getByTestId(option).check();
+
+  const details = [
+    '1 memory',
+    '2 dates',
+    '4.5 average rating',
+    '4 active days',
+    '3-day longest streak',
+    'Top category · Food',
+  ];
+  const caption = `${year}: 1 memory · 2 dates · 4.5 average rating · 4 active days · 3-day longest streak · Food`;
+  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(caption);
+  await expect.poll(() => page.evaluate((expected) => {
+    const cards = (window as Window & { __shareCardExportedText?: { text: string; x: number; y: number; font: string }[][] }).__shareCardExportedText || [];
+    return cards.some((lines) => expected.every((detail) => lines.some(({ text }) => text === detail)));
+  }, details)).toBe(true);
+
+  const cards = await page.evaluate(() =>
+    (window as Window & { __shareCardExportedText?: { text: string; x: number; y: number; font: string }[][] }).__shareCardExportedText || []
+  );
+  const card = cards.find((lines) => details.every((detail) => lines.some(({ text }) => text === detail)));
+  expect(card).toBeDefined();
+  const detailLines = details.map((detail) => card!.find(({ text }) => text === detail)!);
+  expect(detailLines.every(({ y }) => y >= 1070 && y <= 1260)).toBe(true);
+  expect(detailLines.every(({ x, font }) => x === 88 && font.includes('30px'))).toBe(true);
+  expect(detailLines.map(({ y }) => y)).toEqual([...detailLines.map(({ y }) => y)].sort((a, b) => a - b));
+  for (let index = 1; index < detailLines.length; index++) {
+    expect(detailLines[index].y - detailLines[index - 1].y).toBeGreaterThanOrEqual(30);
+  }
+  for (const detail of details) expect(caption).toContain(detail === 'Top category · Food' ? 'Food' : detail);
+
+  await page.getByTestId('button-share-confirm').click();
+  await page.getByTestId('button-share-copy-caption').click();
+  await expect.poll(() => page.evaluate(() => (window as Window & { __copiedCaption?: string }).__copiedCaption)).toBe(caption);
+});
+
 test('recap sharing omits unavailable rating and category options and exports no blank metrics', async ({ page }) => {
   await page.route('**/api/recap**', async (route) => {
     const year = Number(new URL(route.request().url()).searchParams.get('year'));
