@@ -861,7 +861,7 @@ components:
         memoryCount: { type: integer }
         dateCount: { type: integer }
         averageRating: { type: number }
-        topCategory: { type: string }
+        topCategory: { type: ["string", "null"] }
         topMemories:
           type: array
           items: { $ref: "#/components/schemas/Memory" }

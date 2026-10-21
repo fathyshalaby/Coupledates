@@ -18,7 +18,7 @@ type RecapShare = {
   year: number;
   memoryCount: number;
   dateCount: number;
-  averageRating: number;
+  averageRating: number | null;
   activeDays: number;
   longestStreak: number;
   topCategory: string | null;
@@ -194,10 +194,10 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
               <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                 <OptionCheckbox testId="checkbox-share-memory-count" label="Memories" checked={options.memoryCount} disabled={consented} onChange={(value) => updateOption('memoryCount', value)} />
                 <OptionCheckbox testId="checkbox-share-date-count" label="Dates" checked={options.dateCount} disabled={consented} onChange={(value) => updateOption('dateCount', value)} />
-                {content.averageRating > 0 && <OptionCheckbox testId="checkbox-share-average-rating" label="Average rating" checked={options.averageRating} disabled={consented} onChange={(value) => updateOption('averageRating', value)} />}
+                {hasAverageRating(content.averageRating) && <OptionCheckbox testId="checkbox-share-average-rating" label="Average rating" checked={options.averageRating} disabled={consented} onChange={(value) => updateOption('averageRating', value)} />}
                 <OptionCheckbox testId="checkbox-share-active-days" label="Active days" checked={options.activeDays} disabled={consented} onChange={(value) => updateOption('activeDays', value)} />
                 <OptionCheckbox testId="checkbox-share-longest-streak" label="Longest streak" checked={options.longestStreak} disabled={consented} onChange={(value) => updateOption('longestStreak', value)} />
-                {content.topCategory && <OptionCheckbox testId="checkbox-share-top-category" label="Top category" checked={options.topCategory} disabled={consented} onChange={(value) => updateOption('topCategory', value)} />}
+                {hasTopCategory(content.topCategory) && <OptionCheckbox testId="checkbox-share-top-category" label="Top category" checked={options.topCategory} disabled={consented} onChange={(value) => updateOption('topCategory', value)} />}
               </div>
             )}
             {content?.kind === 'recap' && <p className="text-xs text-muted-foreground">Recap details are off until you choose them.</p>}
@@ -294,14 +294,30 @@ function OptionCheckbox({ testId, label, checked, disabled, onChange }: {
 
 function captionFor(content: MemoryShare | RecapShare, options: ShareOptions) {
   if (content.kind === 'memory') return `${content.title} · ${content.date} · ${content.category}`;
+  const details = recapDetails(content, options, false);
+  return `${content.year}${details.length ? `: ${details.join(' · ')}` : ''}`;
+}
+
+function hasAverageRating(value: number | null): value is number {
+  return value !== null && Number.isFinite(value) && value > 0;
+}
+
+function hasTopCategory(value: string | null): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function recapDetails(content: RecapShare, options: ShareOptions, includeCategoryLabel: boolean) {
   const details: string[] = [];
+  const averageRating = content.averageRating;
   if (options.memoryCount) details.push(`${content.memoryCount} ${content.memoryCount === 1 ? 'memory' : 'memories'}`);
   if (options.dateCount) details.push(`${content.dateCount} ${content.dateCount === 1 ? 'date' : 'dates'}`);
-  if (options.averageRating) details.push(`${content.averageRating.toFixed(1)} average rating`);
+  if (options.averageRating && hasAverageRating(averageRating)) details.push(`${averageRating.toFixed(1)} average rating`);
   if (options.activeDays) details.push(`${content.activeDays} active days`);
   if (options.longestStreak) details.push(`${content.longestStreak}-day longest streak`);
-  if (options.topCategory && content.topCategory) details.push(content.topCategory);
-  return `${content.year}${details.length ? `: ${details.join(' · ')}` : ''}`;
+  if (options.topCategory && hasTopCategory(content.topCategory)) {
+    details.push(includeCategoryLabel ? `Top category · ${content.topCategory.trim()}` : content.topCategory.trim());
+  }
+  return details;
 }
 
 async function buildShareCard(content: MemoryShare | RecapShare, options: ShareOptions): Promise<{ blob: Blob; photoFailed: boolean }> {
@@ -357,13 +373,7 @@ async function buildShareCard(content: MemoryShare | RecapShare, options: ShareO
     context.fillText(`${content.date}  ·  ${content.category}`, 88, 1196, 880);
   } else {
     context.fillText(String(content.year), 88, 1010);
-    const details: string[] = [];
-    if (options.memoryCount) details.push(`${content.memoryCount} ${content.memoryCount === 1 ? 'memory' : 'memories'}`);
-    if (options.dateCount) details.push(`${content.dateCount} ${content.dateCount === 1 ? 'date' : 'dates'}`);
-    if (options.averageRating) details.push(`${content.averageRating.toFixed(1)} average rating`);
-    if (options.activeDays) details.push(`${content.activeDays} active days`);
-    if (options.longestStreak) details.push(`${content.longestStreak}-day longest streak`);
-    if (options.topCategory && content.topCategory) details.push(`Top category · ${content.topCategory}`);
+    const details = recapDetails(content, options, true);
     context.fillStyle = '#79645e';
     context.font = '30px sans-serif';
     details.forEach((detail, index) => context.fillText(detail, 88, 1070 + index * 45, 880));

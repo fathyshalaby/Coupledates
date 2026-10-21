@@ -27,7 +27,7 @@ router.get("/recap", async (req, res): Promise<void> => {
   res.json(GetRecapResponse.parse({
     year, memoryCount: memories.length, dateCount: dates.length,
     averageRating: rated.length ? Math.round(rated.reduce((n, d) => n + d.rating!, 0) / rated.length * 10) / 10 : 0,
-    topCategory: Object.entries(categories).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "Your story is just beginning",
+    topCategory: Object.entries(categories).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
     topMemories: memories.sort((a, b) => Number(b.favorite) - Number(a.favorite) || b.date.localeCompare(a.date)).slice(0, 5).map(m => ({ ...m, createdAt: m.createdAt.toISOString() })),
     longestStreak: longestRun(checks.map(x => x.date)),
     activeDays: new Set([...memories, ...dates, ...checks].map(x => x.date)).size,

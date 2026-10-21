@@ -1262,7 +1262,7 @@ export const GetRecapResponse = zod.object({
   "memoryCount": zod.number().int(),
   "dateCount": zod.number().int(),
   "averageRating": zod.number(),
-  "topCategory": zod.string(),
+  "topCategory": zod.string().nullable(),
   "topMemories": zod.array(zod.object({
   "title": zod.string().min(1).max(getRecapResponseTopMemoriesItemOneTitleMax),
   "note": zod.string().max(getRecapResponseTopMemoriesItemOneNoteMax),

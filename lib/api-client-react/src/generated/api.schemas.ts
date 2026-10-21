@@ -527,7 +527,8 @@ export interface Recap {
   memoryCount: number;
   dateCount: number;
   averageRating: number;
-  topCategory: string;
+  /** @nullable */
+  topCategory: string | null;
   topMemories: Memory[];
   longestStreak: number;
   activeDays: number;

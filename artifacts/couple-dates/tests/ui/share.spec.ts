@@ -224,3 +224,68 @@ test('recap sharing includes only selected details and keeps the caption aligned
   expect(caption).not.toContain('Original synthetic note');
   expect(network.writes).toEqual([]);
 });
+
+test('recap sharing omits unavailable rating and category options and exports no blank metrics', async ({ page }) => {
+  await page.route('**/api/recap**', async (route) => {
+    const year = Number(new URL(route.request().url()).searchParams.get('year'));
+    await route.fulfill({
+      json: {
+        year,
+        memoryCount: 1,
+        dateCount: 1,
+        averageRating: 0,
+        topCategory: null,
+        topMemories: [],
+        longestStreak: 0,
+        activeDays: 1,
+        monthlyCounts: Array(12).fill(0),
+      },
+    });
+  });
+  await page.addInitScript(() => {
+    const exportedCardText: string[][] = [];
+    let currentDrawnText: string[] = [];
+    (window as Window & { __shareCardExportedText?: string[][] }).__shareCardExportedText = exportedCardText;
+    const originalFillText = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+      if (this.canvas.width === 1080 && this.canvas.height === 1350) currentDrawnText.push(String(text));
+      return originalFillText.call(this, text, x, y, maxWidth);
+    };
+    const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
+      if (this.width === 1080 && this.height === 1350) {
+        exportedCardText.push(currentDrawnText);
+        currentDrawnText = [];
+      }
+      return originalToBlob.call(this, callback, type, quality);
+    };
+  });
+  await page.goto('/recap');
+  const year = await page.getByTestId('text-recap-year').textContent();
+  await page.getByTestId('button-share-recap').click();
+
+  await expect(page.getByTestId('checkbox-share-average-rating')).toHaveCount(0);
+  await expect(page.getByTestId('checkbox-share-top-category')).toHaveCount(0);
+  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(year || '');
+
+  await page.getByTestId('checkbox-share-memory-count').check();
+  await page.getByTestId('checkbox-share-date-count').check();
+  const caption = `${year}: 1 memory · 1 date`;
+  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(caption);
+
+  await expect.poll(() => page.evaluate(() => {
+    const cards = (window as Window & { __shareCardExportedText?: string[][] }).__shareCardExportedText || [];
+    return cards.some((text) =>
+      text.includes('1 memory') &&
+      text.includes('1 date') &&
+      !text.some((line) => /average rating|top category|undefined|null/i.test(line))
+    );
+  })).toBe(true);
+  const exportedCards = await page.evaluate(() =>
+    (window as Window & { __shareCardExportedText?: string[][] }).__shareCardExportedText || []
+  );
+  const exportedImage = exportedCards.find((text) => text.includes('1 memory') && text.includes('1 date'));
+  expect(exportedImage).toBeDefined();
+  expect(exportedImage?.some((line) => /average rating|top category|undefined|null/i.test(line))).toBe(false);
+  expect(caption).not.toMatch(/average rating|top category|undefined|null|·\s*$/i);
+});
