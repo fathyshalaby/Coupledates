@@ -1,4 +1,72 @@
 import { test, expect } from './fixtures';
+import { memory } from './records';
+
+test('memory share cards show short and long titles fully and download the preview layout', async ({ page }) => {
+  const titles = [
+    'A quiet evening together',
+    'A celebration that brought our families together for a long weekend of cooking, music, stories, and late-night walks under the stars',
+  ];
+  await page.addInitScript(() => {
+    const exportedCards: { text: string; x: number; y: number; font: string }[][] = [];
+    let currentCard: { text: string; x: number; y: number; font: string }[] = [];
+    (window as Window & { __shareCardExportedText?: typeof exportedCards }).__shareCardExportedText = exportedCards;
+
+    const originalFillText = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+      if (this.canvas.width === 1080 && this.canvas.height === 1350) {
+        currentCard.push({ text: String(text), x, y, font: this.font });
+      }
+      return originalFillText.call(this, text, x, y, maxWidth);
+    };
+    const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
+      if (this.width === 1080 && this.height === 1350) {
+        exportedCards.push(currentCard);
+        currentCard = [];
+      }
+      return originalToBlob.call(this, callback, type, quality);
+    };
+    const originalAnchorClick = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      (window as Window & { __downloadedShareCardHref?: string }).__downloadedShareCardHref = this.href;
+      return originalAnchorClick.call(this);
+    };
+  });
+
+  for (const title of titles) {
+    await page.route('**/api/memories', (route) => route.fulfill({ json: [{ ...memory, title }] }));
+    await page.goto('/memories');
+    await page.getByTestId('button-share-memory-900003').click();
+    const preview = page.getByTestId('img-share-preview');
+    await expect(preview).toBeVisible();
+    const previewUrl = await preview.getAttribute('src');
+    const cards = await page.evaluate(() =>
+      (window as Window & { __shareCardExportedText?: { text: string; x: number; y: number; font: string }[][] }).__shareCardExportedText || []
+    );
+    const card = cards.at(-1);
+    expect(card).toBeDefined();
+
+    const dateRow = card!.find(({ text, y }) => y > 1000 && text.includes('·') && text.includes('Food'));
+    expect(dateRow).toBeDefined();
+    const titleRows = card!.filter(({ y }) => y >= 950 && y < dateRow!.y);
+    expect(titleRows.length).toBeGreaterThan(0);
+    expect(titleRows.map(({ text }) => text).join(' ').replace(/\s+/g, ' ').trim()).toBe(title);
+    const lastTitleRow = titleRows.at(-1)!;
+    const fontSize = Number(lastTitleRow.font.match(/(\d+(?:\.\d+)?)px/)?.[1]);
+    expect(dateRow!.y - lastTitleRow.y).toBeGreaterThanOrEqual(fontSize + 18);
+    expect(dateRow!.y).toBeLessThan(1300);
+    const categoryRow = card!.find(({ text }) => text === 'FOOD');
+    expect(categoryRow).toBeDefined();
+    expect(titleRows[0].y - categoryRow!.y).toBeGreaterThan(fontSize / 2);
+
+    await page.getByTestId('button-share-confirm').click();
+    const download = page.waitForEvent('download');
+    await page.getByTestId('button-share-download').click();
+    await expect(download).resolves.toBeTruthy();
+    expect(await page.evaluate(() => (window as Window & { __downloadedShareCardHref?: string }).__downloadedShareCardHref)).toBe(previewUrl);
+    await page.getByTestId('button-share-cancel').click();
+  }
+});
 
 test('memory sharing requires explicit consent before download or caption copy', async ({ page, network }) => {
   await page.addInitScript(() => {

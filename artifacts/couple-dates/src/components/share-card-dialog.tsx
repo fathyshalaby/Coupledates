@@ -365,13 +365,14 @@ async function buildShareCard(content: MemoryShare | RecapShare, options: ShareO
   context.font = '600 24px sans-serif';
   context.fillText(content.kind === 'recap' ? 'OUR YEAR IN REVIEW' : content.category.toUpperCase(), 88, 914);
   context.fillStyle = '#392b29';
-  context.font = '500 62px Georgia, serif';
   if (content.kind === 'memory') {
-    drawWrapped(context, content.title, 88, 1000, 880, 76, 2);
+    const titleLayout = drawMemoryTitle(context, content.title, 88, 982, 880, 1200);
     context.fillStyle = '#79645e';
     context.font = '32px sans-serif';
-    context.fillText(`${content.date}  ·  ${content.category}`, 88, 1196, 880);
+    const detailsY = Math.max(1196, titleLayout.lastBaseline + titleLayout.lineHeight + 18);
+    context.fillText(`${content.date}  ·  ${content.category}`, 88, detailsY, 880);
   } else {
+    context.font = '500 62px Georgia, serif';
     context.fillText(String(content.year), 88, 1010);
     const details = recapDetails(content, options, true);
     context.fillStyle = '#79645e';
@@ -402,18 +403,54 @@ function drawCover(context: CanvasRenderingContext2D, image: HTMLImageElement, x
   context.restore();
 }
 
-function drawWrapped(context: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, lineHeight: number, maxLines: number) {
-  const words = text.split(/\s+/);
+function drawMemoryTitle(context: CanvasRenderingContext2D, text: string, x: number, y: number, maxWidth: number, bottomBaseline: number) {
+  const normalizedText = text.trim().replace(/\s+/g, ' ');
+  let selected: { fontSize: number; lineHeight: number; lines: string[] } | undefined;
+
+  for (let fontSize = 62; fontSize >= 28; fontSize -= 2) {
+    const lineHeight = Math.ceil(fontSize * 1.22);
+    context.font = `500 ${fontSize}px Georgia, serif`;
+    const lines = wrapText(context, normalizedText, maxWidth);
+    if (y + (lines.length - 1) * lineHeight <= bottomBaseline) {
+      selected = { fontSize, lineHeight, lines };
+      break;
+    }
+  }
+  selected ??= { fontSize: 28, lineHeight: 35, lines: wrapText(context, normalizedText, maxWidth) };
+  context.font = `500 ${selected.fontSize}px Georgia, serif`;
+  selected.lines.forEach((line, index) => context.fillText(line, x, y + index * selected!.lineHeight));
+  return {
+    lastBaseline: y + (selected.lines.length - 1) * selected.lineHeight,
+    lineHeight: selected.lineHeight,
+  };
+}
+
+function wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: number) {
+  if (!text) return [''];
+  const lines: string[] = [];
   let line = '';
-  let lineNo = 0;
-  for (const word of words) {
+  for (const word of text.split(' ')) {
+    if (context.measureText(word).width > maxWidth) {
+      if (line) {
+        lines.push(line);
+        line = '';
+      }
+      let chunk = '';
+      for (const character of Array.from(word)) {
+        if (chunk && context.measureText(chunk + character).width > maxWidth) {
+          lines.push(chunk);
+          chunk = character;
+        } else chunk += character;
+      }
+      line = chunk;
+      continue;
+    }
     const next = line ? `${line} ${word}` : word;
-    if (context.measureText(next).width > maxWidth && line) {
-      context.fillText(line, x, y + lineNo * lineHeight, maxWidth);
+    if (line && context.measureText(next).width > maxWidth) {
+      lines.push(line);
       line = word;
-      lineNo += 1;
-      if (lineNo >= maxLines - 1) break;
     } else line = next;
   }
-  if (lineNo < maxLines) context.fillText(line, x, y + lineNo * lineHeight, maxWidth);
+  if (line) lines.push(line);
+  return lines;
 }
