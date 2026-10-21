@@ -629,3 +629,11 @@ body { font-feature-settings: 'ss01', 'cv11'; text-rendering: optimizeLegibility
   .product-screen { padding: 9px; border-radius: 19px; }
   .product-gallery-heading h2 { font-size: 36px; }
 }
+@media(max-width: 360px) {
+  .marketing-nav { column-gap: 8px; }
+  .marketing-actions { gap: 0; }
+  .marketing-actions .nav-signin { display: none; }
+  .marketing-actions .pill-button { min-height: 36px; padding-inline: 10px; font-size: 11px; }
+  .marketing-links { gap: 8px; justify-content: space-between; overflow: visible; }
+  .marketing-links a { font-size: 10.5px; }
+}

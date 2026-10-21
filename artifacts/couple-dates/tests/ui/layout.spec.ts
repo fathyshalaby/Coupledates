@@ -4,6 +4,18 @@ import { inside, keyboardFocus, noHorizontalOverflow, reachable, scrollableDrawe
 
 test('shell and real pages retain long content, navigation and the Propose label', async ({ page }) => {
   await page.goto('/home');
+  const mainNav = page.locator('nav[aria-label="Main"]');
+  if ((page.viewportSize()?.width ?? 0) >= 1024) {
+    await expect(mainNav).toHaveCSS('position', 'sticky');
+    const headerBox = (await page.locator('header').boundingBox())!;
+    const navBox = (await mainNav.boundingBox())!;
+    const mainBox = (await page.locator('main').boundingBox())!;
+    expect(navBox.y).toBeGreaterThanOrEqual(headerBox.y + headerBox.height - 1);
+    expect(mainBox.y).toBeGreaterThanOrEqual(navBox.y + navBox.height - 1);
+    expect(mainBox.width).toBeGreaterThanOrEqual(700);
+  } else {
+    await expect(mainNav).toHaveCSS('position', 'fixed');
+  }
   const names = page.getByTestId('text-couple-names');
   await expect(names).toContainText(couple.yourName);
   await expect(names).toContainText(couple.partnerName);
@@ -93,4 +105,16 @@ test('new memory drawer can scroll to and submit its save control', async ({ pag
   await expect.poll(() => network.writes.filter((w) => w.path === '/api/memories')).toHaveLength(1);
   expect(network.writes[0].data).toMatchObject({ title: 'Synthetic new memory', photoPath: null, dateId: null });
   await expect(page.getByRole('dialog')).not.toBeVisible();
+});
+
+test('ideas and streak views stay readable on phones and desktop', async ({ page }) => {
+  await page.goto('/assistant');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByTestId('state-assistant-empty')).toBeVisible();
+  await noHorizontalOverflow(page);
+
+  await page.goto('/streaks');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByTestId('text-streak')).toBeVisible();
+  await noHorizontalOverflow(page);
 });

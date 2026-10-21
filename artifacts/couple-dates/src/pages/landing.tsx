@@ -22,20 +22,20 @@ export default function Landing() {
       {/* HERO */}
       <section className="mx-auto grid max-w-5xl gap-10 px-5 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:items-center md:pt-16">
         <div>
-          <p className="rise eyebrow text-primary">A private space for exactly two</p>
+          <p className="rise eyebrow text-primary">For the plans that get lost in the week</p>
           <h1 className="rise font-display mt-4 text-[3rem] leading-[0.98] font-medium md:text-[4.75rem]" style={{ animationDelay: '80ms' }}>
-            Tuesday counts <em className="font-normal text-primary">too.</em>
+            From “we should” to <em className="font-normal text-primary">“let’s do it.”</em>
           </h1>
           <p className="rise mt-5 max-w-md text-lg text-muted-foreground" style={{ animationDelay: '160ms' }}>
-            A shared notebook for the two of you. Keep the small moments, plan the next date, check in each day, and look back at your year together.
+            Plan an online or in-person date together, then keep the photo or detail you’d otherwise forget. Tuesday keeps it in one private space for two.
           </p>
           <div className="rise mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '240ms' }}>
             <Link href="/sign-up" data-testid="button-hero-start" className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-[.98]">
-              Make your shared space <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              Start your shared space <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
-            <a href="#preview" data-testid="link-preview" className="rounded-full px-5 py-3.5 font-medium underline decoration-primary/40 underline-offset-4">See a sample</a>
+            <a href="/how-it-works" data-testid="link-preview" className="rounded-full px-5 py-3.5 font-medium underline decoration-primary/40 underline-offset-4">See how it works</a>
           </div>
-          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Only you and the one person you invite can see it.</p>
+          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Private to you and the one person you invite. No public feed.</p>
         </div>
 
         <motion.figure initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .2 }}
@@ -52,11 +52,11 @@ export default function Landing() {
       <section id="preview" className="bg-foreground py-20 text-background">
         <div className="mx-auto grid max-w-5xl gap-12 px-5 md:grid-cols-2 md:items-center">
           <div>
-            <p className="text-xs font-medium text-accent">Sample space, read-only</p>
-            <h2 className="font-display mt-3 text-4xl leading-tight md:text-5xl">This is what a Tuesday looks like when someone writes it down.</h2>
-            <p className="mt-4 text-background/70">Everything on this side is invented to show you around. Your space starts empty, and fills only with what the two of you add.</p>
+            <p className="text-xs font-medium text-accent">An illustrative example</p>
+            <h2 className="font-display mt-3 text-4xl leading-tight md:text-5xl">An idea becomes a plan. A plan becomes a memory.</h2>
+            <p className="mt-4 text-background/70">The names and moments below are made up. Your own space starts simple, then becomes a record of what the two of you chose to do and remember.</p>
             <ul className="mt-8 space-y-4 text-background/85">
-              {['A shared timeline of memories, with photos, search and favorites', 'Planned dates that become rated, completed ones', 'A daily check-in you keep alive together', 'A yearly recap built from what you actually did'].map((t, i) => (
+              {['Suggest a date; your partner can say yes, pass, or find a better time', 'Make it an in-person plan or an online date with a call link', 'Save the photo and small detail you would otherwise forget', 'Look back at a yearly recap made from the dates and memories you shared'].map((t, i) => (
                 <li key={t} className="flex gap-3"><span className="font-mono text-sm text-accent">0{i + 1}</span>{t}</li>
               ))}
             </ul>
@@ -119,9 +119,9 @@ export default function Landing() {
       {/* RECAP */}
       <section className="mx-auto max-w-5xl px-5 pb-20">
         <div className="relative overflow-hidden rounded-[36px] bg-primary p-8 text-primary-foreground md:p-12">
-          <p className="text-xs font-medium opacity-85">Yearly recap / example</p>
+          <p className="text-xs font-medium opacity-85">A year, in your own details / example</p>
           <p className="font-display mt-3 text-5xl leading-none md:text-7xl">83 memories.<br /><em>21 dates.</em></p>
-          <p className="mt-4 max-w-md opacity-90">At the end of the year, your recap counts what really happened: busiest months, your favorite kind of date, the longest streak you kept going.</p>
+          <p className="mt-4 max-w-md opacity-90">At the end of the year, see the dates you completed, the memories you kept, and the little patterns that made the year yours.</p>
           <div className="mt-8 flex h-24 items-end gap-1.5">
             {[3, 5, 4, 9, 7, 6, 11, 8, 5, 7, 10, 8].map((n, i) => (
               <motion.span key={i} initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} style={{ height: `${n * 8}%`, transformOrigin: 'bottom' }} className="flex-1 rounded-t-md bg-primary-foreground/85" />
@@ -132,16 +132,16 @@ export default function Landing() {
 
       {/* HOW */}
       <section className="mx-auto max-w-5xl px-5 pb-24">
-        <h2 className="font-display text-4xl">Two steps. Then it's yours.</h2>
+        <h2 className="font-display text-4xl">No perfect date required. Just the next one.</h2>
         <ol className="mt-8 grid gap-4 md:grid-cols-2">
-          <li className="surface p-6"><span className="font-mono text-primary">01</span><p className="font-display mt-2 text-2xl">One of you creates the space.</p><p className="mt-1 text-muted-foreground">Your names, your anniversary. That's it.</p></li>
-          <li className="surface p-6"><span className="font-mono text-primary">02</span><p className="font-display mt-2 text-2xl">The other joins with a code.</p><p className="mt-1 text-muted-foreground">Two people, never three. Codes can't open a second space.</p></li>
+          <li className="surface p-6"><span className="font-mono text-primary">01</span><p className="font-display mt-2 text-2xl">Invite your person.</p><p className="mt-1 text-muted-foreground">One shared space for the two of you. No group to manage and no audience to perform for.</p></li>
+          <li className="surface p-6"><span className="font-mono text-primary">02</span><p className="font-display mt-2 text-2xl">Make one small plan together.</p><p className="mt-1 text-muted-foreground">Suggest a date, choose a time, and let your partner accept, pass, or suggest a change.</p></li>
         </ol>
         <div className="mt-16 flex flex-col items-center text-center">
           <TwoRings size={80} />
-          <p className="font-display mt-4 text-4xl">Start keeping score of the good stuff.</p>
+          <p className="font-display mt-4 text-4xl">Give the good stuff a place to stay.</p>
           <Link href="/sign-up" data-testid="button-footer-start" className="mt-6 inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3.5 font-medium text-background transition hover:bg-foreground/90">
-            <Heart className="h-4 w-4" /> Create your space
+            <Heart className="h-4 w-4" /> Start your shared space
           </Link>
         </div>
       </section>

@@ -74,6 +74,7 @@ export const test = base.extend<{ network: Network }>({
             monthlyCounts: [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0],
           });
         }
+        if (path === '/api/openai/date-assistant') return json([]);
         if (path === '/api/preferences') return json([]);
         if (path === '/api/reminders') return json([]);
         if (!path.startsWith('/api/')) return route.continue();

@@ -200,10 +200,10 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
     const publicPage = ['', 'how-it-works', 'long-distance', 'pricing'].includes(key);
     const title = `${names[key] ?? 'Page not found'} · ${publicPage ? 'Tuesday' : 'Couple Dates'}`;
     const descriptions: Record<string, string> = {
-      '': 'A private shared space for exactly two: plan dates together, save everyday memories, and make room for the ordinary lovely days.',
-      'how-it-works': 'See how Tuesday works: one person creates a shared space, the other joins with an invite code, and both partners shape it together.',
-      'long-distance': 'Plan thoughtful online dates and keep shared memories across the distance. Tuesday helps you plan; calls happen wherever you choose.',
-      pricing: 'Every Tuesday feature is free during beta. Paid plans and checkout are paused.',
+      '': 'From “we should” to “remember that?” Tuesday is a private space for two to plan dates together and keep the moments that matter.',
+      'how-it-works': 'Turn a passing idea into a shared plan, then save the memory. Tuesday keeps dates, photos, and your year together in one private space for two.',
+      'long-distance': 'Time zones can make “soon” hard. Plan online dates together, add the call link you already use, and keep the moments you share from two places.',
+      pricing: 'Tuesday beta is free for both partners. Try the shared space, date proposals, suggestions, memories, and yearly recap while checkout is paused.',
     };
     const description = descriptions[key] ?? 'A private shared space for exactly two to plan dates together and remember everyday moments.';
     document.title = title;
