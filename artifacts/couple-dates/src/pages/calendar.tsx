@@ -32,7 +32,7 @@ export default function CalendarPage() {
   const q = useGetCalendarStatus({ query: { queryKey: getGetCalendarStatusQueryKey(), staleTime: 60_000 } });
   return (
     <div>
-      <PageHeader kicker="Google Calendar" title={<>When are we <em className="text-primary">both</em> free?</>} />
+      <PageHeader kicker="Google Calendar · Optional" title={<>When are we <em className="text-primary">both</em> free?</>} />
       {q.isLoading ? (
         <div className="space-y-3" data-testid="state-calendar-loading"><Skeleton className="h-56 rounded-[28px]" /><Skeleton className="h-40 rounded-[28px]" /></div>
       ) : q.isError || !q.data ? (

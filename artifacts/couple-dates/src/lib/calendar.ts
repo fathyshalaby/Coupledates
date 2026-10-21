@@ -9,7 +9,7 @@ export const GOOGLE_SCOPES = [
 
 export const CALENDAR_REDIRECT = () => `${window.location.origin}${import.meta.env.BASE_URL}calendar`;
 
-export const MANUAL_COPY_NOTE = 'Changes in Couple Dates are not automatically updated in Google. Update/remove your copy here.';
+export const MANUAL_COPY_NOTE = 'Google copies do not update automatically. Use the controls here to update or remove yours.';
 
 export function hasCalendarScopes(approved?: string | null): boolean {
   const set = new Set((approved ?? '').split(/\s+/).filter(Boolean));

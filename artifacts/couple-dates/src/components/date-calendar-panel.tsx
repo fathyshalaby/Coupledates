@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
-import { CalendarCheck2, CalendarPlus, Download, ExternalLink, Loader2, RefreshCw, Trash2, TriangleAlert } from 'lucide-react';
+import { CalendarCheck2, CalendarPlus, ExternalLink, Loader2, RefreshCw, Trash2, TriangleAlert } from 'lucide-react';
 import {
   getExportDateCalendarUrl, getGetCalendarStatusQueryKey, getGetDateCalendarQueryKey,
   useGetCalendarStatus, useGetDateCalendar, useRemoveDateFromCalendar, useSaveDateToCalendar,
@@ -40,38 +40,52 @@ export function DateCalendarPanel({ plan, agreed }: { plan: DatePlan; agreed: bo
       <div className="flex items-center gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-secondary text-primary">{c?.saved ? <CalendarCheck2 className="h-4 w-4" /> : <CalendarPlus className="h-4 w-4" />}</span>
         <div className="flex-1">
-          <p className="font-medium">Your calendar copy</p>
+          <p className="font-medium">Add this date to a calendar</p>
           <p data-testid="text-calendar-copy-state" className="text-xs text-muted-foreground">
-            {copy.isLoading || status.isLoading ? 'Checking…' : c?.saved ? (c.stale ? 'Saved — but the plan changed since. Update your copy.' : 'Saved in your Google Calendar.') : 'Not in your Google Calendar.'}
+            {copy.isLoading || status.isLoading ? 'Checking your Google copy…' : c?.saved ? (c.stale ? 'Your Google copy is out of date. Update it below.' : 'A separate copy is saved in your Google Calendar.') : 'No Google copy saved.'}
           </p>
         </div>
         {c?.saved && c.stale && <span className="rounded-full bg-accent px-2 py-0.5 font-mono text-[10px] uppercase">Out of date</span>}
       </div>
 
-      {(copy.isLoading || status.isLoading) ? <Skeleton className="mt-3 h-11 rounded-full" /> : (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {!agreed ? (
-            <p className="w-full text-xs text-muted-foreground">This plan isn’t agreed right now, so your saved copy can’t be updated — remove it if it no longer applies.</p>
-          ) : !live ? (
-            <Link href="/calendar" data-testid="link-connect-calendar" className="flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2.5 text-xs font-medium text-background">
-              {st?.needsConsent ? <><RefreshCw className="h-3.5 w-3.5" /> Reconnect Google Calendar</> : <><CalendarPlus className="h-3.5 w-3.5" /> Connect Google Calendar</>}
-            </Link>
-          ) : (
-            <button data-testid="button-save-calendar-copy" disabled={save.isPending} onClick={() => save.mutate({ id: plan.id })} className="flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-xs font-medium text-primary-foreground transition active:scale-95 disabled:opacity-50">
-              {save.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : c?.saved ? <RefreshCw className="h-3.5 w-3.5" /> : <CalendarPlus className="h-3.5 w-3.5" />}
-              {c?.saved ? 'Update my copy' : 'Add to my Google Calendar'}
-            </button>
-          )}
-          {eventUrl && <a href={eventUrl} target="_blank" rel="noopener noreferrer" data-testid="link-calendar-event" className="flex items-center gap-1.5 rounded-full bg-foreground/[0.07] px-4 py-2.5 text-xs font-medium">Open in Google <ExternalLink className="h-3 w-3" /></a>}
-          {agreed && <a href={ics} download data-testid="link-download-ics" className="flex items-center gap-1.5 rounded-full bg-foreground/[0.07] px-4 py-2.5 text-xs font-medium"><Download className="h-3.5 w-3.5" /> Download .ics</a>}
-          {c?.saved && <button data-testid="button-remove-calendar-copy" onClick={() => setConfirm(true)} className="flex items-center gap-1.5 rounded-full px-3 py-2.5 text-xs text-destructive hover:bg-destructive/5"><Trash2 className="h-3.5 w-3.5" /> Remove copy</button>}
+      {agreed && (
+        <div className="mt-3 rounded-[22px] bg-primary/5 p-3">
+          <a href={ics} download data-testid="link-download-ics" className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-3 font-medium text-primary-foreground transition active:scale-[.98]">
+            <CalendarPlus className="h-4 w-4" /> Add to device calendar <span className="font-mono text-[10px] opacity-80">.ics</span>
+          </a>
+          <p data-testid="text-device-calendar-help" className="mt-2 text-center text-xs leading-relaxed text-muted-foreground">
+            Works with iPhone, Android, Apple Calendar, Google Calendar, and other calendar apps. If it downloads as a file, open it and choose your calendar app.
+          </p>
         </div>
       )}
+
+      <div className="mt-4 rounded-[22px] border border-foreground/10 bg-background/70 p-3">
+        <p className="text-sm font-medium">Google Calendar <span className="font-normal text-muted-foreground">· optional</span></p>
+        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">Connect Google to check shared free time or save a separate copy there. This does not sync automatically.</p>
+        {(copy.isLoading || status.isLoading) ? <Skeleton className="mt-3 h-11 rounded-full" /> : (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {!agreed ? (
+              <p className="w-full text-xs text-muted-foreground">This plan isn’t agreed right now, so your saved Google copy can’t be updated — remove it if it no longer applies.</p>
+            ) : !live ? (
+              <Link href="/calendar" data-testid="link-connect-calendar" className="flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2.5 text-xs font-medium text-background">
+                {st?.needsConsent ? <><RefreshCw className="h-3.5 w-3.5" /> Reconnect Google Calendar</> : <><CalendarPlus className="h-3.5 w-3.5" /> Connect Google Calendar</>}
+              </Link>
+            ) : (
+              <button data-testid="button-save-calendar-copy" disabled={save.isPending} onClick={() => save.mutate({ id: plan.id })} className="flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2.5 text-xs font-medium text-background transition active:scale-95 disabled:opacity-50">
+                {save.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : c?.saved ? <RefreshCw className="h-3.5 w-3.5" /> : <CalendarPlus className="h-3.5 w-3.5" />}
+                {c?.saved ? 'Update Google copy' : 'Save a Google copy'}
+              </button>
+            )}
+            {eventUrl && <a href={eventUrl} target="_blank" rel="noopener noreferrer" data-testid="link-calendar-event" className="flex items-center gap-1.5 rounded-full bg-foreground/[0.07] px-4 py-2.5 text-xs font-medium">Open in Google <ExternalLink className="h-3 w-3" /></a>}
+            {c?.saved && <button data-testid="button-remove-calendar-copy" onClick={() => setConfirm(true)} className="flex items-center gap-1.5 rounded-full px-3 py-2.5 text-xs text-destructive hover:bg-destructive/5"><Trash2 className="h-3.5 w-3.5" /> Remove Google copy</button>}
+          </div>
+        )}
+      </div>
 
       {err && <p role="alert" data-testid="text-calendar-copy-error" className="mt-3 rounded-2xl bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</p>}
       {copy.isError && <p className="mt-3 text-xs text-destructive">Couldn’t load your copy status. <button className="underline" onClick={() => copy.refetch()}>Retry</button></p>}
       {c?.notice && <p className="mt-3 text-xs text-muted-foreground">{c.notice}</p>}
-      <p className="mt-3 flex gap-1.5 text-[11px] leading-snug text-muted-foreground"><TriangleAlert className="mt-px h-3 w-3 shrink-0" />{MANUAL_COPY_NOTE} The .ics is a one-time download, not a live feed. Deleting this plan won’t remove calendar copies — remove yours first.</p>
+      <p className="mt-3 flex gap-1.5 text-[11px] leading-snug text-muted-foreground"><TriangleAlert className="mt-px h-3 w-3 shrink-0" />{MANUAL_COPY_NOTE} The .ics file is a one-time copy, not a live feed. Deleting this plan won’t remove calendar entries already added.</p>
 
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <AlertDialogContent className="rounded-[28px]">

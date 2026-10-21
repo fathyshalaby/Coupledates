@@ -269,7 +269,7 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
           <AlertDialogHeader>
             <AlertDialogTitle className="font-display text-2xl">Remove this date?</AlertDialogTitle>
             <AlertDialogDescription>“{d.title}” will be removed for both of you, along with its reviews.{detail.memories.length > 0 && ` The ${detail.memories.length} album ${detail.memories.length === 1 ? 'memory stays' : 'memories stay'} safe in Memories — just unpinned from this date.`}</AlertDialogDescription>
-            <p data-testid="text-delete-calendar-warning" className="rounded-2xl bg-accent/60 px-3 py-2 text-left text-xs">Saved Google Calendar copies are not deleted automatically — they’re independent snapshots that stay in Google. Remove your copy from this date’s calendar panel first if you don’t want it.</p>
+            <p data-testid="text-delete-calendar-warning" className="rounded-2xl bg-accent/60 px-3 py-2 text-left text-xs">Calendar entries added from this date are separate copies and won’t be deleted with it. Remove a Google copy from this date’s calendar panel, or remove an imported .ics entry in your calendar app.</p>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-delete-date" className="rounded-full">Keep it</AlertDialogCancel>
