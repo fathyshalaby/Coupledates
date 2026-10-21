@@ -18,7 +18,7 @@ export function MarketingNav() {
 }
 
 export function MarketingFooter() {
-  return <footer className="marketing-footer"><Link href="/" className="brand-mark"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><span>Couple Dates<small>a shared space for two</small></span></Link><p>For the plans busy couples keep meaning to make.</p><div>{pages.slice(1).map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}<a href={`${import.meta.env.BASE_URL}date-ideas/index.html`}>Date ideas for busy couples</a></div><small>Couple Dates · Free during beta</small></footer>;
+  return <footer className="marketing-footer"><Link href="/" className="brand-mark"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><span>Couple Dates<small>a shared space for two</small></span></Link><p>For the girlfriend who wants more dates worth posting.</p><div>{pages.slice(1).map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}<a href={`${import.meta.env.BASE_URL}date-ideas/index.html`}>Date ideas for busy couples</a></div><small>Couple Dates · Free during beta</small></footer>;
 }
 
 export function PageIntro({ eyebrow, title, body }: { eyebrow: string; title: ReactNode; body: string }) {
@@ -26,11 +26,11 @@ export function PageIntro({ eyebrow, title, body }: { eyebrow: string; title: Re
 }
 
 export function HowItWorks() {
-  return <main className="marketing-page"><PageIntro eyebrow="For plans that keep slipping" title={<>From “we should”<br/>to <em>“remember that?”</em></>} body="When busy weeks push plans aside, Couple Dates gives both partners one private place to suggest a date, decide together, and keep the memory that brings you back to the next one."/>
+  return <main className="marketing-page"><PageIntro eyebrow="For the girlfriend who wants more dates worth posting" title={<>From “we should”<br/>to <em>“remember that?”</em></>} body="Couple Dates turns her next idea into a date both partners choose. Keep the photos and little details in your shared space; share selected memories only when you decide."/>
     <section className="steps-layout"><div className="step-stack">
-      {[['01', 'Make one space for two', 'One of you starts it; the other joins by invite. No group to manage and no audience to perform for.'], ['02', 'Suggest it, then decide together', 'Either partner can propose an online or in-person date. The other can accept, pass, or suggest a time that works.'], ['03', 'Keep the part you would forget', 'Afterward, save a photo and a note in your shared timeline. Later, your recap brings the year back into view.']].map(([n, title, copy]) => <article className="story-step" key={n}><span>{n}</span><div><h2 className="font-display">{title}</h2><p>{copy}</p></div></article>)}
+      {[['01', 'Make one space for two', 'One of you starts it; the other joins by invite. No group to manage and no audience to perform for.'], ['02', 'Suggest it, then decide together', 'Either partner can propose an online or in-person date. The other can accept, pass, or suggest a time that works.'], ['03', 'Keep the part you would forget', 'Afterward, save a photo and a note in your shared timeline. Your space stays private; share a memory only when you choose. Later, your recap brings the year back into view.']].map(([n, title, copy]) => <article className="story-step" key={n}><span>{n}</span><div><h2 className="font-display">{title}</h2><p>{copy}</p></div></article>)}
     </div><aside className="invite-card"><LockKeyhole size={20}/><p className="eyebrow">Just the two of you</p><div className="invite-code">A7K—M2Q</div><p>Illustrative invite code. Your real code is created inside your space and shared with your partner.</p><div className="invite-rule"><Users size={17}/> One shared space. Two people.</div></aside></section>
-    <section className="feature-band"><p className="eyebrow">A shared story, without the pressure</p><div className="feature-columns"><article><Heart/><h3 className="font-display">Save the small stuff</h3><p>Add a photo, a note, and the detail you know you will bring up later. Search and favorite the memories you want close.</p></article><article><Ticket/><h3 className="font-display">Make a plan together</h3><p>Suggest an online or in-person date. Your partner gets a say before it becomes a plan.</p></article><article><Sparkles/><h3 className="font-display">Start with an idea</h3><p>Ask the date assistant for suggestions shaped by your interests and practical details. It offers a starting point; you both decide what happens next.</p></article></div></section>
+     <section className="feature-band"><p className="eyebrow">A shared story, without the pressure</p><div className="feature-columns"><article><Heart/><h3 className="font-display">Save the small stuff</h3><p>Add a photo, a note, and the detail you know you will bring up later. Keep it between you, or make a share card for a memory you choose.</p></article><article><Ticket/><h3 className="font-display">Make a plan together</h3><p>Suggest an online or in-person date. Your partner gets a say before it becomes a plan.</p></article><article><Sparkles/><h3 className="font-display">Start with an idea</h3><p>Ask the date assistant for suggestions shaped by your interests and practical details. It offers a starting point; you both decide what happens next.</p></article></div></section>
      <ProductGallery compact/>
      <MarketingCTA/>
   </main>;
@@ -67,8 +67,8 @@ export function ProductGallery({ compact = false }: { compact?: boolean }) {
   const base = import.meta.env.BASE_URL;
   return <section className={`product-gallery${compact ? ' product-gallery-compact' : ''}`} aria-labelledby="product-gallery-title">
     <div className="product-gallery-heading">
-      <div><p className="eyebrow">Inside Couple Dates</p><h2 id="product-gallery-title" className="font-display">A good idea. A shared yes. A memory to keep.</h2></div>
-      <p>These are real app screens with illustrative details. Your space is private to the two people in it.</p>
+     <div><p className="eyebrow">Inside Couple Dates</p><h2 id="product-gallery-title" className="font-display">Plan the date. Keep the memory. Share it on your terms.</h2></div>
+      <p>These are real app screens with illustrative details. Your space is private to the two people in it; share only the memory you choose.</p>
     </div>
     <div className="product-screen-grid">
       {productScreens.map((screen) => <figure className={`product-screen product-screen-${screen.kind}`} key={screen.src}>
