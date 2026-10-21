@@ -9,3 +9,4 @@
 - [Tuesday public marketing boundaries](tuesday-marketing.md) — Tuesday is the provisional public brand; keep draft legal pages hidden until accurate business contact details are available.
 - [Couple growth flywheel](couple-growth-flywheel.md) — connect partner invitation with the private idea → agreement → date → memory → next-idea loop, without relationship scoring or guilt.
 - [Mobile platform support](mobile-platform-support.md) — Android and iOS are first-class; lead with .ics device adds and keep Google optional for availability.
+- [Static marketing routes](static-marketing-routes.md) — test raw HTML; Vite’s SPA fallback masks nested index pages unless the explicit file URL is used.

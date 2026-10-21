@@ -18,7 +18,7 @@ export function MarketingNav() {
 }
 
 export function MarketingFooter() {
-  return <footer className="marketing-footer"><Link href="/" className="brand-mark"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><span>Tuesday<small>a shared space for two</small></span></Link><p>For the little plans that become your favorite stories.</p><div>{pages.slice(1).map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}</div><small>Tuesday · Beta features are free</small></footer>;
+  return <footer className="marketing-footer"><Link href="/" className="brand-mark"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><span>Tuesday<small>a shared space for two</small></span></Link><p>For the little plans that become your favorite stories.</p><div>{pages.slice(1).map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}<a href={`${import.meta.env.BASE_URL}date-ideas/index.html`}>Date ideas for busy couples</a></div><small>Tuesday · Beta features are free</small></footer>;
 }
 
 export function PageIntro({ eyebrow, title, body }: { eyebrow: string; title: ReactNode; body: string }) {

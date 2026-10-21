@@ -1,0 +1,10 @@
+---
+name: Static marketing routes
+description: How nested static marketing HTML behaves under the Couple Dates Vite SPA fallback.
+---
+
+For this artifact's Vite development server, a request to a nested directory URL such as `/date-ideas/` falls through to the React SPA shell, even when `public/date-ideas/index.html` exists. Requesting the explicit `/date-ideas/index.html` serves the standalone HTML with its own metadata and content.
+
+**Why:** A client-rendered fallback can make an intended search landing page look like an ordinary SPA route in the raw HTTP response.
+
+**How to apply:** For future public content pages that need crawler-readable source, verify the raw response at the exact URL and keep links on an explicit static file path unless a server-side rewrite or prerendered route has been verified.
