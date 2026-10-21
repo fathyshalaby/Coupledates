@@ -156,6 +156,24 @@ test('recap sharing includes only selected details and keeps the caption aligned
       configurable: true,
       value: { writeText: async (text: string) => { (window as Window & { __copiedCaption?: string }).__copiedCaption = text; } },
     });
+
+    const exportedCardText: string[][] = [];
+    let currentDrawnText: string[] = [];
+    (window as Window & { __shareCardExportedText?: string[][] }).__shareCardExportedText = exportedCardText;
+    const originalFillText = CanvasRenderingContext2D.prototype.fillText;
+    CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
+      if (this.canvas.width === 1080 && this.canvas.height === 1350) currentDrawnText.push(String(text));
+      return originalFillText.call(this, text, x, y, maxWidth);
+    };
+
+    const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
+      if (this.width === 1080 && this.height === 1350) {
+        exportedCardText.push(currentDrawnText);
+        currentDrawnText = [];
+      }
+      return originalToBlob.call(this, callback, type, quality);
+    };
   });
   await page.goto('/recap');
   const year = await page.getByTestId('text-recap-year').textContent();
@@ -169,6 +187,34 @@ test('recap sharing includes only selected details and keeps the caption aligned
   await page.getByTestId('checkbox-share-top-category').check();
   const previewCaption = `${year}: 1 memory · 2 dates · Food`;
   await expect(page.getByTestId('text-share-caption-preview')).toHaveText(previewCaption);
+
+  const selectedImageStats = ['1 memory', '2 dates', 'Top category · Food'];
+  const excludedImageStats = ['average rating', 'active days', 'longest streak'];
+  await expect.poll(() => page.evaluate(({ selected, excluded }) => {
+    const exportedCards = (window as Window & { __shareCardExportedText?: string[][] }).__shareCardExportedText || [];
+    return exportedCards.some((drawnText) =>
+      selected.every((stat) => drawnText.includes(stat)) &&
+      excluded.every((stat) => !drawnText.some((line) => line.includes(stat)))
+    );
+  }, { selected: selectedImageStats, excluded: excludedImageStats })).toBe(true);
+
+  const exportedCaption = await page.getByTestId('text-share-caption-preview').textContent();
+  const exportedCards = await page.evaluate(() =>
+    (window as Window & { __shareCardExportedText?: string[][] }).__shareCardExportedText || []
+  );
+  const matchingImage = exportedCards.find((drawnText) =>
+    selectedImageStats.every((stat) => drawnText.includes(stat))
+  );
+  expect(exportedCaption).toBe(previewCaption);
+  expect(matchingImage).toBeDefined();
+  for (const stat of selectedImageStats) {
+    expect(matchingImage).toContain(stat);
+    expect(previewCaption).toContain(stat === 'Top category · Food' ? 'Food' : stat);
+  }
+  for (const stat of excludedImageStats) {
+    expect(matchingImage?.some((line) => line.includes(stat))).toBe(false);
+  }
+
   await page.getByTestId('button-share-confirm').click();
   await page.getByTestId('button-share-copy-caption').click();
 
