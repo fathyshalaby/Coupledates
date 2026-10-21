@@ -22,12 +22,12 @@ export default function Landing() {
       {/* HERO */}
       <section className="mx-auto grid max-w-5xl gap-10 px-5 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:items-center md:pt-16">
         <div>
-          <p className="rise eyebrow text-primary">For the plans that get lost in the week</p>
+          <p className="rise eyebrow text-primary">For busy couples who mean to make a plan</p>
           <h1 className="rise font-display mt-4 text-[3rem] leading-[0.98] font-medium md:text-[4.75rem]" style={{ animationDelay: '80ms' }}>
             From “we should” to <em className="font-normal text-primary">“let’s do it.”</em>
           </h1>
           <p className="rise mt-5 max-w-md text-lg text-muted-foreground" style={{ animationDelay: '160ms' }}>
-            Plan an online or in-person date together, then keep the photo or detail you’d otherwise forget. Tuesday keeps it in one private space for two.
+            Couple Dates helps you turn “we should” into a date you both choose—online or in person—then keep the photo or detail you’d otherwise forget.
           </p>
           <div className="rise mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '240ms' }}>
             <Link href="/sign-up" data-testid="button-hero-start" className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-[.98]">
@@ -35,7 +35,7 @@ export default function Landing() {
             </Link>
             <a href="/how-it-works" data-testid="link-preview" className="rounded-full px-5 py-3.5 font-medium underline decoration-primary/40 underline-offset-4">See how it works</a>
           </div>
-          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Private to you and the one person you invite. No public feed.</p>
+          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Free during beta. Private to you and the one person you invite; no public feed.</p>
         </div>
 
         <motion.figure initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .2 }}

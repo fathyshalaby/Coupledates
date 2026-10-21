@@ -198,12 +198,14 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
     const names: Record<string, string> = { '': 'A private space for two', 'how-it-works': 'How it works', 'long-distance': 'Long-distance dates', pricing: 'Pricing', home: 'Our space', memories: 'Our memories', dates: 'Date night', streaks: 'Daily connection', recap: 'Our year together', settings: 'Our settings', 'date-detail': 'Date details', preferences: 'Date preferences', assistant: 'Date ideas', calendar: 'Calendar', billing: 'Our plan', 'sign-in': 'Sign in', 'sign-up': 'Create your account' };
     names['recover-space'] = 'Recover your existing space';
     const publicPage = ['', 'how-it-works', 'long-distance', 'pricing'].includes(key);
-    const title = `${names[key] ?? 'Page not found'} · ${publicPage ? 'Tuesday' : 'Couple Dates'}`;
+    const title = key === ''
+      ? 'Couple Dates for Busy Couples | Plan Dates Together'
+      : `${names[key] ?? 'Page not found'} · Couple Dates`;
     const descriptions: Record<string, string> = {
-      '': 'From “we should” to “remember that?” Tuesday is a private space for two to plan dates together and keep the moments that matter.',
-      'how-it-works': 'Turn a passing idea into a shared plan, then save the memory. Tuesday keeps dates, photos, and your year together in one private space for two.',
-      'long-distance': 'Time zones can make “soon” hard. Plan online dates together, add the call link you already use, and keep the moments you share from two places.',
-      pricing: 'Tuesday beta is free for both partners. Try the shared space, date proposals, suggestions, memories, and yearly recap while checkout is paused.',
+      '': 'Couple Dates helps busy couples turn “we should” into a shared plan, with simple online or in-person dates, photos, and memories in one private space.',
+      'how-it-works': 'When busy weeks push plans aside, Couple Dates gives two partners one private place to suggest a date, decide together, and keep the memory.',
+      'long-distance': 'Plan online dates across different schedules, add a call link you already use, and keep the moments you share in Couple Dates.',
+      pricing: 'Couple Dates is free for both partners during beta. Try date planning, date ideas, shared memories, and the yearly recap before checkout returns.',
     };
     const description = descriptions[key] ?? 'A private shared space for exactly two to plan dates together and remember everyday moments.';
     document.title = title;

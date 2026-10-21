@@ -6,7 +6,7 @@
 - [Isolated layout tests](ui-layout-testing.md) — a separate Vite root needs production Tailwind sources; enlarge text without also enlarging spacing.
 - [Lazy route recovery](lazy-route-recovery.md) — failed page imports need a real reload, not just an error-boundary reset; keep navigation usable.
 - [Cross-environment account recovery](account-recovery-identity.md) — prove ownership with the same verified Google provider identity; never link spaces by email or names.
-- [Tuesday public marketing boundaries](tuesday-marketing.md) — Tuesday is the provisional public brand; keep draft legal pages hidden until accurate business contact details are available.
+- [Couple Dates marketing direction](couple-dates-marketing.md) — Couple Dates is the public brand; lead with busy couples who keep meaning to make plans.
 - [Couple growth flywheel](couple-growth-flywheel.md) — connect partner invitation with the private idea → agreement → date → memory → next-idea loop, without relationship scoring or guilt.
 - [Mobile platform support](mobile-platform-support.md) — Android and iOS are first-class; lead with .ics device adds and keep Google optional for availability.
 - [Static marketing routes](static-marketing-routes.md) — test raw HTML; Vite’s SPA fallback masks nested index pages unless the explicit file URL is used.
