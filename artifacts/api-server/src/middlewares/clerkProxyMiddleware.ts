@@ -19,9 +19,9 @@
  *   app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
  */
 
-import type { IncomingHttpHeaders } from 'http';
+import type { IncomingHttpHeaders, ServerResponse } from 'http';
 import type { RequestHandler } from 'express';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyServer } from 'httpxy';
 
 const CLERK_FAPI = 'https://frontend-api.clerk.dev';
 export const CLERK_PROXY_PATH = '/api/__clerk';
@@ -63,84 +63,111 @@ export function clerkProxyMiddleware(): RequestHandler {
     return (_req, _res, next) => next();
   }
 
-  return createProxyMiddleware({
-    target: CLERK_FAPI,
+  return createClerkProxyMiddleware(CLERK_FAPI, secretKey);
+}
+
+/**
+ * Build the production proxy handler. Kept separately so the HTTP behavior can
+ * be exercised against a local upstream without contacting Clerk.
+ */
+export function createClerkProxyMiddleware(
+  target: string,
+  secretKey: string,
+): RequestHandler {
+  const proxy = createProxyServer({
+    target,
     changeOrigin: true,
     // Take over the response so it can be re-sent with a Content-Length (see
     // proxyRes); the deployment edge rejects chunked proxied responses.
     selfHandleResponse: true,
-    pathRewrite: (path: string) =>
-      path.replace(new RegExp(`^${CLERK_PROXY_PATH}`), ''),
-    on: {
-      proxyReq: (proxyReq, req) => {
-        const protocol = req.headers['x-forwarded-proto'] || 'https';
-        const host = getClerkProxyHost(req) || '';
-        const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
+  });
 
-        proxyReq.setHeader('Clerk-Proxy-Url', proxyUrl);
-        proxyReq.setHeader('Clerk-Secret-Key', secretKey);
+  const endWithBadGateway = (res: ServerResponse | undefined) => {
+    if (!res || res.writableEnded) return;
+    if (!res.headersSent) {
+      res.writeHead(502, { 'content-length': '0' });
+    }
+    res.end();
+  };
 
-        const xff = req.headers['x-forwarded-for'];
-        const clientIp =
-          (Array.isArray(xff) ? xff[0] : xff)?.split(',')[0]?.trim() ||
-          req.socket?.remoteAddress ||
-          '';
-        if (clientIp) {
-          proxyReq.setHeader('X-Forwarded-For', clientIp);
-        }
-      },
-      // Clerk's dynamic Frontend API responses (/v1/environment, /v1/client,
-      // JWKS, ...) arrive without a Content-Length, so relaying them would use
-      // Transfer-Encoding: chunked — which the deployment edge (Cloud Run)
-      // rejects, turning the app's 200 into a 500. Buffer only those so they can
-      // be re-sent with a Content-Length; the body is forwarded untouched so
-      // Content-Encoding is preserved. Length-known responses (e.g. /npm/*
-      // assets) and body-less responses stream through without buffering.
-      proxyRes: (proxyRes, req, res) => {
-        const headers = { ...proxyRes.headers };
-        // Transfer-Encoding/Connection are hop-by-hop (RFC 7230 §6.1).
-        delete headers['transfer-encoding'];
-        delete headers['connection'];
-        delete headers['keep-alive'];
+  proxy.on('proxyReq', (proxyReq, req) => {
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = getClerkProxyHost(req) || '';
+    const proxyUrl = `${protocol}://${host}${CLERK_PROXY_PATH}`;
 
-        const status = proxyRes.statusCode ?? 502;
-        // Content-Length is forbidden on 1xx/204; HEAD/304 may keep theirs.
-        if (status < 200 || status === 204) {
-          delete headers['content-length'];
-        }
+    proxyReq.setHeader('Clerk-Proxy-Url', proxyUrl);
+    proxyReq.setHeader('Clerk-Secret-Key', secretKey);
 
-        const bodyless =
-          req.method === 'HEAD' ||
-          status < 200 ||
-          status === 204 ||
-          status === 304;
-        if (headers['content-length'] !== undefined || bodyless) {
-          res.writeHead(status, headers);
-          // Headers are already sent, so abort the response if the upstream
-          // stream errors mid-pipe (e.g. ECONNRESET) rather than leaving an
-          // unhandled 'error' or a hung client.
-          proxyRes.on('error', () => res.destroy());
-          proxyRes.pipe(res);
-          return;
-        }
+    const xff = req.headers['x-forwarded-for'];
+    const clientIp =
+      (Array.isArray(xff) ? xff[0] : xff)?.split(',')[0]?.trim() ||
+      req.socket?.remoteAddress ||
+      '';
+    if (clientIp) {
+      proxyReq.setHeader('X-Forwarded-For', clientIp);
+    }
+  });
 
-        const chunks: Buffer[] = [];
-        proxyRes.on('data', (chunk: Buffer) => chunks.push(chunk));
-        proxyRes.on('end', () => {
-          const body = Buffer.concat(chunks);
-          headers['content-length'] = String(body.length);
-          res.writeHead(status, headers);
-          res.end(body);
-        });
-        proxyRes.on('error', () => {
-          if (!res.headersSent) {
-            // Set a length so the empty 502 isn't sent chunked (which the
-            // deployment edge would reject just like the original response).
-            res.writeHead(502, { 'content-length': '0' });
-          }
-          res.end();
-        });
-      },
-    },
-  }) as RequestHandler;
+  proxy.on('proxyRes', (proxyRes, req, res) => {
+    // Clerk's dynamic Frontend API responses (/v1/environment, /v1/client,
+    // JWKS, ...) arrive without a Content-Length, so relaying them would use
+    // Transfer-Encoding: chunked — which the deployment edge (Cloud Run)
+    // rejects, turning the app's 200 into a 500. Buffer only those so they can
+    // be re-sent with a Content-Length; the body is forwarded untouched so
+    // Content-Encoding is preserved. Length-known responses (e.g. /npm/*
+    // assets) and body-less responses stream through without buffering.
+    const headers = { ...proxyRes.headers };
+    // Transfer-Encoding/Connection are hop-by-hop (RFC 7230 §6.1).
+    delete headers['transfer-encoding'];
+    delete headers['connection'];
+    delete headers['keep-alive'];
+
+    const status = proxyRes.statusCode ?? 502;
+    // Content-Length is forbidden on 1xx/204; HEAD/304 may keep theirs.
+    if (status < 200 || status === 204) {
+      delete headers['content-length'];
+    }
+
+    const bodyless =
+      req.method === 'HEAD' ||
+      status < 200 ||
+      status === 204 ||
+      status === 304;
+    if (headers['content-length'] !== undefined || bodyless) {
+      res.writeHead(status, headers);
+      // Headers are already sent, so abort the response if the upstream
+      // stream errors mid-pipe rather than leaving a hung client.
+      proxyRes.on('error', () => res.destroy());
+      proxyRes.pipe(res);
+      return;
+    }
+
+    const chunks: Buffer[] = [];
+    proxyRes.on('data', (chunk: Buffer) => chunks.push(chunk));
+    proxyRes.on('end', () => {
+      const body = Buffer.concat(chunks);
+      headers['content-length'] = String(body.length);
+      res.writeHead(status, headers);
+      res.end(body);
+    });
+    proxyRes.on('error', () => endWithBadGateway(res));
+  });
+
+  proxy.on('error', (_error, _req, res) => {
+    if (res && 'writeHead' in res) {
+      endWithBadGateway(res);
+    }
+  });
+
+  return (req, res, _next) => {
+    // Express removes the mounted path from req.url. Restore the original URL
+    // first so the proxy strips the mount point exactly once, preserving query
+    // strings and Clerk's nested API path.
+    const originalUrl = req.originalUrl || req.url || '/';
+    req.url = originalUrl.startsWith(CLERK_PROXY_PATH)
+      ? originalUrl.slice(CLERK_PROXY_PATH.length) || '/'
+      : req.url || '/';
+
+    void proxy.web(req, res).catch(() => endWithBadGateway(res));
+  };
 }
