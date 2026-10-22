@@ -22,20 +22,20 @@ export default function Landing() {
       {/* HERO */}
       <section className="mx-auto grid max-w-5xl gap-10 px-5 pt-8 pb-16 md:grid-cols-[1.1fr_1fr] md:items-center md:pt-16">
         <div>
-          <p className="rise eyebrow text-primary">For the girlfriend who wants more dates worth posting</p>
+          <p className="rise eyebrow text-primary">For the girlfriend who wants more dates worth sharing</p>
           <h1 className="rise font-display mt-4 text-[3rem] leading-[0.98] font-medium md:text-[4.75rem]" style={{ animationDelay: '80ms' }}>
-            From “we should” to <em className="font-normal text-primary">“remember this?”</em>
+            Your next favorite memory <em className="font-normal text-primary">starts with a date.</em>
           </h1>
           <p className="rise mt-5 max-w-md text-lg text-muted-foreground" style={{ animationDelay: '160ms' }}>
-            Turn “we should do this” into a date you both choose—online or in person. Keep the photo and little detail in your private space, then share a memory only when you want.
+            Find something you’ll both enjoy, suggest a time, and turn “we should” into a plan. Online or in person. Afterward, keep the photos and little details in your private space—and share only what you choose.
           </p>
           <div className="rise mt-8 flex flex-wrap items-center gap-3" style={{ animationDelay: '240ms' }}>
             <Link href="/sign-up" data-testid="button-hero-start" className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-[.98]">
-              Start your shared space <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              Plan our next date <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <a href="/how-it-works" data-testid="link-preview" className="rounded-full px-5 py-3.5 font-medium underline decoration-primary/40 underline-offset-4">See how it works</a>
           </div>
-          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Free during beta. Private to you and the one person you invite; no public feed.</p>
+          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Free during beta · Private to the two of you · No public feed</p>
         </div>
 
         <motion.figure initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .2 }}
@@ -53,10 +53,10 @@ export default function Landing() {
         <div className="mx-auto grid max-w-5xl gap-12 px-5 md:grid-cols-2 md:items-center">
           <div>
             <p className="text-xs font-medium text-accent">An illustrative example</p>
-            <h2 className="font-display mt-3 text-4xl leading-tight md:text-5xl">An idea becomes a plan. A plan becomes a story worth sharing.</h2>
-            <p className="mt-4 text-background/70">The names and moments below are made up. Your own space starts simple, then becomes a record of what the two of you chose to do and remember.</p>
+            <h2 className="font-display mt-3 text-4xl leading-tight md:text-5xl">Find an idea. Make it happen together.</h2>
+            <p className="mt-4 text-background/70">A date doesn’t need to be a big production. Choose something that fits your two lives, then save the small detail you’ll want to remember later. The names and moments below are illustrative.</p>
             <ul className="mt-8 space-y-4 text-background/85">
-              {['Suggest a date; your partner can say yes, pass, or find a better time', 'Make it an in-person plan or an online date with a call link', 'Save the photo and small detail, then choose if you want to share that memory', 'Look back at a yearly recap made from the dates and memories you shared'].map((t, i) => (
+              {['Find an idea that fits your interests and the kind of day you want', 'Suggest it; your partner can say yes, pass, or find a better time', 'Make it an in-person plan or an online date with a call link you already use', 'Save a photo and note afterward; share a memory only if you choose'].map((t, i) => (
                 <li key={t} className="flex gap-3"><span className="font-mono text-sm text-accent">0{i + 1}</span>{t}</li>
               ))}
             </ul>
@@ -102,8 +102,8 @@ export default function Landing() {
 
       {/* MEMORY NOTES */}
       <section className="mx-auto max-w-5xl px-5 py-20">
-        <p className="eyebrow text-primary">Memories</p>
-        <h2 className="font-display mt-2 max-w-xl text-4xl">Not highlights. The bits you'd otherwise forget.</h2>
+          <p className="eyebrow text-primary">Keep the little detail</p>
+        <h2 className="font-display mt-2 max-w-xl text-4xl">The photo is lovely. The story is what brings it all back.</h2>
         <div className="mt-10 grid gap-5 md:grid-cols-[1.3fr_1fr_1fr]">
           {SAMPLES.map((s, i) => (
             <article key={s.title} className={`surface p-5 ${i === 0 ? 'md:row-span-2' : ''}`}>

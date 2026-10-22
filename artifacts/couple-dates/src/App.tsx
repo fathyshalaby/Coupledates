@@ -199,10 +199,10 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
     names['recover-space'] = 'Recover your existing space';
     const publicPage = ['', 'how-it-works', 'long-distance', 'pricing'].includes(key);
     const title = key === ''
-      ? 'Couple Dates for Busy Couples | Plan Dates Together'
+      ? 'Couple Dates | Your Next Favorite Memory Starts With a Date'
       : `${names[key] ?? 'Page not found'} · Couple Dates`;
     const descriptions: Record<string, string> = {
-      '': 'Couple Dates helps the girlfriend who loves sharing moments plan online or in-person dates, save photos privately, and choose which memories to share.',
+      '': 'Find date ideas, make plans you both choose, and save the photos and little details that bring them back. Couple Dates is free during beta.',
       'how-it-works': 'Couple Dates helps turn her date idea into a plan both partners choose, then keeps photos and memories private unless they choose to share.',
       'long-distance': 'Plan online dates across different schedules, add a call link you already use, and keep the moments you share in Couple Dates.',
       pricing: 'Couple Dates is free for both partners during beta. Try date planning, date ideas, shared memories, and the yearly recap before checkout returns.',
