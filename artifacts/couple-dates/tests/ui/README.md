@@ -39,6 +39,10 @@ The existing layout, lazy-loading and memory cases run at **320×568**,
 
 - Real `AppShell`, home, dates and memories pages render long synthetic partner
   names/date titles without horizontal page overflow; navigation stays reachable.
+- The signed-out public couples-journal route opens directly, loads its real
+  product screenshot, privacy and yearly-recap copy, and free-beta links; its
+  route-specific title, description, social metadata, and phone/desktop overflow
+  are checked across all standard viewport profiles.
 - The harness uses the same lazy page wrappers as the app. Pages download only
   on navigation; a held download announces loading without hiding navigation.
   A failed download offers reload, leaves home reachable, and recovers after

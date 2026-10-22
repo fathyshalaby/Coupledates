@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch, useLocation } from 'wouter';
@@ -6,6 +7,8 @@ import { AppShell } from '@/components/shell';
 import { HomePage, DatesPage, MemoriesPage, RecapPage, AssistantPage, StreaksPage } from '@/lib/lazy-pages';
 import { couple } from './records';
 import AtHomeDateIdeasPage from '@/pages/at-home-date-ideas';
+import CouplesJournalPage from '@/pages/couples-journal';
+import { updateRouteMetadata } from '@/lib/route-metadata';
 import './harness.css';
 
 const client = new QueryClient({
@@ -14,7 +17,12 @@ const client = new QueryClient({
 
 function UIHarness() {
   const [location] = useLocation();
+  useEffect(() => {
+    updateRouteMetadata(location, import.meta.env.BASE_URL);
+  }, [location]);
+
   if (location === '/at-home-date-ideas') return <AtHomeDateIdeasPage />;
+  if (location === '/couples-journal') return <CouplesJournalPage />;
 
   return (
     <CoupleContext.Provider value={couple}>
