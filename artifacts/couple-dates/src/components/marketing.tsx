@@ -5,6 +5,7 @@ import { ArrowRight, Check, Heart, LockKeyhole, MapPin, MessageCircleHeart, Spar
 const pages = [
   ['/', 'Home'],
   ['/how-it-works', 'How it works'],
+  ['/couples-journal', 'Couples journal'],
   ['/long-distance', 'Long-distance dates'],
   ['/pricing', 'Pricing'],
 ] as const;

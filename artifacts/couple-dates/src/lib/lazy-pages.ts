@@ -6,6 +6,7 @@ export const Landing = lazyPage(() => import('@/pages/landing'));
 export const HowItWorksPage = lazyPage(() => import('@/pages/marketing-how'));
 export const LongDistancePage = lazyPage(() => import('@/pages/marketing-distance'));
 export const PricingPage = lazyPage(() => import('@/pages/marketing-pricing'));
+export const CouplesJournalPage = lazyPage(() => import('@/pages/couples-journal'));
 export const Onboarding = lazyPage(() => import('@/pages/onboarding'));
 export const HomePage = lazyPage(() => import('@/pages/home'));
 export const MemoriesPage = lazyPage(() => import('@/pages/memories'));
