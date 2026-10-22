@@ -1,3 +1,5 @@
+import seoMetadata from './seo-metadata.json';
+
 export function updateRouteMetadata(location: string, configuredBasePath: string) {
   const basePath = configuredBasePath.replace(/\/$/, '');
   const seg = location.split('/');
@@ -28,14 +30,14 @@ export function updateRouteMetadata(location: string, configuredBasePath: string
   const title = key === ''
     ? 'Couple Dates | Your Next Favorite Memory Starts With a Date'
     : key === 'couples-journal'
-      ? 'Private Couples Journal & Shared Memory Book | Couple Dates'
+      ? seoMetadata.couplesJournal.title
       : key === 'at-home-date-ideas'
         ? 'Romantic At-Home Date Ideas for Two | Couple Dates'
         : `${names[key] ?? 'Page not found'} · Couple Dates`;
   const descriptions: Record<string, string> = {
     '': 'Find date ideas, make plans you both choose, and save the photos and little details that bring them back. Couple Dates is free during beta.',
     'how-it-works': 'Couple Dates helps turn her date idea into a plan both partners choose, then keeps photos and memories private unless they choose to share.',
-    'couples-journal': 'Turn the dates you plan together into a private couples journal of photos and notes. Revisit your timeline and yearly recap; share a memory only if you choose.',
+    'couples-journal': seoMetadata.couplesJournal.description,
     'at-home-date-ideas': 'Find romantic at-home date ideas for every budget and schedule, including long-distance options. Plan a date together in Couple Dates, free during beta.',
     'long-distance': 'Plan online dates across different schedules, add a call link you already use, and keep the moments you share in Couple Dates.',
     pricing: 'Couple Dates is free for both partners during beta. Try date planning, date ideas, shared memories, and the yearly recap before checkout returns.',
@@ -50,7 +52,7 @@ export function updateRouteMetadata(location: string, configuredBasePath: string
 
   const pageUrl = new URL(`${basePath}${location === '/' ? '/' : location}`, window.location.origin).href;
   const imagePath = key === 'couples-journal'
-    ? 'product-shots/memories-mobile.jpg'
+    ? seoMetadata.couplesJournal.image
     : key === 'at-home-date-ideas'
       ? 'product-shots/dates-mobile.jpg'
       : 'product-shots/home-mobile.jpg';

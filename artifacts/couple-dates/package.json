@@ -8,6 +8,7 @@
     "build": "vite build --config vite.config.ts",
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:seo-static": "node --test tests/static-route-metadata.test.mjs",
     "test:ui": "playwright test --config tests/ui/playwright.config.ts",
     "test:ui:mobile": "playwright test --config tests/ui/mobile.config.ts",
     "test:ui:types": "tsc -p tests/ui/tsconfig.json --noEmit"
