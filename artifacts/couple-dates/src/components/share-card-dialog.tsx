@@ -178,7 +178,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
       <DialogContent data-testid="dialog-share-preview" className="max-h-[92dvh] max-w-md overflow-y-auto rounded-[24px] p-5 sm:p-6">
         <DialogHeader className="pr-7 text-left">
           <DialogTitle className="font-display text-2xl">Share a little of this</DialogTitle>
-          <DialogDescription>Choose what to include, then review the image and caption before sharing.</DialogDescription>
+          <DialogDescription>Choose what belongs on the card, then review the image and caption before sharing.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
@@ -187,7 +187,7 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
             {content?.kind === 'memory' && content.photoPath && (
               <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-sm">
                 <input data-testid="checkbox-share-photo" type="checkbox" checked={options.includePhoto} disabled={consented} onChange={(e) => updateOption('includePhoto', e.target.checked)} className="h-4 w-4 accent-primary" />
-                Include photo
+                Include our photo
               </label>
             )}
             {content?.kind === 'recap' && (
@@ -219,11 +219,11 @@ export function ShareCardDialog({ open, onOpenChange, content }: {
           </div>
 
           <p data-testid="text-share-warning" className="rounded-xl border border-[hsl(34_55%_74%)] bg-[hsl(38_65%_94%)] px-3.5 py-3 text-sm leading-relaxed text-[hsl(28_45%_25%)]">
-            Once shared, recipients may save or repost this image. Only the details shown in this preview are included.
+            Your Couple Dates space stays private. Once shared, recipients may save or repost this image. Only the details shown in this preview are included.
           </p>
           {previewUrl && (
             <section data-testid="share-caption-preview" aria-label="Caption preview" className="space-y-1 rounded-xl border border-border px-3.5 py-3">
-              <h3 className="text-xs font-medium text-muted-foreground">Caption</h3>
+              <h3 className="text-xs font-medium text-muted-foreground">Caption to post</h3>
               <p data-testid="text-share-caption-preview" className="break-words text-sm">{caption}</p>
             </section>
           )}
@@ -293,9 +293,9 @@ function OptionCheckbox({ testId, label, checked, disabled, onChange }: {
 }
 
 function captionFor(content: MemoryShare | RecapShare, options: ShareOptions) {
-  if (content.kind === 'memory') return `${content.title} · ${content.date} · ${content.category}`;
+  if (content.kind === 'memory') return `A little moment from us: ${content.title} 💛 #CoupleDates`;
   const details = recapDetails(content, options, false);
-  return `${content.year}${details.length ? `: ${details.join(' · ')}` : ''}`;
+  return `Our ${content.year}, one moment at a time. 💛${details.length ? ` ${details.join(' · ')}` : ''} #CoupleDates`;
 }
 
 function hasAverageRating(value: number | null): value is number {
@@ -363,23 +363,23 @@ async function buildShareCard(content: MemoryShare | RecapShare, options: ShareO
 
   context.fillStyle = '#a15b4d';
   context.font = '600 24px sans-serif';
-  context.fillText(content.kind === 'recap' ? 'OUR YEAR IN REVIEW' : content.category.toUpperCase(), 88, 914);
+  context.fillText(content.kind === 'recap' ? 'OUR YEAR IN REVIEW' : 'A LITTLE MOMENT FROM US', 88, 914);
   context.fillStyle = '#392b29';
   if (content.kind === 'memory') {
-    const titleLayout = drawMemoryTitle(context, content.title, 88, 982, 880, 1200);
-    context.fillStyle = '#79645e';
-    context.font = '32px sans-serif';
-    const detailsY = Math.max(1196, titleLayout.lastBaseline + titleLayout.lineHeight + 18);
-    context.fillText(`${content.date}  ·  ${content.category}`, 88, detailsY, 880);
+    drawMemoryTitle(context, content.title, 88, 982, 880, 1170);
   } else {
     context.font = '500 62px Georgia, serif';
     context.fillText(String(content.year), 88, 1010);
     const details = recapDetails(content, options, true);
     context.fillStyle = '#79645e';
     context.font = '30px sans-serif';
-    const detailLineHeight = Math.min(45, Math.floor(190 / Math.max(details.length - 1, 1)));
+    const detailLineHeight = Math.min(36, Math.floor(150 / Math.max(details.length - 1, 1)));
     details.forEach((detail, index) => context.fillText(detail, 88, 1070 + index * detailLineHeight, 880));
   }
+
+  context.fillStyle = '#a15b4d';
+  context.font = '600 20px sans-serif';
+  context.fillText('COUPLE DATES', 88, 1260);
 
   const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error('Could not encode image')), 'image/png'));
   return { blob, photoFailed };

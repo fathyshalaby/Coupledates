@@ -5,6 +5,7 @@ test('memory share cards show short and long titles fully and download the previ
   const titles = [
     'A quiet evening together',
     'A celebration that brought our families together for a long weekend of cooking, music, stories, and late-night walks under the stars',
+    'Tarde de café con Sofía — ¡qué bonito! ☕💛',
   ];
   await page.addInitScript(() => {
     const exportedCards: { text: string; x: number; y: number; font: string }[][] = [];
@@ -46,18 +47,19 @@ test('memory share cards show short and long titles fully and download the previ
     const card = cards.at(-1);
     expect(card).toBeDefined();
 
-    const dateRow = card!.find(({ text, y }) => y > 1000 && text.includes('·') && text.includes('Food'));
-    expect(dateRow).toBeDefined();
-    const titleRows = card!.filter(({ y }) => y >= 950 && y < dateRow!.y);
+    const label = card!.find(({ text }) => text === 'A LITTLE MOMENT FROM US');
+    const brand = card!.find(({ text }) => text === 'COUPLE DATES');
+    expect(label).toBeDefined();
+    expect(brand).toBeDefined();
+    const titleRows = card!.filter(({ y }) => y >= 950 && y < brand!.y);
     expect(titleRows.length).toBeGreaterThan(0);
     expect(titleRows.map(({ text }) => text).join(' ').replace(/\s+/g, ' ').trim()).toBe(title);
     const lastTitleRow = titleRows.at(-1)!;
     const fontSize = Number(lastTitleRow.font.match(/(\d+(?:\.\d+)?)px/)?.[1]);
-    expect(dateRow!.y - lastTitleRow.y).toBeGreaterThanOrEqual(fontSize + 18);
-    expect(dateRow!.y).toBeLessThan(1300);
-    const categoryRow = card!.find(({ text }) => text === 'FOOD');
-    expect(categoryRow).toBeDefined();
-    expect(titleRows[0].y - categoryRow!.y).toBeGreaterThan(fontSize / 2);
+    expect(brand!.y - lastTitleRow.y).toBeGreaterThanOrEqual(fontSize + 18);
+    expect(brand!.y).toBe(1260);
+    expect(titleRows[0].y - label!.y).toBeGreaterThan(fontSize / 2);
+    expect(card!.some(({ text }) => text === 'FOOD' || text === '2026-06-15')).toBe(false);
 
     await page.getByTestId('button-share-confirm').click();
     const download = page.waitForEvent('download');
@@ -88,7 +90,10 @@ test('memory sharing requires explicit consent before download or caption copy',
   await expect.poll(() => page.getByTestId('img-share-preview').getAttribute('src')).not.toBe(originalPreview);
   await photoOption.uncheck();
   await expect.poll(() => page.getByTestId('img-share-preview').getAttribute('src')).not.toBe(originalPreview);
-  await expect(page.getByTestId('text-share-caption-preview')).toContainText('Food');
+  await expect(page.getByTestId('text-share-caption-preview')).toContainText('A little moment from us:');
+  await expect(page.getByTestId('text-share-caption-preview')).toContainText('#CoupleDates');
+  await expect(page.getByTestId('text-share-caption-preview')).not.toContainText('Food');
+  await expect(page.getByTestId('text-share-caption-preview')).not.toContainText('2026-06-15');
   await expect(page.getByTestId('text-share-warning')).toContainText('may save or repost');
   await expect(page.getByTestId('button-share-confirm')).toHaveText('I understand — continue');
   await expect(page.getByTestId('button-share-download')).toHaveCount(0);
@@ -98,14 +103,14 @@ test('memory sharing requires explicit consent before download or caption copy',
 
   await page.getByTestId('button-share-confirm').click();
   await expect(page.getByTestId('share-manual-fallback')).toContainText('This browser can’t send the image directly to another app.');
-  await expect(page.getByTestId('text-share-caption')).toHaveValue(/Food/);
+  await expect(page.getByTestId('text-share-caption')).toHaveValue(/#CoupleDates/);
   await expect(page.getByTestId('share-manual-fallback').getByRole('link')).toHaveCount(0);
   await expect(page.getByTestId('button-share-download')).toBeVisible();
   const download = page.waitForEvent('download');
   await page.getByTestId('button-share-download-copy').click();
   await expect(download).resolves.toBeTruthy();
   await expect(page.getByTestId('text-share-copied')).toContainText('Image downloaded and caption copied.');
-  expect(await page.evaluate(() => (window as Window & { __copiedCaption?: string }).__copiedCaption)).toContain('Food');
+  expect(await page.evaluate(() => (window as Window & { __copiedCaption?: string }).__copiedCaption)).toContain('#CoupleDates');
   await page.getByTestId('button-share-copy-caption').click();
   await expect(page.getByTestId('text-share-copied')).toContainText('Caption copied.');
   expect(network.writes).toEqual([]);
@@ -162,8 +167,12 @@ test('supported native file share happens only after the second confirmation act
   expect(await page.evaluate(() => (window as Window & { __sharedFileName?: string }).__sharedFileName)).toBeUndefined();
   await confirm.click();
   await expect.poll(() => page.evaluate(() => (window as Window & { __sharedFileName?: string }).__sharedFileName)).toBe('memory-card.png');
-  await expect.poll(() => page.evaluate(() => (window as Window & { __sharedText?: string }).__sharedText)).toContain('Food');
-  expect(await page.evaluate(() => (window as Window & { __sharedText?: string }).__sharedText)).not.toContain('Original synthetic note');
+  await expect.poll(() => page.evaluate(() => (window as Window & { __sharedText?: string }).__sharedText)).toContain('#CoupleDates');
+  expect(await page.evaluate(() => (window as Window & { __sharedText?: string }).__sharedText)).toContain('A very long synthetic date title');
+  const sharedText = await page.evaluate(() => (window as Window & { __sharedText?: string }).__sharedText || '');
+  expect(sharedText).not.toContain('Food');
+  expect(sharedText).not.toContain('2026-06-15');
+  expect(sharedText).not.toContain('Original synthetic note');
   await expect(page.getByTestId('dialog-share-preview')).not.toBeVisible();
 });
 
@@ -212,7 +221,7 @@ test('rejected native sharing exposes download-and-copy fallback without uploadi
   await page.getByTestId('button-share-download-copy').click();
   await expect(download).resolves.toBeTruthy();
   await expect(page.getByTestId('text-share-copied')).toContainText('Image downloaded and caption copied.');
-  expect(await page.evaluate(() => (window as Window & { __copiedCaption?: string }).__copiedCaption)).toContain('Food');
+  expect(await page.evaluate(() => (window as Window & { __copiedCaption?: string }).__copiedCaption)).toContain('#CoupleDates');
   expect(network.writes).toEqual([]);
   await expect(page.getByTestId('dialog-share-preview')).toBeVisible();
 });
@@ -247,13 +256,14 @@ test('recap sharing includes only selected details and keeps the caption aligned
   const year = await page.getByTestId('text-recap-year').textContent();
   await page.getByTestId('button-share-recap').click();
   await expect(page.getByTestId('img-share-preview')).toHaveAttribute('alt', `Preview of ${year} recap share card`);
-  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(year || '');
+  const defaultCaption = `Our ${year}, one moment at a time. 💛 #CoupleDates`;
+  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(defaultCaption);
   await expect(page.getByTestId('checkbox-share-memory-count')).not.toBeChecked();
   await expect(page.getByTestId('checkbox-share-date-count')).not.toBeChecked();
   await page.getByTestId('checkbox-share-memory-count').check();
   await page.getByTestId('checkbox-share-date-count').check();
   await page.getByTestId('checkbox-share-top-category').check();
-  const previewCaption = `${year}: 1 memory · 2 dates · Food`;
+  const previewCaption = `Our ${year}, one moment at a time. 💛 1 memory · 2 dates · Food #CoupleDates`;
   await expect(page.getByTestId('text-share-caption-preview')).toHaveText(previewCaption);
 
   const selectedImageStats = ['1 memory', '2 dates', 'Top category · Food'];
@@ -343,7 +353,7 @@ test('recap sharing keeps every selected detail inside the card and in the copie
     '3-day longest streak',
     'Top category · Food',
   ];
-  const caption = `${year}: 1 memory · 2 dates · 4.5 average rating · 4 active days · 3-day longest streak · Food`;
+  const caption = `Our ${year}, one moment at a time. 💛 1 memory · 2 dates · 4.5 average rating · 4 active days · 3-day longest streak · Food #CoupleDates`;
   await expect(page.getByTestId('text-share-caption-preview')).toHaveText(caption);
   await expect.poll(() => page.evaluate((expected) => {
     const cards = (window as Window & { __shareCardExportedText?: { text: string; x: number; y: number; font: string }[][] }).__shareCardExportedText || [];
@@ -410,11 +420,11 @@ test('recap sharing omits unavailable rating and category options and exports no
 
   await expect(page.getByTestId('checkbox-share-average-rating')).toHaveCount(0);
   await expect(page.getByTestId('checkbox-share-top-category')).toHaveCount(0);
-  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(year || '');
+  await expect(page.getByTestId('text-share-caption-preview')).toHaveText(`Our ${year}, one moment at a time. 💛 #CoupleDates`);
 
   await page.getByTestId('checkbox-share-memory-count').check();
   await page.getByTestId('checkbox-share-date-count').check();
-  const caption = `${year}: 1 memory · 1 date`;
+  const caption = `Our ${year}, one moment at a time. 💛 1 memory · 1 date #CoupleDates`;
   await expect(page.getByTestId('text-share-caption-preview')).toHaveText(caption);
 
   await expect.poll(() => page.evaluate(() => {
