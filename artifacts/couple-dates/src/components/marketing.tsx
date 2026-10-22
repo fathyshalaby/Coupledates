@@ -19,7 +19,7 @@ export function MarketingNav() {
 }
 
 export function MarketingFooter() {
-  return <footer className="marketing-footer"><Link href="/" className="brand-mark"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><span>Couple Dates<small>a shared space for two</small></span></Link><p>For the girlfriend who wants more dates worth posting.</p><div>{pages.slice(1).map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}<a href={`${import.meta.env.BASE_URL}date-ideas/index.html`}>Date ideas for busy couples</a></div><small>Couple Dates · Free during beta</small></footer>;
+  return <footer className="marketing-footer"><Link href="/" className="brand-mark"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><span>Couple Dates<small>a shared space for two</small></span></Link><p>For the girlfriend who wants more dates worth posting.</p><div>{pages.slice(1).map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}<Link href="/at-home-date-ideas">At-home date ideas</Link></div><small>Couple Dates · Free during beta</small></footer>;
 }
 
 export function PageIntro({ eyebrow, title, body }: { eyebrow: string; title: ReactNode; body: string }) {

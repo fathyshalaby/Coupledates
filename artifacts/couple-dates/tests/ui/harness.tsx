@@ -1,18 +1,22 @@
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Route, Switch } from 'wouter';
+import { Route, Switch, useLocation } from 'wouter';
 import { CoupleContext } from '@/lib/couple-context';
 import { AppShell } from '@/components/shell';
 import { HomePage, DatesPage, MemoriesPage, RecapPage, AssistantPage, StreaksPage } from '@/lib/lazy-pages';
 import { couple } from './records';
+import AtHomeDateIdeasPage from '@/pages/at-home-date-ideas';
 import './harness.css';
 
 const client = new QueryClient({
   defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
 });
 
-createRoot(document.getElementById('root')!).render(
-  <QueryClientProvider client={client}>
+function UIHarness() {
+  const [location] = useLocation();
+  if (location === '/at-home-date-ideas') return <AtHomeDateIdeasPage />;
+
+  return (
     <CoupleContext.Provider value={couple}>
       <AppShell>
         <Switch>
@@ -25,5 +29,11 @@ createRoot(document.getElementById('root')!).render(
         </Switch>
       </AppShell>
     </CoupleContext.Provider>
+  );
+}
+
+createRoot(document.getElementById('root')!).render(
+  <QueryClientProvider client={client}>
+    <UIHarness />
   </QueryClientProvider>,
 );

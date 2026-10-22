@@ -11,6 +11,7 @@ const deviceMode = process.env.UI_DEVICE === '1';
 // Separate from the shipped app entry point: no Clerk, API proxy, or secrets.
 export default defineConfig({
   root,
+  publicDir: path.resolve(root, '../../public'),
   plugins: [react(), tailwindcss({ optimize: false }), ...(deviceMode ? [deviceServer()] : [])],
   resolve: {
     alias: { '@': path.resolve(root, '../../src') },

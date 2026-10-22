@@ -580,6 +580,56 @@ body { font-feature-settings: 'ss01', 'cv11'; text-rendering: optimizeLegibility
 .marketing-page .product-gallery { padding-inline: 0; }
 .marketing-page .product-screen-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
+/* Searchable at-home date ideas page. */
+.at-home-page { max-width: 1180px; margin: 0 auto; padding: 0 5vw; }
+.at-home-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .75fr); align-items: center; gap: clamp(38px, 8vw, 108px); padding: clamp(68px, 10vw, 126px) 0 90px; }
+.at-home-hero-copy h1 { max-width: 710px; margin: 20px 0 22px; font-size: clamp(50px, 7.4vw, 86px); line-height: .97; font-weight: 500; letter-spacing: -.055em; }
+.at-home-hero-copy h1 em { color: hsl(var(--primary)); font-weight: 400; }
+.at-home-lede { max-width: 555px; margin: 0; color: hsl(var(--muted-foreground)); font-size: clamp(17px, 2vw, 20px); line-height: 1.65; }
+.at-home-hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 15px 20px; margin-top: 28px; }
+.at-home-hero-actions > span { display: inline-flex; align-items: center; gap: 7px; color: hsl(var(--muted-foreground)); font-size: 12px; }
+.at-home-hero-actions > span svg { color: hsl(var(--primary)); }
+.at-home-product-figure { width: min(100%, 350px); margin: 0 auto; padding: 14px 14px 11px; border: 1px solid hsl(var(--foreground)/.12); border-radius: 27px; background: hsl(42 36% 91%); box-shadow: 0 32px 66px -45px hsl(335 40% 18%/.5); transform: rotate(1.2deg); }
+.at-home-product-image { overflow: hidden; border: 1px solid hsl(var(--foreground)/.12); border-radius: 16px; background: hsl(39 30% 96%); }
+.at-home-product-image img { display: block; width: 100%; height: auto; }
+.at-home-product-figure figcaption { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 11px 3px 1px; }
+.at-home-product-figure figcaption span:first-child { font-size: 16px; }
+.at-home-product-figure figcaption span:last-child { color: hsl(var(--muted-foreground)); font-size: 9px; text-align: right; }
+.at-home-finder { scroll-margin-top: 100px; padding: 72px 0 104px; border-top: 1px solid hsl(var(--foreground)/.1); }
+.at-home-section-heading { max-width: 650px; }
+.at-home-section-heading h2,.at-home-plan-section h2,.at-home-cta h2 { margin: 10px 0 12px; font-size: clamp(35px, 5vw, 57px); line-height: 1.03; font-weight: 500; letter-spacing: -.04em; }
+.at-home-section-heading > p:last-child { max-width: 580px; margin: 0; color: hsl(var(--muted-foreground)); line-height: 1.65; }
+.at-home-filters { display: grid; grid-template-columns: minmax(200px, 1.35fr) repeat(3, minmax(145px, 1fr)); gap: 12px; margin-top: 28px; padding: 18px; border: 1px solid hsl(var(--foreground)/.1); border-radius: 22px; background: hsl(40 38% 96%); }
+.at-home-filters label { display: grid; align-content: end; gap: 7px; color: hsl(var(--foreground)); font-size: 12px; font-weight: 600; }
+.at-home-filters select,.at-home-input-wrap { width: 100%; min-width: 0; min-height: 45px; border: 1px solid hsl(var(--foreground)/.14); border-radius: 12px; background: hsl(var(--background)); color: hsl(var(--foreground)); font: inherit; }
+.at-home-filters select { padding: 0 11px; }
+.at-home-input-wrap { display: flex; align-items: center; gap: 8px; padding: 0 11px; }
+.at-home-input-wrap svg { flex: 0 0 auto; color: hsl(var(--muted-foreground)); }
+.at-home-input-wrap input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: hsl(var(--foreground)); font: inherit; font-size: 13px; }
+.at-home-input-wrap input::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
+.at-home-filters select:focus-visible,.at-home-input-wrap:focus-within { outline: 3px solid hsl(var(--primary)/.35); outline-offset: 2px; }
+.at-home-result-count { margin: 20px 0 12px; color: hsl(var(--muted-foreground)); font-size: 12px; }
+.at-home-idea-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.at-home-idea-card { display: flex; min-height: 220px; flex-direction: column; padding: 21px; border: 1px solid hsl(var(--foreground)/.1); border-radius: 20px; background: hsl(var(--background)); }
+.at-home-idea-meta { display: flex; justify-content: space-between; gap: 12px; color: hsl(var(--primary)); font-size: 11px; font-weight: 600; }
+.at-home-idea-meta span:first-child { display: inline-flex; align-items: center; gap: 5px; }
+.at-home-idea-card h3 { margin: 17px 0 8px; font-size: 23px; line-height: 1.15; font-weight: 500; }
+.at-home-idea-card > p { margin: 0; color: hsl(var(--muted-foreground)); font-size: 13px; line-height: 1.6; }
+.at-home-idea-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; padding-top: 17px; }
+.at-home-idea-tags span { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; border-radius: 999px; background: hsl(40 38% 94%); color: hsl(var(--muted-foreground)); font-size: 10px; }
+.at-home-empty { padding: 27px; border: 1px dashed hsl(var(--foreground)/.2); border-radius: 18px; text-align: center; }
+.at-home-empty p { color: hsl(var(--muted-foreground)); }
+.at-home-empty button { border: 0; background: none; color: hsl(var(--primary)); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.at-home-plan-section { display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(35px, 8vw, 100px); padding: 58px 0 80px; border-top: 1px solid hsl(var(--foreground)/.1); }
+.at-home-plan-section h2 { max-width: 520px; }
+.at-home-plan-copy { align-self: center; }
+.at-home-plan-copy > p,.at-home-cta > div > p:last-child { color: hsl(var(--muted-foreground)); font-size: 15px; line-height: 1.7; }
+.at-home-cta { display: flex; align-items: center; justify-content: space-between; gap: 30px; margin-bottom: 32px; padding: clamp(29px, 5vw, 55px); border-radius: 28px; background: hsl(335 25% 15%); color: hsl(38 50% 94%); }
+.at-home-cta .eyebrow { color: hsl(41 78% 75%); }
+.at-home-cta h2 { max-width: 570px; }
+.at-home-cta > div > p:last-child { max-width: 560px; margin-bottom: 0; color: hsl(38 40% 78%); }
+.at-home-cta .journal-button { flex: 0 0 auto; background: hsl(41 78% 75%); color: hsl(335 25% 15%); }
+
 /* Couples journal story page — a private, editorial field guide. */
 .couples-journal-page { min-height: 100dvh; overflow: hidden; background: hsl(var(--background)); }
 .journal-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1.02fr) minmax(320px, .8fr); align-items: center; gap: clamp(38px, 8vw, 108px); max-width: 1180px; margin: 0 auto; padding: clamp(68px, 10vw, 126px) 5vw 94px; }
@@ -716,6 +766,9 @@ body { font-feature-settings: 'ss01', 'cv11'; text-rendering: optimizeLegibility
   .product-gallery-heading > p { max-width: 500px; }
   .product-screen-grid,.marketing-page .product-screen-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .product-screen-wide { grid-column: 1 / -1; }
+  .at-home-hero { grid-template-columns: minmax(0, 1.1fr) minmax(240px, .75fr); gap: 30px; }
+  .at-home-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .at-home-idea-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media(max-width: 580px) {
   .marketing-nav { padding-inline: 4vw; }
@@ -749,6 +802,17 @@ body { font-feature-settings: 'ss01', 'cv11'; text-rendering: optimizeLegibility
   .product-screen-wide .product-screen-image img { max-height: none; }
   .product-screen { padding: 9px; border-radius: 19px; }
   .product-gallery-heading h2 { font-size: 36px; }
+  .at-home-page { padding-inline: 6vw; }
+  .at-home-hero { grid-template-columns: 1fr; gap: 34px; padding: 66px 0 59px; }
+  .at-home-hero-copy h1 { font-size: clamp(48px, 13vw, 70px); }
+  .at-home-product-figure { width: min(100%, 320px); }
+  .at-home-finder { padding: 55px 0 70px; }
+  .at-home-filters,.at-home-idea-grid { grid-template-columns: 1fr; }
+  .at-home-filters { padding: 14px; }
+  .at-home-idea-card { min-height: 0; }
+  .at-home-plan-section { grid-template-columns: 1fr; gap: 0; padding: 50px 0 65px; }
+  .at-home-cta { align-items: flex-start; flex-direction: column; margin-bottom: 20px; padding: 29px 24px; }
+  .at-home-cta h2 { font-size: 38px; }
 }
 @media(max-width: 360px) {
   .marketing-nav { column-gap: 8px; }
