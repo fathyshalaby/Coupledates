@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'wouter';
 import { ArrowRight, Clock3, Heart, Search, Video } from 'lucide-react';
 import { MarketingFooter, MarketingNav } from '@/components/marketing';
+import { trackEvent } from '@/lib/analytics';
 
 const base = import.meta.env.BASE_URL;
 
@@ -219,7 +220,16 @@ export default function AtHomeDateIdeasPage() {
             <h2 id="at-home-cta-title" className="font-display">Save a little room for each other.</h2>
             <p>Start a private shared space, invite your partner, and plan your next night in together.</p>
           </div>
-          <Link href="/sign-up" className="journal-button">Join the free beta <ArrowRight size={16} /></Link>
+          <Link
+            href="/sign-up"
+            className="journal-button"
+            onClick={() => trackEvent('free_beta_cta_clicked', {
+              page: 'at_home_date_ideas',
+              placement: 'bottom_cta',
+            })}
+          >
+            Join the free beta <ArrowRight size={16} />
+          </Link>
         </section>
       </main>
       <MarketingFooter />
