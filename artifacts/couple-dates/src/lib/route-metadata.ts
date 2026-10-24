@@ -20,6 +20,7 @@ export function updateRouteMetadata(location: string, configuredBasePath: string
     'date-detail': 'Date details',
     preferences: 'Date preferences',
     assistant: 'Date ideas',
+    share: 'Shared date inspiration',
     calendar: 'Calendar',
     billing: 'Our plan',
     'sign-in': 'Sign in',

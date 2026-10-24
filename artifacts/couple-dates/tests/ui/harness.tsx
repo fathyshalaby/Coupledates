@@ -8,6 +8,7 @@ import { HomePage, DatesPage, MemoriesPage, RecapPage, AssistantPage, StreaksPag
 import { couple } from './records';
 import AtHomeDateIdeasPage from '@/pages/at-home-date-ideas';
 import CouplesJournalPage from '@/pages/couples-journal';
+import ShareTargetPage from '@/pages/share-target';
 import { updateRouteMetadata } from '@/lib/route-metadata';
 import './harness.css';
 
@@ -32,6 +33,7 @@ function UIHarness() {
           <Route path="/memories" component={MemoriesPage} />
           <Route path="/recap" component={RecapPage} />
           <Route path="/assistant" component={AssistantPage} />
+          <Route path="/share" component={ShareTargetPage} />
           <Route path="/streaks" component={StreaksPage} />
           <Route component={HomePage} />
         </Switch>

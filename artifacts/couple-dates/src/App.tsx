@@ -13,6 +13,8 @@ import { AppShell } from '@/components/shell';
 import { ErrorState, TwoRings } from '@/components/bits';
 import { CoupleContext } from '@/lib/couple-context';
 import { updateRouteMetadata } from '@/lib/route-metadata';
+import { clearIncomingSocialInspiration, hasIncomingSocialInspiration } from '@/lib/social-inspiration';
+import ShareTargetPage from '@/pages/share-target';
 import {
   NotFound, Landing, HowItWorksPage, LongDistancePage, PricingPage, CouplesJournalPage, AtHomeDateIdeasPage, Onboarding, HomePage, MemoriesPage, DatesPage,
   StreaksPage, RecapPage, SettingsPage, DateDetailPage, PreferencesPage,
@@ -129,6 +131,7 @@ function ClerkQueryClientCacheInvalidator() {
       const userId = user?.id ?? null;
       if (prevUserIdRef.current !== undefined && prevUserIdRef.current !== userId) {
         qc.clear();
+        if (prevUserIdRef.current) clearIncomingSocialInspiration();
       }
       prevUserIdRef.current = userId;
     });
@@ -139,9 +142,10 @@ function ClerkQueryClientCacheInvalidator() {
 }
 
 function HomeRedirect() {
+  const destination = hasIncomingSocialInspiration() ? '/assistant' : '/home';
   return (
     <>
-      <Show when="signed-in"><Redirect to="/home" /></Show>
+      <Show when="signed-in"><Redirect to={destination} /></Show>
       <Show when="signed-out"><Landing /></Show>
     </>
   );
@@ -227,6 +231,7 @@ function ClerkProviderWithRoutes() {
               <Route path="/couples-journal" component={CouplesJournalPage} />
               <Route path="/at-home-date-ideas" component={AtHomeDateIdeasPage} />
               <Route path="/pricing" component={PricingPage} />
+              <Route path="/share" component={ShareTargetPage} />
               <Route path="/sign-in/*?" component={SignInPage} />
               <Route path="/sign-up/*?" component={SignUpPage} />
               <Route path="/recover-space" component={AccountRecoveryRoute} />

@@ -10,6 +10,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { CategoryChip, ErrorState, PageHeader } from '@/components/bits';
 import { DateForm, type DatePrefill } from '@/components/date-form';
 import { errMsg, errStatus, useAssistantQ, useInvalidate, usePreferencesQ } from '@/lib/data';
+import {
+  clearIncomingSocialInspiration,
+  getIncomingSocialInspiration,
+  saveIncomingSocialInspiration,
+  socialPlatformFromUrl,
+} from '@/lib/social-inspiration';
 import { cn } from '@/lib/utils';
 
 const CHIPS = [
@@ -39,6 +45,7 @@ export default function AssistantPage() {
   const [inspirationUrl, setInspirationUrl] = useState('');
   const [inspirationNote, setInspirationNote] = useState('');
   const [inspirationError, setInspirationError] = useState('');
+  const [fromShareTarget, setFromShareTarget] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [proposing, setProposing] = useState<DatePrefill | null>(null);
   const ask = useAskDateAssistant({ mutation: { onSuccess: () => invalidate(['assistant']) } });
@@ -50,6 +57,15 @@ export default function AssistantPage() {
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(t);
   }, [ask.isPending]);
+
+  useEffect(() => {
+    const shared = getIncomingSocialInspiration();
+    if (!shared) return;
+    setInspirationUrl(shared.url);
+    setInspirationNote(shared.note);
+    setInspirationOpen(true);
+    setFromShareTarget(true);
+  }, []);
 
   const mine = prefs.data?.find((p) => p.isYou);
   const partner = prefs.data?.find((p) => !p.isYou);
@@ -76,11 +92,22 @@ export default function AssistantPage() {
       ? `Turn this ${platform} post into date inspiration for us. Use only my note; you cannot view the post.\nLink: ${link}\nWhat I liked: ${note}`
       : `I found a ${platform} post that might inspire a date. Do not guess what it shows; ask me what caught my eye before suggesting ideas.\nLink: ${link}`;
     send(prompt, () => {
+      clearIncomingSocialInspiration();
       setInspirationUrl('');
       setInspirationNote('');
       setInspirationError('');
       setInspirationOpen(false);
+      setFromShareTarget(false);
     });
+  };
+  const updateSharedUrl = (value: string) => {
+    setInspirationUrl(value);
+    setInspirationError('');
+    if (fromShareTarget) saveIncomingSocialInspiration({ url: value, note: inspirationNote });
+  };
+  const updateSharedNote = (value: string) => {
+    setInspirationNote(value);
+    if (fromShareTarget) saveIncomingSocialInspiration({ url: inspirationUrl, note: value });
   };
   const turns = history.data ?? [];
 
@@ -118,8 +145,13 @@ export default function AssistantPage() {
         {inspirationOpen && (
           <div id="social-inspiration-panel" className="space-y-3 border-t border-foreground/10 px-4 py-4">
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Paste an Instagram or TikTok link and tell the concierge what caught your eye. It can’t watch the post; your link and note will be saved in the shared chat for your partner too.
+              Paste an Instagram or TikTok link and tell the concierge what caught your eye. It can’t watch the post; only what you send appears in your shared chat. On Android, install Couple Dates from Chrome’s menu to add it to the share sheet. On iPhone, copy and paste the link here.
             </p>
+            {fromShareTarget && (
+              <p role="status" data-testid="status-shared-inspiration" className="rounded-xl bg-secondary/70 px-3 py-2 text-xs leading-relaxed">
+                Shared from another app. Review the link and note first; nothing is sent to your partner until you tap “Ask about this inspiration.”
+              </p>
+            )}
             <div className="space-y-1.5">
               <label htmlFor="inspiration-url" className="text-xs font-medium">Instagram or TikTok link</label>
               <Input
@@ -131,7 +163,7 @@ export default function AssistantPage() {
                 autoCorrect="off"
                 maxLength={500}
                 value={inspirationUrl}
-                onChange={(event) => { setInspirationUrl(event.target.value); setInspirationError(''); }}
+                onChange={(event) => updateSharedUrl(event.target.value)}
                 placeholder="https://www.instagram.com/reel/…"
                 className="min-h-11 rounded-xl"
               />
@@ -143,7 +175,7 @@ export default function AssistantPage() {
                 data-testid="input-inspiration-note"
                 maxLength={500}
                 value={inspirationNote}
-                onChange={(event) => setInspirationNote(event.target.value)}
+                onChange={(event) => updateSharedNote(event.target.value)}
                 placeholder="A cosy cook-along, a sunset walk, a clever at-home setup…"
                 className="min-h-20 resize-y rounded-xl text-sm"
               />
@@ -232,19 +264,6 @@ function Turn({ t, onPropose }: { t: AssistantTurn; onPropose: (i: DateIdea) => 
       </div>
     </motion.section>
   );
-}
-
-function socialPlatformFromUrl(raw: string): 'Instagram' | 'TikTok' | null {
-  try {
-    const url = new URL(raw.trim());
-    if (url.protocol !== 'https:') return null;
-    const host = url.hostname.toLowerCase().replace(/^www\./, '');
-    if (host === 'instagram.com' || host === 'm.instagram.com' || host === 'instagr.am') return 'Instagram';
-    if (host === 'tiktok.com' || host === 'vm.tiktok.com' || host === 'vt.tiktok.com') return 'TikTok';
-  } catch {
-    return null;
-  }
-  return null;
 }
 
 function renderPrompt(text: string): ReactNode[] {
