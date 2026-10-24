@@ -21,6 +21,7 @@ export const test = base.extend<{ network: Network }>({
   network: [async ({ page }, use) => {
     const responses: Record<UploadStage, UploadResponse[]> = { 'request-url': [], put: [] };
     const memoryResponses: Record<MemoryMethod, UploadResponse[]> = { POST: [], PATCH: [] };
+    const assistantTurns: { id: number; prompt: string; message: string; ideas: unknown[]; createdAt: string }[] = [];
     const releases: (() => void)[] = [];
     const network: Network = {
       writes: [], unexpected: [],
@@ -74,7 +75,7 @@ export const test = base.extend<{ network: Network }>({
             monthlyCounts: [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0],
           });
         }
-        if (path === '/api/openai/date-assistant') return json([]);
+        if (path === '/api/openai/date-assistant') return json(assistantTurns);
         if (path === '/api/preferences') return json([]);
         if (path === '/api/reminders') return json([]);
         if (!path.startsWith('/api/')) return route.continue();
@@ -83,6 +84,18 @@ export const test = base.extend<{ network: Network }>({
           method: request.method(), path,
           data: path === '/synthetic-upload' ? {} : request.postDataJSON(),
         });
+        if (path === '/api/openai/date-assistant' && request.method() === 'POST') {
+          const { message } = request.postDataJSON() as { message: string };
+          const turn = {
+            id: 990001 + assistantTurns.length,
+            prompt: message,
+            message: 'I can work from the details you shared.',
+            ideas: [],
+            createdAt: '2026-10-24T12:00:00.000Z',
+          };
+          assistantTurns.unshift(turn);
+          return json(turn);
+        }
         if (path === '/api/storage/uploads/request-url') {
           const response = responses['request-url'].shift();
           if (response) {

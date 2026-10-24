@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowUp, CalendarPlus, Clock, Info, MapPin, RotateCw, Sparkles, UserRound, Video, Wallet } from 'lucide-react';
+import { ArrowUp, CalendarPlus, Clock, Info, Link2, MapPin, RotateCw, Sparkles, UserRound, Video, Wallet } from 'lucide-react';
 import { useAskDateAssistant, type AssistantTurn, type DateIdea } from '@workspace/api-client-react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { CategoryChip, ErrorState, PageHeader } from '@/components/bits';
@@ -34,9 +35,13 @@ export default function AssistantPage() {
   const [, navigate] = useLocation();
   const [msg, setMsg] = useState('');
   const [lastPrompt, setLastPrompt] = useState('');
+  const [inspirationOpen, setInspirationOpen] = useState(false);
+  const [inspirationUrl, setInspirationUrl] = useState('');
+  const [inspirationNote, setInspirationNote] = useState('');
+  const [inspirationError, setInspirationError] = useState('');
   const [elapsed, setElapsed] = useState(0);
   const [proposing, setProposing] = useState<DatePrefill | null>(null);
-  const ask = useAskDateAssistant({ mutation: { onSuccess: () => { invalidate(['assistant']); setMsg(''); } } });
+  const ask = useAskDateAssistant({ mutation: { onSuccess: () => invalidate(['assistant']) } });
   const locked = false;
 
   useEffect(() => {
@@ -51,13 +56,32 @@ export default function AssistantPage() {
   const needsProfile = prefs.isSuccess && !mine;
   const profileError = ask.isError && errStatus(ask.error) === 409;
 
-  const send = (text: string) => {
+  const send = (text: string, onSuccess?: () => void) => {
     const t = text.trim();
     if (!t || ask.isPending || needsProfile || locked) return;
     setLastPrompt(t);
-    ask.mutate({ data: { message: t.slice(0, 1500) } });
+    ask.mutate({ data: { message: t.slice(0, 1500) } }, { onSuccess });
   };
-  const onSubmit = (e: FormEvent) => { e.preventDefault(); send(msg); };
+  const onSubmit = (e: FormEvent) => { e.preventDefault(); send(msg, () => setMsg('')); };
+  const sendInspiration = () => {
+    const platform = socialPlatformFromUrl(inspirationUrl);
+    if (!platform) {
+      setInspirationError('Paste a secure Instagram or TikTok link to continue.');
+      return;
+    }
+
+    const link = inspirationUrl.trim();
+    const note = inspirationNote.trim();
+    const prompt = note
+      ? `Turn this ${platform} post into date inspiration for us. Use only my note; you cannot view the post.\nLink: ${link}\nWhat I liked: ${note}`
+      : `I found a ${platform} post that might inspire a date. Do not guess what it shows; ask me what caught my eye before suggesting ideas.\nLink: ${link}`;
+    send(prompt, () => {
+      setInspirationUrl('');
+      setInspirationNote('');
+      setInspirationError('');
+      setInspirationOpen(false);
+    });
+  };
   const turns = history.data ?? [];
 
   return (
@@ -76,6 +100,67 @@ export default function AssistantPage() {
         <p data-testid="text-profile-basis" className="mb-4 flex items-start gap-2 text-xs text-muted-foreground"><UserRound className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           {partner ? `Ideas use both your profile and ${partner.displayName}’s.` : 'Ideas use your profile only — your partner hasn’t filled theirs in yet.'} <Link href="/preferences" className="underline">Edit</Link></p>
       )}
+
+      <section className="mb-3 overflow-hidden rounded-[22px] border border-foreground/10 bg-card/70">
+        <button
+          type="button"
+          data-testid="button-open-inspiration"
+          aria-expanded={inspirationOpen}
+          aria-controls="social-inspiration-panel"
+          disabled={ask.isPending || needsProfile || locked}
+          onClick={() => { setInspirationOpen((open) => !open); setInspirationError(''); }}
+          className="flex min-h-12 w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium disabled:opacity-50"
+        >
+          <Link2 className="h-4 w-4 shrink-0 text-primary" />
+          <span>Have a reel or post you want to turn into a date?</span>
+          <span className="ml-auto shrink-0 text-xs text-muted-foreground">{inspirationOpen ? 'Close' : 'Add link'}</span>
+        </button>
+        {inspirationOpen && (
+          <div id="social-inspiration-panel" className="space-y-3 border-t border-foreground/10 px-4 py-4">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Paste an Instagram or TikTok link and tell the concierge what caught your eye. It can’t watch the post; your link and note will be saved in the shared chat for your partner too.
+            </p>
+            <div className="space-y-1.5">
+              <label htmlFor="inspiration-url" className="text-xs font-medium">Instagram or TikTok link</label>
+              <Input
+                id="inspiration-url"
+                data-testid="input-inspiration-url"
+                type="url"
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                maxLength={500}
+                value={inspirationUrl}
+                onChange={(event) => { setInspirationUrl(event.target.value); setInspirationError(''); }}
+                placeholder="https://www.instagram.com/reel/…"
+                className="min-h-11 rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="inspiration-note" className="text-xs font-medium">What caught your eye? <span className="font-normal text-muted-foreground">Optional</span></label>
+              <Textarea
+                id="inspiration-note"
+                data-testid="input-inspiration-note"
+                maxLength={500}
+                value={inspirationNote}
+                onChange={(event) => setInspirationNote(event.target.value)}
+                placeholder="A cosy cook-along, a sunset walk, a clever at-home setup…"
+                className="min-h-20 resize-y rounded-xl text-sm"
+              />
+            </div>
+            {inspirationError && <p role="alert" data-testid="state-inspiration-error" className="text-sm text-destructive">{inspirationError}</p>}
+            <button
+              type="button"
+              data-testid="button-send-inspiration"
+              disabled={!inspirationUrl.trim() || ask.isPending || needsProfile || locked}
+              onClick={sendInspiration}
+              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition active:scale-[0.99] disabled:opacity-45"
+            >
+              <Sparkles className="h-4 w-4" /> Ask about this inspiration
+            </button>
+          </div>
+        )}
+      </section>
 
       <form onSubmit={onSubmit} className="rounded-[26px] bg-card p-3 shadow-[0_1px_0_hsl(var(--border)),0_20px_40px_-30px_hsl(330_40%_20%/.5)]">
         <label htmlFor="ask" className="sr-only">Ask the date concierge</label>
@@ -134,7 +219,7 @@ export default function AssistantPage() {
 }
 
 function Bubble({ text }: { text: string }) {
-  return <p className="ml-auto w-fit max-w-[85%] rounded-[22px] rounded-br-md bg-foreground px-4 py-2.5 text-sm text-background">{text}</p>;
+  return <p className="ml-auto w-fit max-w-[85%] whitespace-pre-wrap break-words rounded-[22px] rounded-br-md bg-foreground px-4 py-2.5 text-sm text-background">{renderPrompt(text)}</p>;
 }
 
 function Turn({ t, onPropose }: { t: AssistantTurn; onPropose: (i: DateIdea) => void }) {
@@ -147,6 +232,36 @@ function Turn({ t, onPropose }: { t: AssistantTurn; onPropose: (i: DateIdea) => 
       </div>
     </motion.section>
   );
+}
+
+function socialPlatformFromUrl(raw: string): 'Instagram' | 'TikTok' | null {
+  try {
+    const url = new URL(raw.trim());
+    if (url.protocol !== 'https:') return null;
+    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    if (host === 'instagram.com' || host === 'm.instagram.com' || host === 'instagr.am') return 'Instagram';
+    if (host === 'tiktok.com' || host === 'vm.tiktok.com' || host === 'vt.tiktok.com') return 'TikTok';
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function renderPrompt(text: string): ReactNode[] {
+  return text.split(/(https?:\/\/[^\s]+)/g).map((part, index) => {
+    const trailing = part.match(/[.,!?;:)\]]+$/)?.[0] ?? '';
+    const candidate = trailing ? part.slice(0, -trailing.length) : part;
+    const platform = socialPlatformFromUrl(candidate);
+    if (!platform) return part;
+    return (
+      <span key={`${index}-${platform}`}>
+        <a href={candidate} target="_blank" rel="noopener noreferrer" className="break-all underline underline-offset-2">
+          {candidate}
+        </a>
+        {trailing}
+      </span>
+    );
+  });
 }
 
 function IdeaCard({ i, n, turnId, onPropose }: { i: DateIdea; n: number; turnId: number; onPropose: () => void }) {

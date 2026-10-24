@@ -7,4 +7,4 @@ The user wants invitation-driven growth and product vitality treated as one coup
 
 **Why:** The user explicitly chose both virality and product vitality as one connected growth engine.
 
-**How to apply:** Keep growth private and relationship-centered. Prefer the existing partner-invite loop and meaningful shared actions; do not add public feeds, competitive scoring, or guilt-based streak mechanics without a direct request.
+**How to apply:** Keep growth private and relationship-centered. Let partners bring Instagram/TikTok links and their own notes into shared assistant history; the assistant must not claim to watch or import media it cannot access. Prefer meaningful shared actions; do not add public feeds, competitive scoring, or guilt-based streak mechanics without a direct request.
