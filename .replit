@@ -66,6 +66,7 @@ BILLING_APP_ORIGIN = "https://47847380-6335-4a4d-9967-42da2a382a6b-00-391sg7ngok
 
 [userenv.production]
 BILLING_APP_ORIGIN = "https://couple-dates.replit.app"
+PUBLIC_SITE_URL = "https://couple-dates.replit.app"
 
 [nix]
 channel = "stable-25_05"
