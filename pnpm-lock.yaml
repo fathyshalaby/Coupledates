@@ -67,8 +67,8 @@ catalogs:
       specifier: ^7.3.7
       version: 7.3.7
     zod:
-      specifier: 3.25.76
-      version: 3.25.76
+      specifier: 4.6.6
+      version: 4.6.6
 
 overrides:
   '@esbuild-kit/esm-loader': npm:tsx@^4.21.0
@@ -226,7 +226,7 @@ importers:
         version: 10.5.0
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.6.6
     devDependencies:
       '@types/cookie-parser':
         specifier: ^1.4.10
@@ -450,7 +450,7 @@ importers:
         version: 3.13.0(react@19.1.10)
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.6.6
 
   artifacts/mockup-sandbox:
     dependencies:
@@ -634,7 +634,7 @@ importers:
         version: 7.3.7(@types/node@25.9.6)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.23.13)(yaml@2.9.0)
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.6.6
 
   lib/api-client-react:
     dependencies:
@@ -652,7 +652,7 @@ importers:
     dependencies:
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.6.6
 
   lib/db:
     dependencies:
@@ -661,13 +661,13 @@ importers:
         version: 0.45.2(@types/pg@8.23.1)(pg@8.23.0)
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.45.2(@types/pg@8.23.1)(pg@8.23.0))(zod@3.25.76)
+        version: 0.8.3(drizzle-orm@0.45.2(@types/pg@8.23.1)(pg@8.23.0))(zod@4.6.6)
       pg:
         specifier: ^8.23.0
         version: 8.23.0
       zod:
         specifier: 'catalog:'
-        version: 3.25.76
+        version: 4.6.6
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -683,7 +683,7 @@ importers:
     dependencies:
       openai:
         specifier: ^6.27.0
-        version: 6.49.0(zod@3.25.76)
+        version: 6.49.0(zod@4.6.6)
       p-limit:
         specifier: ^7.3.0
         version: 7.3.3
@@ -3409,8 +3409,8 @@ packages:
     resolution: {integrity: sha512-xYqdZFUK/VYazNl/oCDYN+3WloWQwMfZxBoiNt6qNyk+xfOdi598muWE42rNZFp1kNOiqW936q5RhUdnpqElSg==}
     engines: {node: '>=18'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
 snapshots:
 
@@ -4961,10 +4961,10 @@ snapshots:
       '@types/pg': 8.23.1
       pg: 8.23.0
 
-  drizzle-zod@0.8.3(drizzle-orm@0.45.2(@types/pg@8.23.1)(pg@8.23.0))(zod@3.25.76):
+  drizzle-zod@0.8.3(drizzle-orm@0.45.2(@types/pg@8.23.1)(pg@8.23.0))(zod@4.6.6):
     dependencies:
       drizzle-orm: 0.45.2(@types/pg@8.23.1)(pg@8.23.0)
-      zod: 3.25.76
+      zod: 4.6.6
 
   dunder-proto@1.0.1:
     dependencies:
@@ -5483,9 +5483,9 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  openai@6.49.0(zod@3.25.76):
+  openai@6.49.0(zod@4.6.6):
     optionalDependencies:
-      zod: 3.25.76
+      zod: 4.6.6
 
   orval@8.30.0(prettier@3.9.6)(typescript@5.9.3):
     dependencies:
@@ -6151,4 +6151,4 @@ snapshots:
 
   yoctocolors@2.2.0: {}
 
-  zod@3.25.76: {}
+  zod@4.6.6: {}
