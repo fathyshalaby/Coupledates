@@ -13,8 +13,10 @@ import { AppShell } from '@/components/shell';
 import { ErrorState, TwoRings } from '@/components/bits';
 import { CoupleContext } from '@/lib/couple-context';
 import { updateRouteMetadata } from '@/lib/route-metadata';
+import { inviteJoinPath, resolveInviteCode, stashInviteCode } from '@/lib/invite';
 import { clearIncomingSocialInspiration, hasIncomingSocialInspiration } from '@/lib/social-inspiration';
 import ShareTargetPage from '@/pages/share-target';
+import JoinPage from '@/pages/join';
 import {
   NotFound, Landing, HowItWorksPage, LongDistancePage, PricingPage, CouplesJournalPage, AtHomeDateIdeasPage, Onboarding, HomePage, MemoriesPage, DatesPage,
   StreaksPage, RecapPage, SettingsPage, DateDetailPage, PreferencesPage,
@@ -106,18 +108,45 @@ function AuthFrame({ children, line }: { children: ReactNode; line: string }) {
 }
 
 function SignInPage() {
+  const invite = resolveInviteCode();
+  const afterAuth = invite ? inviteJoinPath(invite, basePath) : `${basePath}/home`;
   return (
     <AuthFrame line="Welcome back to the two of you.">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+      <SignIn
+        routing="path"
+        path={`${basePath}/sign-in`}
+        signUpUrl={invite ? `${basePath}/sign-up?code=${encodeURIComponent(invite)}` : `${basePath}/sign-up`}
+        forceRedirectUrl={afterAuth}
+        fallbackRedirectUrl={afterAuth}
+      />
     </AuthFrame>
   );
 }
 
 function SignUpPage() {
+  const invite = resolveInviteCode();
+  const afterAuth = invite ? inviteJoinPath(invite, basePath) : `${basePath}/home`;
   return (
     <AuthFrame line="A quiet place for your everyday.">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+      <SignUp
+        routing="path"
+        path={`${basePath}/sign-up`}
+        signInUrl={`${basePath}/sign-in`}
+        forceRedirectUrl={afterAuth}
+        fallbackRedirectUrl={afterAuth}
+      />
     </AuthFrame>
+  );
+}
+
+function JoinInviteRoute() {
+  const invite = resolveInviteCode();
+  if (invite) stashInviteCode(invite);
+  return (
+    <>
+      <Show when="signed-in"><JoinPage /></Show>
+      <Show when="signed-out"><Redirect to={invite ? `/sign-up?code=${encodeURIComponent(invite)}` : '/sign-up'} /></Show>
+    </>
   );
 }
 
@@ -160,7 +189,18 @@ function AccountRecoveryRoute() {
 
 function CoupleGate({ page: Page }: { page: ComponentType }) {
   const { isSignedIn } = useAuth();
-  const q = useGetCouple({ query: { queryKey: getGetCoupleQueryKey(), enabled: !!isSignedIn, refetchInterval: 30_000, refetchIntervalInBackground: false } });
+  const q = useGetCouple({
+    query: {
+      queryKey: getGetCoupleQueryKey(),
+      enabled: !!isSignedIn,
+      refetchInterval: (query) => {
+        const count = query.state.data?.couple?.memberCount ?? 0;
+        // Incomplete spaces need a faster refresh so "1 of 2" flips when the partner joins.
+        return count > 0 && count < 2 ? 5_000 : 30_000;
+      },
+      refetchIntervalInBackground: false,
+    },
+  });
   if (q.isLoading || (!q.data && !q.isError)) return <PageLoading />;
   if (q.isError) return <div className="mx-auto max-w-md px-5 pt-24"><ErrorState error={q.error} onRetry={() => q.refetch()} label="Your space" /></div>;
   const couple = q.data?.couple ?? null;
@@ -234,6 +274,7 @@ function ClerkProviderWithRoutes() {
               <Route path="/share" component={ShareTargetPage} />
               <Route path="/sign-in/*?" component={SignInPage} />
               <Route path="/sign-up/*?" component={SignUpPage} />
+              <Route path="/join" component={JoinInviteRoute} />
               <Route path="/recover-space" component={AccountRecoveryRoute} />
               <Route path="/home" component={HomeR} />
               <Route path="/memories" component={MemoriesR} />

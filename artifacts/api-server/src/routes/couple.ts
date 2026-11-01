@@ -4,6 +4,7 @@ import { db, couplesTable, membersTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { SaveCoupleBody, JoinCoupleBody, GetCoupleResponse, SaveCoupleResponse, JoinCoupleResponse } from "@workspace/api-zod";
 import { requireUser, findCouple, coupleResponse, fail, validateDay, dayInZone } from "../lib/couple";
+import { joinCoupleByInvite } from "../lib/couple-membership";
 
 const router: IRouter = Router();
 router.use("/couple", requireUser);
@@ -34,18 +35,7 @@ router.post("/couple", async (req, res): Promise<void> => {
 });
 router.post("/couple/join", async (req, res): Promise<void> => {
   const { code } = JoinCoupleBody.parse(req.body);
-  const userId = res.locals.userId as string;
-  const result = await db.transaction(async tx => {
-    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${userId}))`);
-    const [member] = await tx.select().from(membersTable).where(eq(membersTable.userId, userId));
-    if (member) fail(409, "You already belong to a couple space.");
-    const [c] = await tx.select().from(couplesTable).where(eq(couplesTable.inviteCode, code.trim())).for("update");
-    if (!c) fail(404, "That invite code wasn't found. Check with your partner.");
-    const members = await tx.select().from(membersTable).where(eq(membersTable.coupleId, c.id));
-    if (members.length >= 2) fail(409, "This space already has two partners.");
-    await tx.insert(membersTable).values({ userId, coupleId: c.id });
-    return c;
-  });
+  const result = await joinCoupleByInvite(res.locals.userId as string, code);
   res.json(JoinCoupleResponse.parse(await coupleResponse(result)));
 });
 export default router;
