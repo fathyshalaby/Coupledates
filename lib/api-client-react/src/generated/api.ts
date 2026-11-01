@@ -2611,6 +2611,142 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getJoinCoupleMutationOptions(options));
     }
 
+export const getRotateInviteCodeUrl = () => {
+
+
+
+
+  return `/api/couple/invite/rotate`
+}
+
+export const rotateInviteCode = async ( options?: Parameters<typeof customFetch>[1]): Promise<Couple> => {
+
+  return customFetch<Couple>(getRotateInviteCodeUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRotateInviteCodeMutationKey = () => ['rotateInviteCode'] as const;
+
+export const getRotateInviteCodeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rotateInviteCode>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof rotateInviteCode>>, TError,void, TContext> => {
+
+const mutationKey = getRotateInviteCodeMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rotateInviteCode>>, void> = () => {
+
+
+          return  rotateInviteCode(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RotateInviteCodeMutationResult = NonNullable<Awaited<ReturnType<typeof rotateInviteCode>>>
+
+    export type RotateInviteCodeMutationError = ErrorType<unknown>
+
+
+    export const useRotateInviteCode = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rotateInviteCode>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof rotateInviteCode>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getRotateInviteCodeMutationOptions(options));
+    }
+
+export const getLeaveCoupleUrl = () => {
+
+
+
+
+  return `/api/couple/leave`
+}
+
+export const leaveCouple = async ( options?: Parameters<typeof customFetch>[1]): Promise<CoupleState> => {
+
+  return customFetch<CoupleState>(getLeaveCoupleUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getLeaveCoupleMutationKey = () => ['leaveCouple'] as const;
+
+export const getLeaveCoupleMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leaveCouple>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof leaveCouple>>, TError,void, TContext> => {
+
+const mutationKey = getLeaveCoupleMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof leaveCouple>>, void> = () => {
+
+
+          return  leaveCouple(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LeaveCoupleMutationResult = NonNullable<Awaited<ReturnType<typeof leaveCouple>>>
+
+    export type LeaveCoupleMutationError = ErrorType<unknown>
+
+
+    export const useLeaveCouple = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof leaveCouple>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof leaveCouple>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLeaveCoupleMutationOptions(options));
+    }
+
 export const getListMemoriesUrl = () => {
 
 

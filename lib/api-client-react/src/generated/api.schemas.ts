@@ -63,6 +63,7 @@ export interface ReminderPreferences {
   timezone: string;
   dateEnabled: boolean;
   photoEnabled: boolean;
+  partnerUpdatesEnabled: boolean;
   leadMinutes: ReminderPreferencesLeadMinutes;
 }
 
@@ -72,6 +73,10 @@ export type ReminderKind = typeof ReminderKind[keyof typeof ReminderKind];
 export const ReminderKind = {
   date: 'date',
   photo: 'photo',
+  proposal: 'proposal',
+  accepted: 'accepted',
+  countered: 'countered',
+  declined: 'declined',
 } as const;
 
 export interface Reminder {
@@ -208,6 +213,7 @@ export type DateInputStatus = typeof DateInputStatus[keyof typeof DateInputStatu
 
 
 export const DateInputStatus = {
+  idea: 'idea',
   proposed: 'proposed',
   planned: 'planned',
   active: 'active',
@@ -451,6 +457,7 @@ export type DateResponseInputAction = typeof DateResponseInputAction[keyof typeo
 
 
 export const DateResponseInputAction = {
+  propose: 'propose',
   accept: 'accept',
   decline: 'decline',
   counter: 'counter',
@@ -533,6 +540,10 @@ export interface Recap {
   longestStreak: number;
   activeDays: number;
   monthlyCounts: number[];
+  storyTitle: string;
+  storyBody: string;
+  /** @nullable */
+  topRatedTitle: string | null;
 }
 
 export type UploadInputContentType = typeof UploadInputContentType[keyof typeof UploadInputContentType];

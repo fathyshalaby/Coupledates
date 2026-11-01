@@ -73,7 +73,13 @@ export const test = base.extend<{ network: Network }>({
             year, memoryCount: 1, dateCount: 2, averageRating: 4.5, topCategory: 'Food',
             topMemories: [memory], longestStreak: 3, activeDays: 4,
             monthlyCounts: [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0],
+            storyTitle: 'June still stands out',
+            storyBody: 'A look back at 2 dates you finished together, 1 memory saved, and leaning into Food.',
+            topRatedTitle: 'Pasta night',
           });
+        }
+        if (path === '/api/reminder-preferences') {
+          return json({ timezone: 'UTC', dateEnabled: false, photoEnabled: false, partnerUpdatesEnabled: true, leadMinutes: 60 });
         }
         if (path === '/api/openai/date-assistant') return json(assistantTurns);
         if (path === '/api/preferences') return json([]);

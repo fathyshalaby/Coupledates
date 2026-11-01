@@ -140,6 +140,7 @@ export function getPosition(): Promise<GeolocationPosition> {
 }
 
 export const STATUS_META: Record<string, { label: string; tone: string }> = {
+  idea: { label: 'Saved idea', tone: 'bg-[hsl(210_40%_92%)] text-[hsl(215_40%_28%)]' },
   proposed: { label: 'Proposed', tone: 'bg-[hsl(38_70%_89%)] text-[hsl(28_55%_28%)]' },
   planned: { label: 'Planned', tone: 'bg-[hsl(165_28%_90%)] text-[hsl(170_40%_22%)]' },
   active: { label: 'Happening now', tone: 'bg-primary text-primary-foreground' },

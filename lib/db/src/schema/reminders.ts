@@ -6,6 +6,7 @@ export const reminderPreferencesTable = pgTable("reminder_preferences", {
   timezone: text("timezone").notNull(),
   dateEnabled: boolean("date_enabled").notNull().default(false),
   photoEnabled: boolean("photo_enabled").notNull().default(false),
+  partnerUpdatesEnabled: boolean("partner_updates_enabled").notNull().default(true),
   leadMinutes: integer("lead_minutes").notNull().default(60),
 });
 

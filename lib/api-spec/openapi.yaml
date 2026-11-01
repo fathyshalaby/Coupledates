@@ -381,6 +381,24 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/Couple" }
+  /couple/invite/rotate:
+    post:
+      operationId: rotateInviteCode
+      responses:
+        "200":
+          description: Invite code rotated; previous code stops working
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Couple" }
+  /couple/leave:
+    post:
+      operationId: leaveCouple
+      responses:
+        "200":
+          description: Left the space; deleted it when you were the last member
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CoupleState" }
   /memories:
     get:
       operationId: listMemories
@@ -566,11 +584,12 @@ components:
         useRecovered: { type: boolean }
     ReminderPreferences:
       type: object
-      required: [timezone, dateEnabled, photoEnabled, leadMinutes]
+      required: [timezone, dateEnabled, photoEnabled, partnerUpdatesEnabled, leadMinutes]
       properties:
         timezone: { type: string, minLength: 1, maxLength: 100 }
         dateEnabled: { type: boolean }
         photoEnabled: { type: boolean }
+        partnerUpdatesEnabled: { type: boolean }
         leadMinutes: { type: integer, enum: [15, 60, 1440] }
     Reminder:
       type: object
@@ -579,7 +598,7 @@ components:
         id: { type: integer }
         dateId: { type: integer }
         title: { type: string }
-        kind: { type: string, enum: [date, photo] }
+        kind: { type: string, enum: [date, photo, proposal, accepted, countered, declined] }
         dueAt: { type: string, format: date-time }
         timezone: { type: string }
         href: { type: string }
@@ -677,7 +696,7 @@ components:
         location: { type: string, maxLength: 200 }
         category: { type: string, enum: [Everyday, Adventure, Food, Travel, Milestone] }
         notes: { type: string, maxLength: 5000 }
-        status: { type: string, enum: [proposed, planned, active, completed, declined] }
+        status: { type: string, enum: [idea, proposed, planned, active, completed, declined] }
         rating: { type: ["number", "null"], minimum: 1, maximum: 5 }
         mode: { type: string, enum: [in_person, remote] }
         meetingUrl: { type: string, maxLength: 1000 }
@@ -799,7 +818,7 @@ components:
       type: object
       required: [action, version]
       properties:
-        action: { type: string, enum: [accept, decline, counter, start, complete] }
+        action: { type: string, enum: [propose, accept, decline, counter, start, complete] }
         version: { type: integer, minimum: 0 }
         note: { type: string, maxLength: 1500 }
         date: { type: string, pattern: '^\d{4}-\d{2}-\d{2}$' }
@@ -855,7 +874,7 @@ components:
               checked: { type: boolean }
     Recap:
       type: object
-      required: [year, memoryCount, dateCount, averageRating, topCategory, topMemories, longestStreak, activeDays, monthlyCounts]
+      required: [year, memoryCount, dateCount, averageRating, topCategory, topMemories, longestStreak, activeDays, monthlyCounts, storyTitle, storyBody, topRatedTitle]
       properties:
         year: { type: integer }
         memoryCount: { type: integer }
@@ -870,6 +889,9 @@ components:
         monthlyCounts:
           type: array
           items: { type: integer }
+        storyTitle: { type: string }
+        storyBody: { type: string }
+        topRatedTitle: { type: ["string", "null"] }
     UploadInput:
       type: object
       required: [name, size, contentType]

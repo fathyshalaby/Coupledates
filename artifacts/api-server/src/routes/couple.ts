@@ -1,9 +1,12 @@
 import { Router, type IRouter } from "express";
-import { randomBytes } from "node:crypto";
 import { db, couplesTable, membersTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
-import { SaveCoupleBody, JoinCoupleBody, GetCoupleResponse, SaveCoupleResponse, JoinCoupleResponse } from "@workspace/api-zod";
+import {
+  SaveCoupleBody, JoinCoupleBody, GetCoupleResponse, SaveCoupleResponse, JoinCoupleResponse,
+  RotateInviteCodeResponse, LeaveCoupleResponse,
+} from "@workspace/api-zod";
 import { requireUser, findCouple, coupleResponse, fail, validateDay, dayInZone } from "../lib/couple";
+import { leaveCoupleSpace, newInviteCode, rotateInvite } from "../lib/space-lifecycle";
 
 const router: IRouter = Router();
 router.use("/couple", requireUser);
@@ -26,7 +29,7 @@ router.post("/couple", async (req, res): Promise<void> => {
       const [c] = await tx.update(couplesTable).set(input).where(eq(couplesTable.id, member.coupleId)).returning();
       return c!;
     }
-    const [c] = await tx.insert(couplesTable).values({ ...input, inviteCode: randomBytes(16).toString("hex") }).returning();
+    const [c] = await tx.insert(couplesTable).values({ ...input, inviteCode: newInviteCode() }).returning();
     await tx.insert(membersTable).values({ userId, coupleId: c!.id });
     return c!;
   });
@@ -47,5 +50,13 @@ router.post("/couple/join", async (req, res): Promise<void> => {
     return c;
   });
   res.json(JoinCoupleResponse.parse(await coupleResponse(result)));
+});
+router.post("/couple/invite/rotate", async (_req, res): Promise<void> => {
+  const couple = await rotateInvite(res.locals.userId);
+  res.json(RotateInviteCodeResponse.parse(await coupleResponse(couple)));
+});
+router.post("/couple/leave", async (_req, res): Promise<void> => {
+  await leaveCoupleSpace(res.locals.userId);
+  res.json(LeaveCoupleResponse.parse({ couple: null }));
 });
 export default router;

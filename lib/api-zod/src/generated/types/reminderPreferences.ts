@@ -15,5 +15,6 @@ export interface ReminderPreferences {
   timezone: string;
   dateEnabled: boolean;
   photoEnabled: boolean;
+  partnerUpdatesEnabled: boolean;
   leadMinutes: ReminderPreferencesLeadMinutes;
 }

@@ -49,12 +49,19 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
   const [geoMsg, setGeoMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const solo = couple.memberCount < 2;
   const resetsApproval = !!plan && (plan.status === 'planned' || plan.status === 'proposed' || plan.status === 'declined');
   const opts = {
     mutation: {
       onSuccess: (d: DatePlan) => {
         invalidate([...DATE_AFFECTED]);
-        toast({ title: plan ? (resetsApproval ? 'Sent back for a yes' : 'Date updated') : 'Proposal sent', description: plan ? undefined : 'Your partner can accept, decline or suggest another time.' });
+        const savedIdea = !plan && (solo || d.status === 'idea');
+        toast({
+          title: plan ? (resetsApproval ? 'Sent back for a yes' : 'Date updated') : savedIdea ? 'Idea saved' : 'Proposal sent',
+          description: plan ? undefined : savedIdea
+            ? 'When your partner joins, open it and tap Propose so they can answer.'
+            : 'Your partner can accept, decline or suggest another time.',
+        });
         if (!plan) onCreated?.(d);
         onDone();
       },
@@ -92,7 +99,7 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
     if (mode === 'remote' && meetingUrl.trim() && !safeHttpUrl(meetingUrl)) { setError('The call link should start with http:// or https://'); return; }
     const data: DateInput & { expectedVersion?: number } = {
       title: title.trim(), date, time, timezone: timezone.trim(), durationMinutes: duration, location: location.trim(), category, notes,
-      status: plan ? plan.status : 'proposed',
+      status: plan ? plan.status : (solo ? 'idea' : 'proposed'),
       rating: plan?.rating ?? null,
       mode,
       meetingUrl: mode === 'remote' ? meetingUrl.trim() : '',
@@ -105,8 +112,8 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
 
   return (
     <form onSubmit={submit} className="mx-auto w-full max-w-xl overflow-y-auto px-5 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-2">
-      <DrawerTitle className="font-display text-[1.75rem] font-medium">{plan ? 'Edit the plan' : 'Propose a date'}</DrawerTitle>
-      <DrawerDescription className="mt-1 text-sm text-muted-foreground">{plan ? 'Changes are shared with your partner.' : 'It lands in your partner’s inbox to accept, decline, or counter.'}</DrawerDescription>
+      <DrawerTitle className="font-display text-[1.75rem] font-medium">{plan ? 'Edit the plan' : solo ? 'Save a date idea' : 'Propose a date'}</DrawerTitle>
+      <DrawerDescription className="mt-1 text-sm text-muted-foreground">{plan ? 'Changes are shared with your partner.' : solo ? 'Saved just for you until your partner joins — then you can propose it.' : 'It lands in your partner’s inbox to accept, decline, or counter.'}</DrawerDescription>
 
       {resetsApproval && (
         <p data-testid="text-edit-resets" className="mt-4 flex gap-2 rounded-xl border border-[hsl(38_60%_75%)] bg-[hsl(41_78%_94%)] px-4 py-3 text-sm">
@@ -180,7 +187,7 @@ export function DateForm({ plan, prefill, requireTime, onDone, onCreated }: {
       </div>
       {error && <p role="alert" data-testid="text-date-error" className="mt-4 rounded-xl border border-destructive/25 bg-destructive/[0.06] px-4 py-2.5 text-sm text-destructive">{error}</p>}
       <button data-testid="button-save-date" disabled={pending} className="mt-6 min-h-[52px] w-full rounded-full bg-primary font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-[.99] disabled:opacity-50">
-        {pending ? 'Saving...' : plan ? (resetsApproval ? 'Save & re-propose' : 'Save changes') : 'Send proposal'}
+        {pending ? 'Saving...' : plan ? (plan.status === 'idea' ? 'Save idea' : resetsApproval ? 'Save & re-propose' : 'Save changes') : solo ? 'Save for later' : 'Send proposal'}
       </button>
     </form>
   );

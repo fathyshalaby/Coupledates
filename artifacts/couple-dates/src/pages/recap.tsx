@@ -56,6 +56,13 @@ export default function RecapPage() {
             <button data-testid="button-share-recap" onClick={() => setShareOpen(true)} className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border border-primary-foreground/35 px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground" aria-label={`Share ${year} recap`}><Share2 className="h-4 w-4" />Share recap</button>
           </motion.section>
 
+          <section data-testid="panel-recap-story" className="rounded-[28px] bg-card p-5 shadow-[0_1px_0_hsl(var(--border))]">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-primary">Your year, in a sentence</p>
+            <h2 className="font-display mt-2 text-2xl leading-tight" data-testid="text-recap-story-title">{r.storyTitle}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground" data-testid="text-recap-story-body">{r.storyBody}</p>
+            {r.topRatedTitle && <p className="mt-3 text-sm" data-testid="text-recap-top-rated">Highest-rated date: <span className="font-medium text-foreground">{r.topRatedTitle}</span></p>}
+          </section>
+
           <section className="grid grid-cols-2 gap-3">
             <Tile label="Average rating" value={r.averageRating ? r.averageRating.toFixed(1) : '-'} sub={r.averageRating ? 'out of 5' : 'no rated dates'} testid="text-recap-rating" />
             <Tile label="Active days" value={String(r.activeDays)} sub="with a check-in" testid="text-recap-active" />

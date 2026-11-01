@@ -117,6 +117,9 @@ try {
             averageRating: 5, topCategory: 'Food', topMemories: memories,
             longestStreak: 16, activeDays: 42,
             monthlyCounts: [1, 2, 4, 3, 2, 5, 4, 3, 5, 4, 0, 0],
+            storyTitle: 'Pasta night still stands out',
+            storyBody: 'A look back at 1 date you finished together, leaning into Food, and a 16-day check-in streak.',
+            topRatedTitle: 'Pasta night',
           },
         });
         if (url.pathname.startsWith('/api/storage/')) {

@@ -18,9 +18,16 @@ export function ReminderInbox() {
     {q.isError && <p role="alert" className="mt-2 text-xs text-destructive">{errMsg(q.error)}</p>}
     {q.data?.map(r => <div key={r.id} className="mt-3 flex items-center justify-between gap-3 border-t border-foreground/10 pt-3">
       <Link href={r.href} data-testid={`link-reminder-${r.id}`} className="min-w-0 text-sm">
-        <span className="block font-medium">{r.kind === 'photo' ? 'Save photos from your date' : 'Your agreed date is coming up'}</span>
+        <span className="block font-medium">{
+          r.kind === 'photo' ? 'Save photos from your date'
+            : r.kind === 'proposal' ? 'Your partner proposed a date'
+              : r.kind === 'accepted' ? 'Your partner said yes'
+                : r.kind === 'countered' ? 'Your partner suggested another time'
+                  : r.kind === 'declined' ? 'Your partner declined a proposal'
+                    : 'Your agreed date is coming up'
+        }</span>
         <span className="block truncate text-primary">{r.title}{r.kind === 'photo' ? ' · Open private album' : ''}</span>
-        <span className="text-xs text-muted-foreground">Due {new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short', timeZone: r.timezone }).format(new Date(r.dueAt))} · {r.timezone}</span>
+        <span className="text-xs text-muted-foreground">{['proposal', 'accepted', 'countered', 'declined'].includes(r.kind) ? 'Just now in your shared space' : `Due ${new Intl.DateTimeFormat(undefined, { dateStyle: 'short', timeStyle: 'short', timeZone: r.timezone }).format(new Date(r.dueAt))} · ${r.timezone}`}</span>
       </Link>
       <button data-testid={`button-dismiss-reminder-${r.id}`} disabled={dismiss.isPending} onClick={() => dismiss.mutate({ id: r.id })} className="shrink-0 rounded-full bg-foreground/5 px-3 py-2 text-xs disabled:opacity-50">Dismiss</button>
     </div>)}

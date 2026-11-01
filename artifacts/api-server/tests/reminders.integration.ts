@@ -38,7 +38,7 @@ async function main() {
       time: `${String(when.hour).padStart(2, "0")}:${String(when.minute).padStart(2, "0")}`,
       timezone: "UTC", durationMinutes: 90, location: "", category: "Everyday", notes: "", status: "planned",
     }).returning();
-    const preferences = { timezone: "UTC", dateEnabled: true, photoEnabled: true, leadMinutes: 60 };
+    const preferences = { timezone: "UTC", dateEnabled: true, photoEnabled: true, partnerUpdatesEnabled: true, leadMinutes: 60 };
     assert.equal((await call(remindersRouter, "get", "/reminder-preferences")).body.dateEnabled, false);
     assert.deepEqual((await call(remindersRouter, "get", "/reminders")).body, []);
     await call(remindersRouter, "put", "/reminder-preferences", a, preferences);

@@ -1,6 +1,6 @@
 import { fail, validateDay } from "./validation";
 
-export type DateAction = "accept" | "decline" | "counter" | "start" | "complete";
+export type DateAction = "propose" | "accept" | "decline" | "counter" | "start" | "complete";
 export function validateTime(time?: string) {
   if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) fail(400, "Choose a valid time.");
 }
@@ -9,8 +9,15 @@ export function nextDateState(
   row: { status: string; proposedBy: string | null; version: number },
   userId: string,
   data: { action: DateAction; version: number; date?: string; time?: string },
+  memberCount = 2,
 ) {
   if (row.version !== data.version) fail(409, "Your partner updated this date. Refresh it before responding.");
+  if (data.action === "propose") {
+    if (row.status !== "idea") fail(409, "Only a saved idea can be proposed to your partner.");
+    if (!row.proposedBy || row.proposedBy !== userId) fail(403, "Only the person who saved this idea can propose it.");
+    if (memberCount < 2) fail(409, "Invite your partner before sending this idea as a proposal.");
+    return "proposed";
+  }
   if (["accept", "decline", "counter"].includes(data.action)) {
     if (row.status !== "proposed") fail(409, "This date is no longer waiting for a response.");
     if (!row.proposedBy || row.proposedBy === userId) fail(403, "Only your partner can respond to your proposal.");

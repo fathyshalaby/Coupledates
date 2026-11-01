@@ -393,6 +393,9 @@ test('recap sharing omits unavailable rating and category options and exports no
         longestStreak: 0,
         activeDays: 1,
         monthlyCounts: Array(12).fill(0),
+        storyTitle: `${year} is waiting`,
+        storyBody: 'Your recap fills in from the dates, memories, and check-ins you two actually add.',
+        topRatedTitle: null,
       },
     });
   });

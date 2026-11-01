@@ -10,9 +10,9 @@ import { useCouple } from '@/lib/couple-context';
 import { fmtTime, parseISO, todayISO, useDatesQ } from '@/lib/data';
 import { cn } from '@/lib/utils';
 
-type Tab = 'inbox' | 'upcoming' | 'past' | 'declined';
+type Tab = 'inbox' | 'ideas' | 'upcoming' | 'past' | 'declined';
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'inbox', label: 'Inbox' }, { key: 'upcoming', label: 'Upcoming' }, { key: 'past', label: 'Past' }, { key: 'declined', label: 'Declined' },
+  { key: 'inbox', label: 'Inbox' }, { key: 'ideas', label: 'Ideas' }, { key: 'upcoming', label: 'Upcoming' }, { key: 'past', label: 'Past' }, { key: 'declined', label: 'Declined' },
 ];
 type ModeFilter = 'all' | 'in_person' | 'remote';
 const MODES: { key: ModeFilter; label: string }[] = [{ key: 'all', label: 'All' }, { key: 'in_person', label: 'In person' }, { key: 'remote', label: 'Online' }];
@@ -25,6 +25,10 @@ const TEMPLATES: (DatePrefill & { icon: typeof Coffee; blurb: string })[] = [
 const byWhen = (a: DatePlan, b: DatePlan) => (a.date.slice(0, 10) + (a.time ?? '')).localeCompare(b.date.slice(0, 10) + (b.time ?? ''));
 
 export function whoOwes(d: DatePlan, solo: boolean, partnerName: string): { text: string; urgent: boolean } | null {
+  if (d.status === 'idea') {
+    if (solo) return { text: 'Invite your partner, then propose this', urgent: false };
+    return { text: 'Ready to propose to your partner', urgent: true };
+  }
   if (d.status !== 'proposed') return null;
   if (d.canRespond) return { text: 'Your turn to answer', urgent: true };
   if (solo) return { text: 'Invite your partner to respond', urgent: false };
@@ -46,23 +50,25 @@ export default function DatesPage() {
     const all = (q.data ?? []).filter((d) => modeF === 'all' || d.mode === modeF);
     return {
       inbox: all.filter((d) => d.status === 'proposed').sort((a, b) => Number(b.canRespond) - Number(a.canRespond) || byWhen(a, b)),
+      ideas: all.filter((d) => d.status === 'idea').sort((a, b) => byWhen(a, b)),
       upcoming: all.filter((d) => d.status === 'planned' || d.status === 'active').sort((a, b) => Number(b.status === 'active') - Number(a.status === 'active') || byWhen(a, b)),
       past: all.filter((d) => d.status === 'completed').sort((a, b) => byWhen(b, a)),
       declined: all.filter((d) => d.status === 'declined').sort((a, b) => byWhen(b, a)),
     };
   }, [q.data, modeF]);
   const needsYou = buckets.inbox.filter((d) => d.canRespond).length;
-  const current: Tab = tab ?? (needsYou > 0 ? 'inbox' : buckets.upcoming.length ? 'upcoming' : buckets.inbox.length ? 'inbox' : 'upcoming');
+  const current: Tab = tab ?? (needsYou > 0 ? 'inbox' : buckets.ideas.length && solo ? 'ideas' : buckets.upcoming.length ? 'upcoming' : buckets.inbox.length ? 'inbox' : buckets.ideas.length ? 'ideas' : 'upcoming');
   const list = buckets[current];
+  const visibleTabs = TABS.filter((t) => t.key !== 'ideas' || buckets.ideas.length > 0 || solo);
 
   return (
     <div>
       <PageHeader kicker="Plans & keepsakes" title={<>Date <em className="font-normal text-primary">night</em></>}>
-        <button data-testid="button-new-date" onClick={() => openNew()} aria-label="Propose a date" className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-primary pl-3.5 pr-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-95"><Plus className="h-4 w-4" /><span>Propose</span></button>
+        <button data-testid="button-new-date" onClick={() => openNew()} aria-label={solo ? 'Save a date idea' : 'Propose a date'} className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-primary pl-3.5 pr-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 active:scale-95"><Plus className="h-4 w-4" /><span>{solo ? 'Idea' : 'Propose'}</span></button>
       </PageHeader>
 
       <div role="tablist" aria-label="Date lists" className="flex flex-wrap gap-1 rounded-xl bg-foreground/[0.05] p-1">
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <button role="tab" aria-selected={current === t.key} key={t.key} data-testid={`tab-${t.key}`} onClick={() => setTab(t.key)} className={cn('relative min-h-10 min-w-fit flex-1 rounded-lg px-1 text-[13px] font-medium transition-colors', current === t.key ? 'text-foreground' : 'text-muted-foreground hover:text-foreground')}>
             {current === t.key && <motion.span layoutId="datetab" className="absolute inset-0 rounded-lg border border-border bg-card shadow-[0_1px_2px_hsl(335_30%_20%/.06)]" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
             <span className="relative">{t.label}</span>
@@ -102,7 +108,8 @@ export default function DatesPage() {
 
       <div className="mt-4">
         {q.isLoading ? <ListSkeleton /> : q.isError ? <ErrorState error={q.error} onRetry={() => q.refetch()} label="Dates" /> : list.length === 0 ? (
-          current === 'inbox' ? <EmptyState title="Inbox zero." body="No proposals waiting. Suggest something — a walk after dinner counts." action={<button data-testid="button-empty-new-date" onClick={() => openNew()} className="min-h-11 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Propose a date</button>} />
+          current === 'inbox' ? <EmptyState title="Inbox zero." body="No proposals waiting. Suggest something — a walk after dinner counts." action={<button data-testid="button-empty-new-date" onClick={() => openNew()} className="min-h-11 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">{solo ? 'Save an idea' : 'Propose a date'}</button>} />
+            : current === 'ideas' ? <EmptyState title="No saved ideas yet." body={solo ? 'Save ideas while you wait for your partner — propose them once they join.' : 'Park ideas here, then propose when you’re ready.'} action={<button data-testid="button-empty-ideas" onClick={() => openNew()} className="min-h-11 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Save an idea</button>} />
             : current === 'upcoming' ? <EmptyState title="The calendar is open." body="Accepted proposals land here. Propose one and wait for the yes." action={<button data-testid="button-empty-upcoming" onClick={() => openNew()} className="min-h-11 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90">Propose a date</button>} />
             : current === 'past' ? <EmptyState title="No finished dates yet." body="Start a planned date on the day, then mark it complete to rate it together." />
             : <EmptyState title="Nothing declined." body="Turned-down proposals rest here, in case you want to try again." />
