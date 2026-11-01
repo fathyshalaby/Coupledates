@@ -1,14 +1,15 @@
 import { useState, type FormEvent } from 'react';
 import { useClerk, useUser } from '@clerk/react';
-import { CalendarClock, Gem, Check, ChevronRight, ClipboardList, Copy, Flame, LifeBuoy, LogOut, Share2 } from 'lucide-react';
+import { CalendarClock, Gem, Check, ChevronRight, ClipboardList, Copy, Flame, KeyRound, LifeBuoy, LogOut, Share2 } from 'lucide-react';
 import { Link } from 'wouter';
-import { useSaveCouple } from '@workspace/api-client-react';
+import { useJoinCouple, useSaveCouple } from '@workspace/api-client-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/bits';
 import { useToast } from '@/hooks/use-toast';
 import { useCouple } from '@/lib/couple-context';
 import { errMsg, useInvalidate } from '@/lib/data';
+import { inviteJoinPath } from '@/lib/invite';
 import { billingPhase, fmtPeriod, useBillingStatusQ } from '@/lib/billing';
 import { ReminderPreferences } from '@/components/reminder-preferences';
 
@@ -24,14 +25,24 @@ export default function SettingsPage() {
   const [partnerName, setPartnerName] = useState(couple.partnerName);
   const [anniversary, setAnniversary] = useState(couple.anniversary.slice(0, 10));
   const [copied, setCopied] = useState(false);
+  const [partnerCode, setPartnerCode] = useState('');
   const save = useSaveCouple({ mutation: {
     onSuccess: () => { invalidate(['couple', 'summary', 'recap']); toast({ title: 'Saved' }); },
   } });
+  const join = useJoinCouple({
+    mutation: {
+      onSuccess: () => {
+        invalidate(['couple', 'summary', 'memories', 'dates', 'preferences', 'assistant', 'detail', 'recap']);
+        toast({ title: 'Joined their space', description: 'You’re both in the same place now.' });
+      },
+    },
+  });
   const dirty = yourName !== couple.yourName || partnerName !== couple.partnerName || anniversary !== couple.anniversary.slice(0, 10);
   const full = couple.memberCount >= 2;
   const billing = useBillingStatusQ();
   const bs = billing.data;
   const planLine = billing.isLoading ? 'Checking plan...' : !bs ? 'Plan status unavailable, tap to retry' : (() => { const ph = billingPhase(bs); const end = fmtPeriod(bs.currentPeriodEnd); return ph === 'verifying' ? 'Status unknown, tap to check' : ph === 'active' ? `Plus${end ? `, renews ${end}` : ''}` : ph === 'ending' ? `Plus until ${end ?? 'period end'}` : ph === 'past_due' ? 'Payment issue' : ph === 'pending' ? 'Checkout pending' : 'Free plan, Plus adds concierge and recap'; })();
+  const joinUrl = `${window.location.origin}${inviteJoinPath(couple.inviteCode, basePath)}`;
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -43,9 +54,16 @@ export default function SettingsPage() {
     catch { toast({ title: 'Copy failed', description: 'Select the code and copy it manually.', variant: 'destructive' }); }
   };
   const share = async () => {
-    const text = `Join our space on Couple Dates. Sign in at ${window.location.origin}${basePath}/sign-up and enter this code: ${couple.inviteCode}`;
-    if (navigator.share) { try { await navigator.share({ title: 'Couple Dates invite', text }); } catch { /* cancelled */ } }
-    else copy();
+    const text = `Join our Couple Dates space with this link: ${joinUrl}\nOr sign up and enter code ${couple.inviteCode}. Don’t create a second space.`;
+    if (navigator.share) { try { await navigator.share({ title: 'Couple Dates invite', text, url: joinUrl }); } catch { /* cancelled */ } }
+    else {
+      try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1800); toast({ title: 'Invite copied' }); }
+      catch { copy(); }
+    }
+  };
+  const switchIntoPartnerSpace = (e: FormEvent) => {
+    e.preventDefault();
+    join.mutate({ data: { code: partnerCode.trim() } });
   };
 
   return (
@@ -61,7 +79,7 @@ export default function SettingsPage() {
           <div className="mt-3 flex gap-2">
             {[0, 1].map((i) => <span key={i} className={`h-2 flex-1 rounded-full ${i < couple.memberCount ? 'bg-primary' : 'bg-background/20'}`} />)}
           </div>
-          <p className="mt-4 text-sm opacity-80">{full ? 'Both of you are here. This space is complete, so the code no longer lets anyone else in.' : 'Your partner joins by signing up and entering this code.'}</p>
+          <p className="mt-4 text-sm opacity-80">{full ? 'Both of you are here. This space is complete, so the code no longer lets anyone else in.' : 'Your partner joins by opening your invite link or entering this code after signing up. If they create their own space by mistake, they can still join yours from Settings.'}</p>
         </div>
         {!full && (
           <div className="stub mx-3 mb-3 rounded-[22px] bg-accent p-4 text-accent-foreground">
@@ -74,6 +92,21 @@ export default function SettingsPage() {
           </div>
         )}
       </section>
+
+      {!full && (
+        <form onSubmit={switchIntoPartnerSpace} className="mt-4 space-y-3 rounded-[28px] border border-dashed border-foreground/15 bg-card p-5">
+          <div className="flex items-start gap-3">
+            <KeyRound className="mt-0.5 h-5 w-5 text-primary" />
+            <div>
+              <p className="font-medium">Meant to join your partner instead?</p>
+              <p className="mt-1 text-sm text-muted-foreground">If you created this empty space by mistake, paste their invite code here. You’ll move into their space so dates and recommendations stay together.</p>
+            </div>
+          </div>
+          <Input data-testid="input-switch-invite-code" required minLength={8} maxLength={100} value={partnerCode} onChange={(e) => setPartnerCode(e.target.value)} placeholder="Paste their invite code" className="h-12 rounded-2xl font-mono tracking-wider" />
+          {join.isError && <p data-testid="text-switch-join-error" className="rounded-2xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{errMsg(join.error)}</p>}
+          <button data-testid="button-switch-join-space" disabled={join.isPending} className="w-full rounded-full bg-foreground py-3.5 text-sm font-medium text-background transition active:scale-[.98] disabled:opacity-40">{join.isPending ? 'Joining...' : 'Join their space'}</button>
+        </form>
+      )}
 
       <nav className="mt-6 overflow-hidden rounded-[28px] bg-card shadow-[0_1px_0_hsl(var(--border))]">
         <Link href="/billing" data-testid="link-settings-billing" className="flex items-center gap-3 px-5 py-4 hover:bg-foreground/[0.03]"><Gem className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Plan and billing</span><span data-testid="text-settings-plan" className="text-sm text-muted-foreground">{planLine}</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>

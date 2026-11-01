@@ -45,6 +45,8 @@ Reminder preferences belong to each partner and are opt-in for all agreed dates 
 
 Reminder checks: `pnpm --filter @workspace/api-server run test` runs pure scheduling and lifecycle tests. `pnpm --filter @workspace/api-server run test:reminders-db` additionally exercises reminder routes against the development database using disposable synthetic spaces and members, which it cleans up.
 
+Partner join checks: `pnpm --filter @workspace/api-server run test:couple-join` runs the disposable-cluster contract for invite join, including abandoning a mistaken empty solo space so both partners end up in one shared couple id.
+
 ## User preferences
 
 The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships.
