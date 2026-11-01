@@ -10,6 +10,7 @@ export type DateResponseInputAction = typeof DateResponseInputAction[keyof typeo
 
 
 export const DateResponseInputAction = {
+  propose: 'propose',
   accept: 'accept',
   decline: 'decline',
   counter: 'counter',

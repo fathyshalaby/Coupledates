@@ -37,7 +37,7 @@ A mobile-first private space for couples to save photos and memories, plan and r
 
 ## Product
 
-Shared photo memory timeline; partner date proposals, acceptance/counter/decline, start/completion and individual 1–5 reviews; date-linked albums and camera capture; daily quality-time streaks; yearly relationship recap; couple profile and code-based partner pairing. Each partner can complete a shared interests/budget/availability questionnaire. A shared AI date concierge recommends in-person or remote experiences using the available profiles and recent dates. AI suggests only; people choose dates and approve plans.
+Shared photo memory timeline; partner date proposals, acceptance/counter/decline, start/completion and individual 1–5 reviews; date-linked albums and camera capture; daily quality-time streaks; yearly relationship recap; couple profile and code-based partner pairing with invite rotation and leave/dissolve. Solo partners can save private date ideas and propose them once the second member joins. Partner propose/accept/counter/decline updates appear in the private in-app reminder inbox (opt-out per person). Each partner can complete a shared interests/budget/availability questionnaire. A shared AI date concierge recommends in-person or remote experiences using the available profiles and recent dates. AI suggests only; people choose dates and approve plans.
 
 Location is an optional, explicitly requested foreground check against a voluntarily pinned meeting point. Do not promise background arrival detection or push reminders. Current device locations from arrival checks are never sent to the backend.
 
@@ -53,7 +53,7 @@ Stuck-space cleanup: `pnpm --filter @workspace/api-server run cleanup:couple-spa
 
 The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships.
 
-The user confirmed the launch upgrade at US$5/month per shared couple space, covering both partners, and selected Whop. The paid features are the AI date assistant and yearly recap; existing memories must remain accessible after cancellation. Whop bills in 30-day periods, disclosed alongside applicable taxes. Cancellation stops renewal, with Plus continuing through the verified paid-through date.
+The product has left open beta. The launch upgrade is US$5 per shared couple space every 30 days, covering both partners, via Whop. The paid features are the AI date assistant and yearly recap; existing memories must remain accessible after cancellation. Whop bills in 30-day periods, disclosed alongside applicable taxes. Cancellation stops renewal, with Plus continuing through the verified paid-through date. Checkout and resume are live; `requirePlus` gates assistant asks and yearly recap.
 
 Billing uses hosted checkout and a server-owned checkout reservation to bind a verified Whop membership to the couple space. A return URL, client-provided email, or membership identifier is never purchase proof. Both partners share entitlements; only the initiating billing owner manages renewal. Whop is the source of truth, with short-lived access snapshots and signed, idempotent webhook updates. Signing secrets are encrypted using the stable SESSION_SECRET, which must not be rotated without reprovisioning webhook verification. BILLING_APP_ORIGIN is an explicitly configured HTTPS origin for each environment.
 

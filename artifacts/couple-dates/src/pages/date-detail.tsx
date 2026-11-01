@@ -71,21 +71,34 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [ritual, setRitual] = useState(false);
   const [capture, setCapture] = useState<{ file: File | null; memory: Memory | null } | null>(null);
   const camRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const search = useSearch();
   const albumRef = useRef<HTMLElement>(null);
+  const reviewRef = useRef<HTMLElement>(null);
   useEffect(() => {
     if (new URLSearchParams(search).get('album') === '1') albumRef.current?.scrollIntoView({ block: 'start' });
   }, [search, d.id]);
+  useEffect(() => {
+    if (ritual) reviewRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }, [ritual]);
 
   const respond = useRespondToDate({ mutation: {
     onSuccess: (_r, v) => {
       invalidate([...DATE_AFFECTED]);
       setNote(''); setConflict(false); setCountering(false); setCompleting(false);
-      const msg: Record<string, string> = { accept: "It's a date.", decline: 'Proposal declined.', counter: 'Counter-proposal sent.', start: 'Date started — have fun.', complete: 'Marked complete. Leave your review below.' };
+      const msg: Record<string, string> = {
+        propose: 'Proposed to your partner.',
+        accept: "It's a date.",
+        decline: 'Proposal declined.',
+        counter: 'Counter-proposal sent.',
+        start: 'Date started — have fun.',
+        complete: 'Marked complete — keep a memory and your rating.',
+      };
       toast({ title: msg[v.data.action] });
+      if (v.data.action === 'complete') setRitual(true);
     },
     onError: (e) => {
       if (errStatus(e) === 409) { setConflict(true); invalidate(['dates', 'detail']); }
@@ -105,9 +118,12 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
 
   const owe = whoOwes(d, solo, 'your partner');
   const url = safeHttpUrl(d.meetingUrl);
-  const canEdit = d.status === 'proposed' || d.status === 'planned' || d.status === 'declined';
+  const canEdit = d.status === 'idea' || d.status === 'proposed' || d.status === 'planned' || d.status === 'declined';
   const hasPoint = d.mode === 'in_person' && d.latitude != null && d.longitude != null;
-  const albumOpen = d.status !== 'declined';
+  const albumOpen = d.status !== 'declined' && d.status !== 'idea';
+  const needsReview = d.status === 'completed' && !detail.reviews.some((r) => r.isYou);
+  const needsAlbum = d.status === 'completed' && detail.memories.length === 0;
+  const showRitual = ritual || (d.status === 'completed' && (needsReview || needsAlbum));
   const isToday = d.date.slice(0, 10) === todayISO();
   const online = d.mode === 'remote';
   const zone = d.timezone || couple.timezone;
@@ -175,6 +191,19 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
       <section className="mt-5 space-y-3">
         {owe && <p data-testid="text-owes" className={cn('rounded-full px-4 py-2 text-center text-sm font-medium', owe.urgent ? 'bg-foreground text-background' : 'bg-foreground/[0.06]')}>{owe.text}</p>}
 
+        {d.status === 'idea' && d.isProposer && (
+          <div className="rise rounded-[26px] border border-dashed border-primary/35 bg-primary/5 p-4">
+            <p className="text-sm font-medium">Saved just for you</p>
+            <p className="mt-1 text-sm text-muted-foreground">{solo ? 'Invite your partner, then propose this idea so they can answer.' : 'Ready when you are — send it to your partner’s inbox.'}</p>
+            {solo ? (
+              <Link href="/settings" data-testid="link-invite-from-idea" className="mt-3 flex items-center justify-center gap-2 rounded-full bg-foreground py-3.5 text-sm font-medium text-background"><UserPlus className="h-4 w-4" /> Invite partner first</Link>
+            ) : (
+              <button data-testid="button-propose-idea" disabled={respond.isPending} onClick={() => act('propose')} className="mt-3 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 font-medium text-primary-foreground transition active:scale-[.98] disabled:opacity-50">
+                {busy('propose') ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Propose to partner
+              </button>
+            )}
+          </div>
+        )}
         {d.status === 'proposed' && d.canRespond && (
           <div className="rise rounded-[26px] bg-accent p-4 text-accent-foreground">
             <Label htmlFor="respond-note" className="font-mono text-[10px] uppercase tracking-widest">A note back · optional</Label>
@@ -213,7 +242,19 @@ function Detail({ detail, onReload }: { detail: DateDetail; onReload: () => void
       <DateCalendarPanel plan={d} agreed={accepted} />
       {accepted && <ReminderPreferences />}
 
-      {d.status === 'completed' && <Reviews plan={d} reviews={detail.reviews} />}
+      {showRitual && (
+        <section data-testid="panel-post-date-ritual" className="rise mt-6 rounded-[26px] bg-foreground p-5 text-background">
+          <p className="font-mono text-[10px] uppercase tracking-widest opacity-60">Keep the night</p>
+          <h2 className="font-display mt-1 text-2xl leading-tight">One last beat together.</h2>
+          <p className="mt-1 text-sm opacity-80">Leave your rating, then pin a photo or note to the album — both stay private to this space.</p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <button type="button" data-testid="button-ritual-review" onClick={() => reviewRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })} className="rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground">{needsReview ? 'Leave your review' : 'See reviews'}</button>
+            <button type="button" data-testid="button-ritual-album" onClick={() => { albumRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }); camRef.current?.click(); }} className="rounded-full bg-background/15 py-3 text-sm font-medium">{needsAlbum ? 'Add a photo' : 'Open album'}</button>
+          </div>
+        </section>
+      )}
+
+      {d.status === 'completed' && <section ref={reviewRef} className="scroll-mt-4"><Reviews plan={d} reviews={detail.reviews} /></section>}
 
       {/* Album */}
       <section ref={albumRef} id="date-album" tabIndex={-1} className="mt-8 scroll-mt-4">

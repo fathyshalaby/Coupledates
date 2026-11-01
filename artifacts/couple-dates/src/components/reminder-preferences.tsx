@@ -12,7 +12,7 @@ export function ReminderPreferences() {
   return (
     <section data-testid="panel-reminder-preferences" className="mt-5 rounded-[26px] border border-foreground/10 bg-card p-5">
       <h2 className="font-display text-2xl">Your reminders</h2>
-      <p className="mt-1 text-xs text-muted-foreground">Opt in for all agreed dates in this space. These settings are just yours — your partner chooses separately. In-app only, refreshed every 30 seconds while open. No push, email, or background location.</p>
+      <p className="mt-1 text-xs text-muted-foreground">These settings are just yours — your partner chooses separately. In-app only, refreshed every 30 seconds while open. No push, email, or background location.</p>
       {q.isLoading && <p className="mt-3 text-sm">Loading preferences…</p>}
       {q.isError && <p role="alert" className="mt-3 text-sm text-destructive">{errMsg(q.error)} <button onClick={() => q.refetch()} className="underline">Retry</button></p>}
       {q.data && <PreferencesForm key={JSON.stringify(q.data)} initial={q.data} />}
@@ -35,6 +35,10 @@ function PreferencesForm({ initial }: { initial: Preferences }) {
     e.preventDefault(); setSaved(false); save.mutate({ data: draft });
   };
   return <form onSubmit={submit} className="mt-4 space-y-4">
+    <label className="flex items-center gap-3 text-sm">
+      <input data-testid="checkbox-partner-updates" type="checkbox" checked={draft.partnerUpdatesEnabled} onChange={e => { setSaved(false); setDraft({ ...draft, partnerUpdatesEnabled: e.target.checked }); }} />
+      Tell me when my partner proposes, accepts, counters, or declines
+    </label>
     <label className="flex items-center gap-3 text-sm">
       <input data-testid="checkbox-date-reminders" type="checkbox" checked={draft.dateEnabled} onChange={e => { setSaved(false); setDraft({ ...draft, dateEnabled: e.target.checked }); }} />
       Remind me before agreed dates

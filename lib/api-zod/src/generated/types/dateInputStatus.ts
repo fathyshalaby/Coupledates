@@ -10,6 +10,7 @@ export type DateInputStatus = typeof DateInputStatus[keyof typeof DateInputStatu
 
 
 export const DateInputStatus = {
+  idea: 'idea',
   proposed: 'proposed',
   planned: 'planned',
   active: 'active',

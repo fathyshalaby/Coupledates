@@ -35,7 +35,7 @@ export default function Landing() {
             </Link>
             <a href="/how-it-works" data-testid="link-preview" className="rounded-full px-5 py-3.5 font-medium underline decoration-primary/40 underline-offset-4">See how it works</a>
           </div>
-          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Free during beta · Private to the two of you · No public feed</p>
+          <p className="mt-6 flex items-center gap-2 text-sm text-muted-foreground"><Lock className="h-4 w-4" /> Private to the two of you · No public feed · Plus optional</p>
         </div>
 
         <motion.figure initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .65, delay: .2 }}

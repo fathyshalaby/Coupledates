@@ -5,7 +5,7 @@ test('at-home date ideas are searchable, filterable, mobile-safe, and share uniq
   expect(response?.status()).toBe(200);
 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Romantic at-home date ideas');
-  await expect(page.getByRole('link', { name: 'Join the free beta' })).toHaveAttribute('href', '/sign-up');
+  await expect(page.getByRole('link', { name: 'Start your shared space' })).toHaveAttribute('href', '/sign-up');
   await expect(page.getByRole('status')).toHaveText('8 ideas to try');
   const productShot = page.getByRole('img', { name: /Real Couple Dates screen/ });
   await expect(productShot).toBeVisible();
@@ -13,7 +13,7 @@ test('at-home date ideas are searchable, filterable, mobile-safe, and share uniq
   await expect.poll(() => productShot.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);
 
   const title = 'Romantic At-Home Date Ideas for Two | Couple Dates';
-  const description = 'Find romantic at-home date ideas for every budget and schedule, including long-distance options. Plan a date together in Couple Dates, free during beta.';
+  const description = 'Find romantic at-home date ideas for every budget and schedule, including long-distance options. Plan a date together in Couple Dates.';
   const canonicalUrl = `${new URL(page.url()).origin}/at-home-date-ideas`;
   const productShotUrl = `${new URL(page.url()).origin}/product-shots/dates-mobile.jpg`;
   await expect(page).toHaveTitle(title);

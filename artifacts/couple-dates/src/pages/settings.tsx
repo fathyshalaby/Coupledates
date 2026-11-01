@@ -1,8 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { useClerk, useUser } from '@clerk/react';
-import { CalendarClock, Gem, Check, ChevronRight, ClipboardList, Copy, Flame, KeyRound, LifeBuoy, LogOut, Share2 } from 'lucide-react';
-import { Link } from 'wouter';
-import { useJoinCouple, useSaveCouple } from '@workspace/api-client-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { CalendarClock, Gem, Check, ChevronRight, ClipboardList, Copy, Flame, KeyRound, LifeBuoy, LogOut, RefreshCw, Share2, DoorOpen } from 'lucide-react';
+import { Link, useLocation } from 'wouter';
+import {
+  getGetCoupleQueryKey, useJoinCouple, useLeaveCouple, useRotateInviteCode, useSaveCouple,
+} from '@workspace/api-client-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PageHeader } from '@/components/bits';
@@ -21,10 +27,13 @@ export default function SettingsPage() {
   const { signOut } = useClerk();
   const { toast } = useToast();
   const invalidate = useInvalidate();
+  const qc = useQueryClient();
+  const [, navigate] = useLocation();
   const [yourName, setYourName] = useState(couple.yourName);
   const [partnerName, setPartnerName] = useState(couple.partnerName);
   const [anniversary, setAnniversary] = useState(couple.anniversary.slice(0, 10));
   const [copied, setCopied] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [partnerCode, setPartnerCode] = useState('');
   const save = useSaveCouple({ mutation: {
     onSuccess: () => { invalidate(['couple', 'summary', 'recap']); toast({ title: 'Saved' }); },
@@ -37,11 +46,37 @@ export default function SettingsPage() {
       },
     },
   });
+  const rotate = useRotateInviteCode({ mutation: {
+    onSuccess: (c) => {
+      qc.setQueryData(getGetCoupleQueryKey(), { couple: c });
+      invalidate(['couple']);
+      toast({ title: 'Invite code refreshed', description: 'The previous code no longer works.' });
+    },
+    onError: (e) => toast({ title: 'Couldn’t refresh the code', description: errMsg(e), variant: 'destructive' }),
+  } });
+  const leave = useLeaveCouple({ mutation: {
+    onSuccess: () => {
+      qc.clear();
+      qc.setQueryData(getGetCoupleQueryKey(), { couple: null });
+      toast({ title: 'You left this space' });
+      navigate('/');
+    },
+    onError: (e) => toast({ title: 'Couldn’t leave', description: errMsg(e), variant: 'destructive' }),
+  } });
   const dirty = yourName !== couple.yourName || partnerName !== couple.partnerName || anniversary !== couple.anniversary.slice(0, 10);
   const full = couple.memberCount >= 2;
   const billing = useBillingStatusQ();
   const bs = billing.data;
-  const planLine = billing.isLoading ? 'Checking plan...' : !bs ? 'Plan status unavailable, tap to retry' : (() => { const ph = billingPhase(bs); const end = fmtPeriod(bs.currentPeriodEnd); return ph === 'verifying' ? 'Status unknown, tap to check' : ph === 'active' ? `Plus${end ? `, renews ${end}` : ''}` : ph === 'ending' ? `Plus until ${end ?? 'period end'}` : ph === 'past_due' ? 'Payment issue' : ph === 'pending' ? 'Checkout pending' : 'Free plan, Plus adds concierge and recap'; })();
+  const planLine = billing.isLoading ? 'Checking plan...' : !bs ? 'Plan status unavailable, tap to retry' : (() => {
+    const ph = billingPhase(bs);
+    const end = fmtPeriod(bs.currentPeriodEnd);
+    return ph === 'verifying' ? 'Status unknown, tap to check'
+      : ph === 'active' ? `Plus${end ? `, renews ${end}` : ''}`
+        : ph === 'ending' ? `Plus until ${end ?? 'period end'}`
+          : ph === 'past_due' ? 'Payment issue'
+            : ph === 'pending' ? 'Checkout pending'
+              : 'Free plan, Plus adds concierge and recap';
+  })();
   const joinUrl = `${window.location.origin}${inviteJoinPath(couple.inviteCode, basePath)}`;
 
   const submit = (e: FormEvent) => {
@@ -85,10 +120,12 @@ export default function SettingsPage() {
           <div className="stub mx-3 mb-3 rounded-[22px] bg-accent p-4 text-accent-foreground">
             <p className="font-mono text-[10px] uppercase tracking-widest">Invite code</p>
             <p data-testid="text-invite-code" className="mt-1 select-all break-all font-mono text-lg">{couple.inviteCode}</p>
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex flex-wrap gap-2">
               <button data-testid="button-copy-code" onClick={copy} className="flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs text-background active:scale-95 transition-transform">{copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}{copied ? 'Copied' : 'Copy'}</button>
               <button data-testid="button-share-code" onClick={share} className="flex items-center gap-1.5 rounded-full border border-foreground/20 px-4 py-2 text-xs active:scale-95 transition-transform"><Share2 className="h-3.5 w-3.5" /> Share</button>
+              <button data-testid="button-rotate-invite" disabled={rotate.isPending} onClick={() => rotate.mutate()} className="flex items-center gap-1.5 rounded-full border border-foreground/20 px-4 py-2 text-xs active:scale-95 transition-transform disabled:opacity-50"><RefreshCw className={`h-3.5 w-3.5 ${rotate.isPending ? 'animate-spin' : ''}`} /> New code</button>
             </div>
+            <p className="mt-2 text-[11px] opacity-70">Refreshing the code invalidates the previous one — use it if a code may have leaked.</p>
           </div>
         )}
       </section>
@@ -128,6 +165,16 @@ export default function SettingsPage() {
         <button data-testid="button-save-settings" disabled={!dirty || save.isPending} className="w-full rounded-full bg-primary py-3.5 font-medium text-primary-foreground transition active:scale-[.98] disabled:opacity-40">{save.isPending ? 'Saving...' : 'Save changes'}</button>
       </form>
 
+      <section className="mt-6 rounded-[28px] border border-destructive/20 p-5">
+        <h2 className="font-display text-2xl">Leave this space</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {full
+            ? 'You’ll leave your partner here alone. Their invite code refreshes automatically so you can’t rejoin with the old one. Shared memories stay with the space.'
+            : 'You’re the only member — leaving deletes this private space and its plans. Memories and photos in it are removed.'}
+        </p>
+        <button data-testid="button-leave-space" onClick={() => setConfirmLeave(true)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border border-destructive/30 py-3.5 text-sm font-medium text-destructive transition hover:bg-destructive/5 active:scale-[.98]"><DoorOpen className="h-4 w-4" /> Leave space</button>
+      </section>
+
       <section className="mt-6 flex items-center justify-between rounded-[28px] border border-foreground/10 p-5">
         <div className="min-w-0">
           <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">Signed in as</p>
@@ -136,6 +183,23 @@ export default function SettingsPage() {
         <button data-testid="button-sign-out" onClick={() => signOut({ redirectUrl: basePath || '/' })} className="flex items-center gap-1.5 rounded-full bg-foreground/5 px-4 py-2 text-sm active:scale-95 transition-transform"><LogOut className="h-4 w-4" /> Sign out</button>
       </section>
       <Link href="/recover-space" data-testid="link-settings-recover-space" className="mt-3 flex items-center gap-3 rounded-[28px] bg-card px-5 py-4 shadow-[0_1px_0_hsl(var(--border))] hover:bg-foreground/[0.03]"><LifeBuoy className="h-5 w-5 text-primary" /><span className="flex-1"><span className="block font-medium">Recover existing space</span><span className="text-sm text-muted-foreground">Signed in with a different account than before? Link your original space.</span></span><ChevronRight className="h-4 w-4 opacity-40" /></Link>
+
+      <AlertDialog open={confirmLeave} onOpenChange={setConfirmLeave}>
+        <AlertDialogContent className="rounded-[28px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-2xl">{full ? 'Leave your partner’s space?' : 'Delete this space?'}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {full
+                ? 'You will need a new invite to come back. If you manage Plus for this space, cancel it first.'
+                : 'This removes the space and everything saved in it for good.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full">Stay</AlertDialogCancel>
+            <AlertDialogAction data-testid="button-confirm-leave" disabled={leave.isPending} onClick={(e) => { e.preventDefault(); leave.mutate(); }} className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90">{leave.isPending ? 'Leaving…' : full ? 'Leave space' : 'Delete space'}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

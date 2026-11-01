@@ -80,6 +80,7 @@ export const GetReminderPreferencesResponse = zod.object({
   "timezone": zod.string().min(1).max(getReminderPreferencesResponseTimezoneMax),
   "dateEnabled": zod.boolean(),
   "photoEnabled": zod.boolean(),
+  "partnerUpdatesEnabled": zod.boolean(),
   "leadMinutes": zod.union([zod.literal(15),zod.literal(60),zod.literal(1440)])
 })
 
@@ -92,6 +93,7 @@ export const SaveReminderPreferencesBody = zod.object({
   "timezone": zod.string().min(1).max(saveReminderPreferencesBodyTimezoneMax),
   "dateEnabled": zod.boolean(),
   "photoEnabled": zod.boolean(),
+  "partnerUpdatesEnabled": zod.boolean(),
   "leadMinutes": zod.union([zod.literal(15),zod.literal(60),zod.literal(1440)])
 })
 
@@ -103,6 +105,7 @@ export const SaveReminderPreferencesResponse = zod.object({
   "timezone": zod.string().min(1).max(saveReminderPreferencesResponseTimezoneMax),
   "dateEnabled": zod.boolean(),
   "photoEnabled": zod.boolean(),
+  "partnerUpdatesEnabled": zod.boolean(),
   "leadMinutes": zod.union([zod.literal(15),zod.literal(60),zod.literal(1440)])
 })
 
@@ -111,7 +114,7 @@ export const ListRemindersResponseItem = zod.object({
   "id": zod.number().int(),
   "dateId": zod.number().int(),
   "title": zod.string(),
-  "kind": zod.enum(['date', 'photo']),
+  "kind": zod.enum(['date', 'photo', 'proposal', 'accepted', 'countered', 'declined']),
   "dueAt": zod.coerce.date(),
   "timezone": zod.string(),
   "href": zod.string()
@@ -563,7 +566,7 @@ export const GetDateDetailResponse = zod.object({
   "location": zod.string().max(getDateDetailResponseDateOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(getDateDetailResponseDateOneNotesMax),
-  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "status": zod.enum(['idea', 'proposed', 'planned', 'active', 'completed', 'declined']),
   "rating": zod.number().min(1).max(getDateDetailResponseDateOneRatingMax).nullish(),
   "mode": zod.enum(['in_person', 'remote']),
   "meetingUrl": zod.string().max(getDateDetailResponseDateOneMeetingUrlMax).optional(),
@@ -614,7 +617,7 @@ export const respondToDateBodyTimeMax = 10;
 
 
 export const RespondToDateBody = zod.object({
-  "action": zod.enum(['accept', 'decline', 'counter', 'start', 'complete']),
+  "action": zod.enum(['propose', 'accept', 'decline', 'counter', 'start', 'complete']),
   "version": zod.number().int().min(respondToDateBodyVersionMin),
   "note": zod.string().max(respondToDateBodyNoteMax).optional(),
   "date": zod.string().regex(respondToDateBodyDateRegExp).optional(),
@@ -659,7 +662,7 @@ export const RespondToDateResponse = zod.object({
   "location": zod.string().max(respondToDateResponseOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(respondToDateResponseOneNotesMax),
-  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "status": zod.enum(['idea', 'proposed', 'planned', 'active', 'completed', 'declined']),
   "rating": zod.number().min(1).max(respondToDateResponseOneRatingMax).nullish(),
   "mode": zod.enum(['in_person', 'remote']),
   "meetingUrl": zod.string().max(respondToDateResponseOneMeetingUrlMax).optional(),
@@ -734,7 +737,7 @@ export const ReviewDateResponse = zod.object({
   "location": zod.string().max(reviewDateResponseDateOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(reviewDateResponseDateOneNotesMax),
-  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "status": zod.enum(['idea', 'proposed', 'planned', 'active', 'completed', 'declined']),
   "rating": zod.number().min(1).max(reviewDateResponseDateOneRatingMax).nullish(),
   "mode": zod.enum(['in_person', 'remote']),
   "meetingUrl": zod.string().max(reviewDateResponseDateOneMeetingUrlMax).optional(),
@@ -828,6 +831,30 @@ export const JoinCoupleResponse = zod.object({
   "timezone": zod.string(),
   "inviteCode": zod.string(),
   "memberCount": zod.number().int()
+})
+
+
+export const RotateInviteCodeResponse = zod.object({
+  "id": zod.number().int(),
+  "yourName": zod.string(),
+  "partnerName": zod.string(),
+  "anniversary": zod.string(),
+  "timezone": zod.string(),
+  "inviteCode": zod.string(),
+  "memberCount": zod.number().int()
+})
+
+
+export const LeaveCoupleResponse = zod.object({
+  "couple": zod.union([zod.object({
+  "id": zod.number().int(),
+  "yourName": zod.string(),
+  "partnerName": zod.string(),
+  "anniversary": zod.string(),
+  "timezone": zod.string(),
+  "inviteCode": zod.string(),
+  "memberCount": zod.number().int()
+}),zod.null()])
 })
 
 
@@ -981,7 +1008,7 @@ export const ListDatesResponseItem = zod.object({
   "location": zod.string().max(listDatesResponseOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(listDatesResponseOneNotesMax),
-  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "status": zod.enum(['idea', 'proposed', 'planned', 'active', 'completed', 'declined']),
   "rating": zod.number().min(1).max(listDatesResponseOneRatingMax).nullish(),
   "mode": zod.enum(['in_person', 'remote']),
   "meetingUrl": zod.string().max(listDatesResponseOneMeetingUrlMax).optional(),
@@ -1036,7 +1063,7 @@ export const CreateDateBody = zod.object({
   "location": zod.string().max(createDateBodyLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(createDateBodyNotesMax),
-  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "status": zod.enum(['idea', 'proposed', 'planned', 'active', 'completed', 'declined']),
   "rating": zod.number().min(1).max(createDateBodyRatingMax).nullish(),
   "mode": zod.enum(['in_person', 'remote']).optional(),
   "meetingUrl": zod.string().max(createDateBodyMeetingUrlMax).optional(),
@@ -1082,7 +1109,7 @@ export const CreateDateResponse = zod.object({
   "location": zod.string().max(createDateResponseOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(createDateResponseOneNotesMax),
-  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "status": zod.enum(['idea', 'proposed', 'planned', 'active', 'completed', 'declined']),
   "rating": zod.number().min(1).max(createDateResponseOneRatingMax).nullish(),
   "mode": zod.enum(['in_person', 'remote']),
   "meetingUrl": zod.string().max(createDateResponseOneMeetingUrlMax).optional(),
@@ -1140,7 +1167,7 @@ export const UpdateDateBody = zod.object({
   "location": zod.string().max(updateDateBodyLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(updateDateBodyNotesMax),
-  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "status": zod.enum(['idea', 'proposed', 'planned', 'active', 'completed', 'declined']),
   "rating": zod.number().min(1).max(updateDateBodyRatingMax).nullish(),
   "mode": zod.enum(['in_person', 'remote']).optional(),
   "meetingUrl": zod.string().max(updateDateBodyMeetingUrlMax).optional(),
@@ -1186,7 +1213,7 @@ export const UpdateDateResponse = zod.object({
   "location": zod.string().max(updateDateResponseOneLocationMax),
   "category": zod.enum(['Everyday', 'Adventure', 'Food', 'Travel', 'Milestone']),
   "notes": zod.string().max(updateDateResponseOneNotesMax),
-  "status": zod.enum(['proposed', 'planned', 'active', 'completed', 'declined']),
+  "status": zod.enum(['idea', 'proposed', 'planned', 'active', 'completed', 'declined']),
   "rating": zod.number().min(1).max(updateDateResponseOneRatingMax).nullish(),
   "mode": zod.enum(['in_person', 'remote']),
   "meetingUrl": zod.string().max(updateDateResponseOneMeetingUrlMax).optional(),
@@ -1278,7 +1305,10 @@ export const GetRecapResponse = zod.object({
 }))),
   "longestStreak": zod.number().int(),
   "activeDays": zod.number().int(),
-  "monthlyCounts": zod.array(zod.number().int())
+  "monthlyCounts": zod.array(zod.number().int()),
+  "storyTitle": zod.string(),
+  "storyBody": zod.string(),
+  "topRatedTitle": zod.string().nullable()
 })
 
 

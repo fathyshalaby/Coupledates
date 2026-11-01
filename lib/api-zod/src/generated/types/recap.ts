@@ -18,4 +18,8 @@ export interface Recap {
   longestStreak: number;
   activeDays: number;
   monthlyCounts: number[];
+  storyTitle: string;
+  storyBody: string;
+  /** @nullable */
+  topRatedTitle: string | null;
 }

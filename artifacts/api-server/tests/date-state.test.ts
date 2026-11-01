@@ -14,6 +14,13 @@ test("only the recipient may accept, decline or counter a proposal", () => {
   assert.equal(nextDateState(proposal, "partner-b", { action: "decline", version: 2 }), "declined");
   assert.equal(nextDateState(proposal, "partner-b", { action: "counter", version: 2, date: "2026-10-21", time: "18:00" }), "proposed");
 });
+test("a saved idea becomes a proposal only from its author once a partner has joined", () => {
+  const idea = { status: "idea", proposedBy: "partner-a", version: 1 };
+  checkError(() => nextDateState(idea, "partner-b", { action: "propose", version: 1 }, 2), 403);
+  checkError(() => nextDateState(idea, "partner-a", { action: "propose", version: 1 }, 1), 409);
+  assert.equal(nextDateState(idea, "partner-a", { action: "propose", version: 1 }, 2), "proposed");
+  checkError(() => nextDateState(proposal, "partner-a", { action: "propose", version: 2 }, 2), 409);
+});
 test("stale approvals cannot overwrite a newer plan", () => {
   checkError(() => nextDateState(proposal, "partner-b", { action: "accept", version: 1 }), 409);
 });

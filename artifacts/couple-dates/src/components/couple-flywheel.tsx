@@ -52,6 +52,10 @@ export function CoupleFlywheel({ couple, dates = [], memories = [], preferences 
     .filter((date) => date.status === 'proposed')
     .sort((a, b) => Number(b.canRespond) - Number(a.canRespond) || (a.date + (a.time ?? '')).localeCompare(b.date + (b.time ?? '')));
   const needsResponse = pending.find((date) => date.canRespond);
+  const savedIdeas = dates
+    .filter((date) => date.status === 'idea' && date.isProposer)
+    .sort((a, b) => (a.date + (a.time ?? '')).localeCompare(b.date + (b.time ?? '')));
+  const nextIdea = savedIdeas[0];
   const nextPlanned = dates
     .filter((date) => date.status === 'planned' && date.date.slice(0, 10) >= today)
     .sort((a, b) => (a.date + (a.time ?? '')).localeCompare(b.date + (b.time ?? '')))[0];
@@ -69,15 +73,30 @@ export function CoupleFlywheel({ couple, dates = [], memories = [], preferences 
     if (completedWithoutMemory) activeStage = 'remember';
     if (nextPlanned || active) activeStage = 'do';
     if (pending.length > 0) activeStage = 'agree';
+    if (nextIdea && pending.length === 0) activeStage = 'idea';
+  } else if (nextIdea) {
+    activeStage = 'idea';
   }
 
   let action: { href: string; title: string; detail: string; testId: string };
   if (couple.memberCount < 2) {
-    action = {
+    action = nextIdea ? {
+      href: `/dates/${nextIdea.id}`,
+      title: 'Invite, then propose your idea',
+      detail: nextIdea.title,
+      testId: 'link-flywheel-idea-invite',
+    } : {
       href: '/settings',
       title: 'Invite your person',
       detail: 'Bring them into this private space to start planning together.',
       testId: 'link-flywheel-invite',
+    };
+  } else if (nextIdea && !needsResponse) {
+    action = {
+      href: savedIdeas.length === 1 ? `/dates/${nextIdea.id}` : '/dates',
+      title: 'Propose a saved idea',
+      detail: nextIdea.title,
+      testId: 'link-flywheel-propose-idea',
     };
   } else if (!hasYourProfile || !hasPartnerProfile) {
     action = {
@@ -131,20 +150,22 @@ export function CoupleFlywheel({ couple, dates = [], memories = [], preferences 
   }
 
   const message = couple.memberCount < 2
-    ? 'A shared plan starts when your partner joins.'
-    : !hasYourProfile || !hasPartnerProfile
-      ? 'Make room for both of your tastes.'
-      : needsResponse
-        ? needsResponse.canRespond ? 'There is an idea waiting for your answer.' : 'An idea is with your partner.'
-        : active
-          ? 'You are in the middle of making a memory.'
-          : nextPlanned
-            ? 'The next time together is on the calendar.'
-            : completedWithoutMemory
-              ? 'Your date is done; its album is ready for a memory.'
-              : nextMemory
-                ? 'A memory is here. Whenever you are ready, find what comes next.'
-                : 'Bring one idea, then make a plan together.';
+    ? nextIdea ? 'You have ideas ready — invite your partner so you can propose them.' : 'A shared plan starts when your partner joins.'
+    : nextIdea && !needsResponse
+      ? 'A saved idea is ready to send to your partner.'
+      : !hasYourProfile || !hasPartnerProfile
+        ? 'Make room for both of your tastes.'
+        : needsResponse
+          ? needsResponse.canRespond ? 'There is an idea waiting for your answer.' : 'An idea is with your partner.'
+          : active
+            ? 'You are in the middle of making a memory.'
+            : nextPlanned
+              ? 'The next time together is on the calendar.'
+              : completedWithoutMemory
+                ? 'Your date is done; its album is ready for a memory.'
+                : nextMemory
+                  ? 'A memory is here. Whenever you are ready, find what comes next.'
+                  : 'Bring one idea, then make a plan together.';
 
   return (
     <section className="rise mt-6 overflow-hidden rounded-[24px] border border-border bg-card" aria-labelledby="couple-flywheel-title" data-testid="couple-flywheel">

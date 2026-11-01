@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
+import { useRefreshBilling } from '@workspace/api-client-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategoryChip, EmptyState, ErrorState, PageHeader, Photo } from '@/components/bits';
+import { Paywall } from '@/components/paywall';
 import { useCouple } from '@/lib/couple-context';
+import { useBillingStatusQ, useBillingSync } from '@/lib/billing';
 import { errStatus, fmtDate, parseISO, useRecapQ } from '@/lib/data';
 import { ShareCardDialog } from '@/components/share-card-dialog';
 
@@ -15,18 +18,25 @@ export default function RecapPage() {
   const firstYear = Math.max(2000, Math.min(thisYear, parseISO(couple.anniversary).getFullYear()));
   const [year, setYear] = useState(thisYear);
   const [shareOpen, setShareOpen] = useState(false);
-  const q = useRecapQ(year, true);
+  const billing = useBillingStatusQ();
+  const sync = useBillingSync();
+  const refresh = useRefreshBilling({ mutation: { onSuccess: (d) => sync(d) } });
+  const entitled = !!billing.data?.entitled && !billing.data.verificationPending;
+  const q = useRecapQ(year, entitled);
   const r = q.data;
   const max = r ? Math.max(1, ...r.monthlyCounts) : 1;
   const empty = r && r.memoryCount === 0 && r.dateCount === 0 && r.activeDays === 0;
 
   const header = <PageHeader kicker="Year in review" title={<>The <em className="text-primary">recap</em></>} />;
-  const beta = <p className="mb-4 rounded-2xl bg-secondary/70 px-4 py-3 text-sm">Included free during the beta.</p>;
-  if (q.isError && errStatus(q.error) === 402) return <div>{header}{beta}<ErrorState error={q.error} onRetry={() => q.refetch()} label="Your recap" /></div>;
+  if (billing.isLoading) return <div>{header}<Skeleton className="h-56 rounded-[32px]" /></div>;
+  if (billing.isError) return <div>{header}<ErrorState error={billing.error} onRetry={() => billing.refetch()} label="Your plan" /></div>;
+  if (!entitled || (q.isError && errStatus(q.error) === 402)) {
+    return <div>{header}<Paywall feature="recap" status={billing.data} onRetry={() => refresh.mutate()} retrying={refresh.isPending} /></div>;
+  }
 
   return (
     <div>
-      {header}{beta}
+      {header}
       <div className="mb-5 flex items-center justify-between rounded-full bg-card p-1.5 shadow-[0_1px_0_hsl(var(--border))]">
         <button data-testid="button-prev-year" disabled={year <= firstYear} onClick={() => setYear((y) => y - 1)} className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-foreground/5 disabled:opacity-30" aria-label="Previous year"><ChevronLeft className="h-5 w-5" /></button>
         <motion.span key={year} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} data-testid="text-recap-year" className="font-display text-2xl">{year}</motion.span>
@@ -55,6 +65,13 @@ export default function RecapPage() {
             </div>
             <button data-testid="button-share-recap" onClick={() => setShareOpen(true)} className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-full border border-primary-foreground/35 px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-foreground" aria-label={`Share ${year} recap`}><Share2 className="h-4 w-4" />Share recap</button>
           </motion.section>
+
+          <section data-testid="panel-recap-story" className="rounded-[28px] bg-card p-5 shadow-[0_1px_0_hsl(var(--border))]">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-primary">Your year, in a sentence</p>
+            <h2 className="font-display mt-2 text-2xl leading-tight" data-testid="text-recap-story-title">{r.storyTitle}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground" data-testid="text-recap-story-body">{r.storyBody}</p>
+            {r.topRatedTitle && <p className="mt-3 text-sm" data-testid="text-recap-top-rated">Highest-rated date: <span className="font-medium text-foreground">{r.topRatedTitle}</span></p>}
+          </section>
 
           <section className="grid grid-cols-2 gap-3">
             <Tile label="Average rating" value={r.averageRating ? r.averageRating.toFixed(1) : '-'} sub={r.averageRating ? 'out of 5' : 'no rated dates'} testid="text-recap-rating" />

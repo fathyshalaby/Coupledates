@@ -111,12 +111,23 @@ try {
           json: [{ id: 730020, isYou: true, displayName: 'Noor' }, { id: 730021, isYou: false, displayName: 'Teo' }],
         });
         if (url.pathname === '/api/reminders') return route.fulfill({ json: [] });
+        if (url.pathname === '/api/billing/status') return route.fulfill({
+          json: {
+            plan: 'plus', entitled: true, providerStatus: 'active', isPayer: true, canManage: true,
+            cancelAtPeriodEnd: false, currentPeriodEnd: '2099-12-01T00:00:00.000Z',
+            checkoutPending: false, checkoutAvailable: false, verificationPending: false,
+            notice: '', price: 5, currency: 'usd', billingIntervalDays: 30,
+          },
+        });
         if (url.pathname === '/api/recap') return route.fulfill({
           json: {
             year: 2026, memoryCount: memories.length, dateCount: 1,
             averageRating: 5, topCategory: 'Food', topMemories: memories,
             longestStreak: 16, activeDays: 42,
             monthlyCounts: [1, 2, 4, 3, 2, 5, 4, 3, 5, 4, 0, 0],
+            storyTitle: 'Pasta night still stands out',
+            storyBody: 'A look back at 1 date you finished together, leaning into Food, and a 16-day check-in streak.',
+            topRatedTitle: 'Pasta night',
           },
         });
         if (url.pathname.startsWith('/api/storage/')) {

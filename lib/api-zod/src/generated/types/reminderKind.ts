@@ -12,4 +12,8 @@ export type ReminderKind = typeof ReminderKind[keyof typeof ReminderKind];
 export const ReminderKind = {
   date: 'date',
   photo: 'photo',
+  proposal: 'proposal',
+  accepted: 'accepted',
+  countered: 'countered',
+  declined: 'declined',
 } as const;

@@ -2,13 +2,15 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useLocation } from 'wouter';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUp, CalendarPlus, Clock, Info, Link2, MapPin, RotateCw, Sparkles, UserRound, Video, Wallet } from 'lucide-react';
-import { useAskDateAssistant, type AssistantTurn, type DateIdea } from '@workspace/api-client-react';
+import { useAskDateAssistant, useRefreshBilling, type AssistantTurn, type DateIdea } from '@workspace/api-client-react';
 import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { CategoryChip, ErrorState, PageHeader } from '@/components/bits';
 import { DateForm, type DatePrefill } from '@/components/date-form';
+import { Paywall } from '@/components/paywall';
+import { useBillingStatusQ, useBillingSync } from '@/lib/billing';
 import { errMsg, errStatus, useAssistantQ, useInvalidate, usePreferencesQ } from '@/lib/data';
 import {
   clearIncomingSocialInspiration,
@@ -48,8 +50,17 @@ export default function AssistantPage() {
   const [fromShareTarget, setFromShareTarget] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [proposing, setProposing] = useState<DatePrefill | null>(null);
-  const ask = useAskDateAssistant({ mutation: { onSuccess: () => invalidate(['assistant']) } });
-  const locked = false;
+  const billing = useBillingStatusQ();
+  const sync = useBillingSync();
+  const refresh = useRefreshBilling({ mutation: { onSuccess: (d) => sync(d) } });
+  const ask = useAskDateAssistant({
+    mutation: {
+      onSuccess: () => invalidate(['assistant']),
+      onError: (e) => { if (errStatus(e) === 402) sync(); },
+    },
+  });
+  const paidError = ask.isError && errStatus(ask.error) === 402;
+  const locked = !billing.data?.entitled || !!billing.data?.verificationPending || paidError;
 
   useEffect(() => {
     if (!ask.isPending) return;
@@ -114,7 +125,10 @@ export default function AssistantPage() {
   return (
     <div>
       <PageHeader kicker="Date concierge" title={<>Ideas for <em className="text-primary">two</em></>} />
-      <p className="mb-4 rounded-2xl bg-secondary/70 px-4 py-3 text-sm">The AI date assistant is included free during the beta.</p>
+
+      {!billing.isLoading && locked && (
+        <div className="mb-4">{billing.isError ? <ErrorState error={billing.error} onRetry={() => billing.refetch()} label="Your plan" /> : <Paywall feature="assistant" status={billing.data} onRetry={() => refresh.mutate()} retrying={refresh.isPending} />}</div>
+      )}
 
       {prefs.isLoading ? <Skeleton className="h-20 rounded-[24px]" /> : (needsProfile || profileError) ? (
         <Link href="/preferences" data-testid="card-assistant-setup" className="rise mb-5 block rounded-[28px] bg-foreground p-5 text-background">
@@ -223,7 +237,7 @@ export default function AssistantPage() {
           )}
         </AnimatePresence>
 
-        {ask.isError && !profileError && (
+        {ask.isError && !profileError && !paidError && (
           <div role="alert" data-testid="state-assistant-error" className="rounded-[24px] border border-destructive/30 bg-destructive/5 p-4 text-sm">
             <p className="font-medium">The concierge couldn’t answer that one.</p><p className="text-muted-foreground">{errMsg(ask.error)}</p>
             <button data-testid="button-assistant-retry" disabled={locked} onClick={() => send(lastPrompt)} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs text-background"><RotateCw className="h-3.5 w-3.5" /> Try again</button>
