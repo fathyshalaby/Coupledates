@@ -8,6 +8,12 @@ import {
   db, pool, couplesTable, membersTable, preferencesTable, datesTable, accountLinksTable,
 } from "@workspace/db";
 import { joinCoupleByInvite } from "../src/lib/couple-membership";
+import {
+  applyOrphanCoupleCleanup,
+  listCoupleSpaceCandidates,
+  planCoupleSpaceCleanup,
+  releaseEmptySoloSpace,
+} from "../src/lib/couple-space-cleanup";
 
 const database = new URL(process.env.DATABASE_URL!);
 assert.equal(process.env.BILLING_CONTRACT_TEST, "isolated");
@@ -102,4 +108,39 @@ test("solo partners can abandon a mistaken empty space and join the shared invit
 
   await expectFail(() => joinCoupleByInvite(`fresh-${randomUUID()}`, fullInvite), 409);
   await expectFail(() => joinCoupleByInvite(owner, "missing-invite-code-xx"), 404);
+});
+
+test("cleanup can remove orphan couples and release empty mistaken solos", async () => {
+  const soloUser = `cleanup-solo-${randomUUID()}`;
+  const [orphan] = await db.insert(couplesTable).values({
+    yourName: "Ghost", partnerName: "None", anniversary: "2024-01-01", timezone: "UTC",
+    inviteCode: `orphan-${randomUUID().replace(/-/g, "").slice(0, 12)}`,
+  }).returning();
+  const [emptySolo] = await db.insert(couplesTable).values({
+    yourName: "Stuck", partnerName: "Partner", anniversary: "2024-01-01", timezone: "UTC",
+    inviteCode: `empty-${randomUUID().replace(/-/g, "").slice(0, 12)}`,
+  }).returning();
+  await db.insert(membersTable).values({ userId: soloUser, coupleId: emptySolo.id });
+
+  const candidates = await listCoupleSpaceCandidates();
+  const plan = planCoupleSpaceCleanup(candidates);
+  assert.ok(plan.orphans.some(c => c.coupleId === orphan.id));
+  assert.ok(plan.emptySolos.some(c => c.coupleId === emptySolo.id));
+
+  const dryOrphans = await applyOrphanCoupleCleanup(plan.orphans.filter(c => c.coupleId === orphan.id), false);
+  assert.equal(dryOrphans[0]?.deleted, false);
+  assert.equal((await db.select().from(couplesTable).where(eq(couplesTable.id, orphan.id))).length, 1);
+
+  const appliedOrphans = await applyOrphanCoupleCleanup(plan.orphans.filter(c => c.coupleId === orphan.id), true);
+  assert.equal(appliedOrphans[0]?.deleted, true);
+  assert.equal((await db.select().from(couplesTable).where(eq(couplesTable.id, orphan.id))).length, 0);
+
+  const dryRelease = await releaseEmptySoloSpace(emptySolo.id, false);
+  assert.equal(dryRelease.released, false);
+  assert.equal((await db.select().from(membersTable).where(eq(membersTable.userId, soloUser))).length, 1);
+
+  const released = await releaseEmptySoloSpace(emptySolo.id, true);
+  assert.equal(released.released, true);
+  assert.equal((await db.select().from(membersTable).where(eq(membersTable.userId, soloUser))).length, 0);
+  assert.equal((await db.select().from(couplesTable).where(eq(couplesTable.id, emptySolo.id))).length, 0);
 });

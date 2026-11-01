@@ -16,9 +16,10 @@ import {
 } from "@workspace/db";
 import { fail } from "./validation";
 
-type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type DbTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-async function cleanupAbandonedSoloSpace(tx: Tx, coupleId: number) {
+/** Delete a couple row only after every membership has already moved away. */
+export async function cleanupAbandonedSoloSpace(tx: DbTx, coupleId: number) {
   const remaining = await tx.select().from(membersTable).where(eq(membersTable.coupleId, coupleId));
   if (remaining.length > 0) return;
 

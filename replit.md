@@ -47,6 +47,8 @@ Reminder checks: `pnpm --filter @workspace/api-server run test` runs pure schedu
 
 Partner join checks: `pnpm --filter @workspace/api-server run test:couple-join` runs the disposable-cluster contract for invite join, including abandoning a mistaken empty solo space so both partners end up in one shared couple id.
 
+Stuck-space cleanup: `pnpm --filter @workspace/api-server run cleanup:couple-spaces` reports orphans, empty solos, and suggested explicit moves. Apply with `--apply-orphans` and/or `--apply-empty-solos`, or repair one person with `--move-user <clerkOrMemberId> --invite <code>`. A raw SQL preview/delete for memberless couples lives at `artifacts/api-server/scripts/cleanup-orphan-couples.sql`. Do not auto-merge by names or emails.
+
 ## User preferences
 
 The user chose a mobile-first web app rather than a native mobile app. Product scope comes from their description of the couples memory/date/streak/yearly recap concept. They want a coherent interests → recommendations → proposal → partner approval → date → photos flow, including long-distance relationships.
