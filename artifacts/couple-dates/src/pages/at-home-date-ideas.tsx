@@ -216,19 +216,19 @@ export default function AtHomeDateIdeasPage() {
 
         <section className="at-home-cta" aria-labelledby="at-home-cta-title">
           <div>
-            <p className="eyebrow">Open beta · free for both partners</p>
+            <p className="eyebrow">A private space for two</p>
             <h2 id="at-home-cta-title" className="font-display">Save a little room for each other.</h2>
             <p>Start a private shared space, invite your partner, and plan your next night in together.</p>
           </div>
           <Link
             href="/sign-up"
             className="journal-button"
-            onClick={() => trackEvent('free_beta_cta_clicked', {
+            onClick={() => trackEvent('signup_cta_clicked', {
               page: 'at_home_date_ideas',
               placement: 'bottom_cta',
             })}
           >
-            Join the free beta <ArrowRight size={16} />
+            Start your shared space <ArrowRight size={16} />
           </Link>
         </section>
       </main>

@@ -65,7 +65,7 @@ export default function SettingsPage() {
         : ph === 'ending' ? `Plus until ${end ?? 'period end'}`
           : ph === 'past_due' ? 'Payment issue'
             : ph === 'pending' ? 'Checkout pending'
-              : 'Free during beta · everything included';
+              : 'Free plan, Plus adds concierge and recap';
   })();
 
   const submit = (e: FormEvent) => {

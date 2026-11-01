@@ -32,7 +32,7 @@ export default function CouplesJournalPage() {
               </Link>
               <a href="#how-it-works" className="journal-text-link">See how it works <ArrowDown size={15} /></a>
             </div>
-            <p className="journal-beta-line"><LockKeyhole size={15} /> Free during beta <span aria-hidden="true">·</span> Private to the two people in your space</p>
+            <p className="journal-beta-line"><LockKeyhole size={15} /> Private to the two people in your space <span aria-hidden="true">·</span> Memories stay free</p>
           </div>
           <motion.figure {...enter} className="journal-product-figure">
             <div className="journal-photo-frame">
@@ -147,7 +147,7 @@ export default function CouplesJournalPage() {
 
         <section className="journal-cta">
           <div className="journal-cta-ornament" aria-hidden="true">02</div>
-          <p className="eyebrow">Free while beta is open</p>
+          <p className="eyebrow">Private to the two of you</p>
           <h2 className="font-display">Make a little room for your story.</h2>
           <p>Start a shared space, invite your person, and decide together what’s worth keeping.</p>
           <Link href="/sign-up" data-testid="link-journal-signup-bottom" className="journal-button journal-button-light">Start your shared space <ArrowRight size={16} /></Link>

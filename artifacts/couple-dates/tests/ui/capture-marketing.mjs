@@ -111,6 +111,14 @@ try {
           json: [{ id: 730020, isYou: true, displayName: 'Noor' }, { id: 730021, isYou: false, displayName: 'Teo' }],
         });
         if (url.pathname === '/api/reminders') return route.fulfill({ json: [] });
+        if (url.pathname === '/api/billing/status') return route.fulfill({
+          json: {
+            plan: 'plus', entitled: true, providerStatus: 'active', isPayer: true, canManage: true,
+            cancelAtPeriodEnd: false, currentPeriodEnd: '2099-12-01T00:00:00.000Z',
+            checkoutPending: false, checkoutAvailable: false, verificationPending: false,
+            notice: '', price: 5, currency: 'usd', billingIntervalDays: 30,
+          },
+        });
         if (url.pathname === '/api/recap') return route.fulfill({
           json: {
             year: 2026, memoryCount: memories.length, dateCount: 1,

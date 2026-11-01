@@ -81,6 +81,14 @@ export const test = base.extend<{ network: Network }>({
         if (path === '/api/reminder-preferences') {
           return json({ timezone: 'UTC', dateEnabled: false, photoEnabled: false, partnerUpdatesEnabled: true, leadMinutes: 60 });
         }
+        if (path === '/api/billing/status') {
+          return json({
+            plan: 'plus', entitled: true, providerStatus: 'active', isPayer: true, canManage: true,
+            cancelAtPeriodEnd: false, currentPeriodEnd: '2099-12-01T00:00:00.000Z',
+            checkoutPending: false, checkoutAvailable: false, verificationPending: false,
+            notice: '', price: 5, currency: 'usd', billingIntervalDays: 30,
+          });
+        }
         if (path === '/api/openai/date-assistant') return json(assistantTurns);
         if (path === '/api/preferences') return json([]);
         if (path === '/api/reminders') return json([]);

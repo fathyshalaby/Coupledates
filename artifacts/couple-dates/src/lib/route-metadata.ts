@@ -36,12 +36,12 @@ export function updateRouteMetadata(location: string, configuredBasePath: string
         ? 'Romantic At-Home Date Ideas for Two | Couple Dates'
         : `${names[key] ?? 'Page not found'} · Couple Dates`;
   const descriptions: Record<string, string> = {
-    '': 'Find date ideas, make plans you both choose, and save the photos and little details that bring them back. Couple Dates is free during beta.',
+    '': 'Find date ideas, make plans you both choose, and save the photos and little details that bring them back. Memories stay free; Plus adds the date concierge and yearly recap.',
     'how-it-works': 'Couple Dates helps turn her date idea into a plan both partners choose, then keeps photos and memories private unless they choose to share.',
     'couples-journal': seoMetadata.couplesJournal.description,
-    'at-home-date-ideas': 'Find romantic at-home date ideas for every budget and schedule, including long-distance options. Plan a date together in Couple Dates, free during beta.',
+    'at-home-date-ideas': 'Find romantic at-home date ideas for every budget and schedule, including long-distance options. Plan a date together in Couple Dates.',
     'long-distance': 'Plan online dates across different schedules, add a call link you already use, and keep the moments you share in Couple Dates.',
-    pricing: 'Couple Dates is free for both partners during beta. Try date planning, date ideas, shared memories, and the yearly recap before checkout returns.',
+    pricing: 'Couple Dates memories stay free. Plus is US$5 per couple every 30 days for the AI date concierge and yearly recap, covering both partners.',
   };
   const description = descriptions[key] ?? 'A private shared space for exactly two to plan dates together and remember everyday moments.';
   document.title = title;

@@ -19,7 +19,7 @@ export function MarketingNav() {
 }
 
 export function MarketingFooter() {
-  return <footer className="marketing-footer"><Link href="/" className="brand-mark"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><span>Couple Dates<small>a shared space for two</small></span></Link><p>For the girlfriend who wants more dates worth posting.</p><div>{pages.slice(1).map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}<Link href="/at-home-date-ideas">At-home date ideas</Link></div><small>Couple Dates · Free during beta</small></footer>;
+  return <footer className="marketing-footer"><Link href="/" className="brand-mark"><img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" /><span>Couple Dates<small>a shared space for two</small></span></Link><p>For the girlfriend who wants more dates worth posting.</p><div>{pages.slice(1).map(([href, label]) => <Link key={href} href={href}>{label}</Link>)}<Link href="/at-home-date-ideas">At-home date ideas</Link></div><small>Couple Dates · US$5 / couple / 30 days for Plus</small></footer>;
 }
 
 export function PageIntro({ eyebrow, title, body }: { eyebrow: string; title: ReactNode; body: string }) {
@@ -46,9 +46,9 @@ export function LongDistance() {
 }
 
 export function Pricing() {
-  return <main className="marketing-page pricing-page"><PageIntro eyebrow="Open beta · free for both partners" title={<>Use the whole space.<br/><em>No checkout in beta.</em></>} body="Invite your partner and try the full flow together. Every Couple Dates feature is free while beta is open; paid plans and checkout are paused."/>
-    <section className="beta-card"><div className="beta-copy"><span className="beta-stamp">CURRENT BETA</span><h2 className="font-display">One shared space.<br/>Everything included.</h2><p>Plan dates, save memories, and look back at your year together. No paid plan or checkout needed during beta.</p><Link href="/sign-up" className="pill-button">Start your shared space <ArrowRight size={15}/></Link></div><div className="included-list">{['A private space for exactly two', 'Date proposals, online or in person', 'Date assistant suggestions shaped by your preferences', 'Memories, photos, search & favorites', 'Daily check-ins and yearly recap'].map((x) => <p key={x}><Check size={17}/>{x}</p>)}</div></section>
-    <section className="pricing-note"><div><p className="eyebrow">Clear about beta</p><h2 className="font-display">Try the whole story before there’s a price.</h2></div><p>The date assistant has an operating-cost safeguard to keep beta reliable; it is not a paid-plan allowance. We are not setting future prices here. If your space already has a subscription, its billing controls remain separate and unchanged.</p></section>
+  return <main className="marketing-page pricing-page"><PageIntro eyebrow="One plan for both of you" title={<>Start free.<br/><em>Plus when you want more.</em></>} body="Memories, date proposals, calendars, and streaks stay free forever. Couple Dates Plus unlocks the AI date concierge and yearly recap for both partners in the space."/>
+    <section className="beta-card"><div className="beta-copy"><span className="beta-stamp">COUPLE DATES PLUS</span><h2 className="font-display">US$5 per couple,<br/>every 30 days.</h2><p>One subscription covers both partners. Cancel renewal anytime; Plus continues through the paid period, and every memory stays readable afterward.</p><Link href="/sign-up" className="pill-button">Start your shared space <ArrowRight size={15}/></Link></div><div className="included-list">{['Date concierge shaped by both your preferences', 'Yearly recap of memories, dates, and check-ins', 'Always free: proposals, albums, calendars, streaks', 'Taxes may apply at checkout on Whop'].map((x) => <p key={x}><Check size={17}/>{x}</p>)}</div></section>
+    <section className="pricing-note"><div><p className="eyebrow">Clear about usage</p><h2 className="font-display">Plus unlocks features. Safeguards keep the assistant reliable.</h2></div><p>The date assistant has an operating-cost request safeguard; it is not a paid-plan allowance. Memories, photos, manual dates, calendars, and streaks remain free whether or not you subscribe.</p></section>
     <MarketingCTA/>
   </main>;
 }
